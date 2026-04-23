@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body><Providers>{children}</Providers></body>
+      <body className="min-h-screen bg-white"><Providers>{children}</Providers></body>
     </html>
   );
 }

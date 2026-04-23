@@ -6,19 +6,24 @@ import { LocationId } from '@/data/locations';
 type LocationContextValue = {
   selectedLocation: LocationId | null;
   setSelectedLocation: (location: LocationId) => void;
+  isTeleporting: boolean;
+  setIsTeleporting: (state: boolean) => void;
 };
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
+  const [isTeleporting, setIsTeleporting] = useState(false);
 
   const value = useMemo(
     () => ({
       selectedLocation,
-      setSelectedLocation
+      setSelectedLocation,
+      isTeleporting,
+      setIsTeleporting
     }),
-    [selectedLocation]
+    [selectedLocation, isTeleporting]
   );
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

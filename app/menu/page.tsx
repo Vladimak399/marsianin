@@ -1,5 +1,9 @@
 import MenuPage from '@/components/menu/MenuPage';
 
-export default function MenuRoutePage() {
-  return <MenuPage />;
+type MenuRoutePageProps = {
+  searchParams: { location?: string };
+};
+
+export default function MenuRoutePage({ searchParams }: MenuRoutePageProps) {
+  return <MenuPage initialLocation={searchParams.location} />;
 }
