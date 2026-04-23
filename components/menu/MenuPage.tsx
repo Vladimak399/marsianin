@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
@@ -29,6 +29,8 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
+  const categoryNavRef = useRef<HTMLDivElement>(null);
+  const [categoryNavHeight, setCategoryNavHeight] = useState(64);
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -53,6 +55,26 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   }, [categories, initialCategory]);
 
   useEffect(() => {
+    const navElement = categoryNavRef.current;
+    if (!navElement) return;
+
+    const updateNavHeight = () => {
+      setCategoryNavHeight(Math.round(navElement.getBoundingClientRect().height));
+    };
+
+    updateNavHeight();
+
+    const resizeObserver = new ResizeObserver(updateNavHeight);
+    resizeObserver.observe(navElement);
+    window.addEventListener('resize', updateNavHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateNavHeight);
+    };
+  }, []);
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -64,14 +86,17 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
           if (next) setActiveCategory(next);
         }
       },
-      { rootMargin: '-24% 0px -60% 0px', threshold: [0.2, 0.45, 0.7] }
+      {
+        rootMargin: `-${categoryNavHeight + 28}px 0px -55% 0px`,
+        threshold: [0.15, 0.35, 0.6]
+      }
     );
 
     const sections = document.querySelectorAll<HTMLElement>('[data-category]');
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, []);
+  }, [categoryNavHeight]);
 
   useEffect(() => {
     const activeChip = document.querySelector<HTMLElement>(`[data-category-chip="${activeCategory}"]`);
@@ -94,7 +119,11 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   const handleCategorySelect = (category: string) => {
     const section = document.getElementById(`section-${category}`);
-    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (section) {
+      const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+      const offsetTop = sectionTop - categoryNavHeight - 24;
+      window.scrollTo({ top: Math.max(offsetTop, 0), behavior: 'smooth' });
+    }
     setActiveCategory(category);
     updateQuery(activeLocation, category);
   };
@@ -112,10 +141,10 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   };
 
   return (
-    <main className="relative min-h-svh overflow-hidden px-3 pb-12 pt-3 sm:px-6 sm:pt-6 lg:px-8">
+    <main className="relative min-h-svh overflow-x-hidden px-3 pb-12 pt-3 sm:px-6 sm:pt-6 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,130,44,0.18),transparent_32%),radial-gradient(circle_at_88%_22%,rgba(255,155,90,0.13),transparent_30%),linear-gradient(#faf8f5,#f5f4f1)]" />
       <div className="relative mx-auto max-w-[1240px]">
-        <section className="relative overflow-hidden border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
+        <section className="relative overflow-visible border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
           <GridOverlay className="z-0 opacity-70" />
 
           <AnimatePresence>
@@ -184,7 +213,12 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
             })}
           </motion.div>
 
-          <CategoryNav categories={categories} activeCategory={activeCategory} onSelect={handleCategorySelect} />
+          <CategoryNav
+            categories={categories}
+            activeCategory={activeCategory}
+            onSelect={handleCategorySelect}
+            navRef={categoryNavRef}
+          />
 
           <div className="relative z-10 mt-6 space-y-8 sm:mt-8 sm:space-y-10">
             {menuData.map((section) => (
