@@ -315,6 +315,45 @@ export default function Hero() {
             />
           </div>
 
+          <div className="relative mt-3 border border-[#ffc8ad] bg-[#fff5ee]/90 p-3 lg:hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-70 [background-image:linear-gradient(to_right,rgba(255,106,44,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,106,44,0.22)_1px,transparent_1px)] [background-size:44px_44px]"
+            />
+            <div className="relative z-10 text-left">
+              <p className="text-[9px] tracking-[0.16em] text-[#9a6c52]">карта узлов · mobile</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {locations.map((location) => {
+                  const isActive = selectedLocation === location.id;
+                  const isNearest = nearestPoint?.id === location.id;
+
+                  return (
+                    <button
+                      key={`mobile-map-${location.id}`}
+                      type="button"
+                      onClick={() => {
+                        setSelectedLocation(location.id);
+                        goToMenu(location.id);
+                      }}
+                      className={`border px-2 py-2 text-left transition-colors ${
+                        isActive
+                          ? 'border-[#ff6d2d] bg-[#ffe8dc] shadow-[0_8px_20px_rgba(255,109,45,0.2)]'
+                          : 'border-[#e3d0c2] bg-[#fffbf8]'
+                      }`}
+                    >
+                      <p className={`leading-none tracking-[0.01em] ${isActive ? 'text-[1.62rem] text-[#ff6d2d]' : 'text-[1.28rem] text-[#4a443e]'}`}>
+                        {location.label}
+                      </p>
+                      <p className={`mt-1 text-[9px] tracking-[0.14em] ${isNearest ? 'text-[#da5f2b]' : 'text-[#8b7f76]'}`}>
+                        {isNearest ? 'ближайший' : 'узел'}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           <div className="pointer-events-none mt-5 grid gap-1.5 text-left text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
             <span>северный ориентир</span>
             <span>центральная линия</span>
