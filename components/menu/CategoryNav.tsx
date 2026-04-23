@@ -9,9 +9,10 @@ type CategoryNavProps = {
   activeCategory: string;
   onSelect: (category: string) => void;
   navRef: RefObject<HTMLDivElement>;
+  chipsContainerRef: RefObject<HTMLDivElement>;
 };
 
-export default function CategoryNav({ categories, activeCategory, onSelect, navRef }: CategoryNavProps) {
+export default function CategoryNav({ categories, activeCategory, onSelect, navRef, chipsContainerRef }: CategoryNavProps) {
   return (
     <div
       ref={navRef}
@@ -19,7 +20,10 @@ export default function CategoryNav({ categories, activeCategory, onSelect, navR
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,transparent_8%,transparent_92%,rgba(255,255,255,0.92)_100%)]" />
 
-      <div className="relative flex snap-x snap-mandatory gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={chipsContainerRef}
+        className="relative flex snap-x snap-mandatory gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {categories.map((category) => {
           const isActive = category === activeCategory;
 

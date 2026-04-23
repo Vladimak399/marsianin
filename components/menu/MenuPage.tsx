@@ -30,6 +30,8 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
   const categoryNavRef = useRef<HTMLDivElement>(null);
+  const chipsContainerRef = useRef<HTMLDivElement>(null);
+  const isCategoryClickScrollRef = useRef(false);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
 
   useEffect(() => {
@@ -99,8 +101,19 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   }, [categoryNavHeight]);
 
   useEffect(() => {
-    const activeChip = document.querySelector<HTMLElement>(`[data-category-chip="${activeCategory}"]`);
-    activeChip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const container = chipsContainerRef.current;
+    if (!container) return;
+
+    const activeChip = container.querySelector<HTMLElement>(`[data-category-chip="${activeCategory}"]`);
+    if (!activeChip) return;
+
+    const behavior: ScrollBehavior = isCategoryClickScrollRef.current ? 'smooth' : 'auto';
+    const targetLeft = activeChip.offsetLeft + activeChip.offsetWidth / 2 - container.clientWidth / 2;
+    const maxLeft = Math.max(container.scrollWidth - container.clientWidth, 0);
+    const left = Math.min(Math.max(targetLeft, 0), maxLeft);
+
+    container.scrollTo({ left, behavior });
+    isCategoryClickScrollRef.current = false;
   }, [activeCategory]);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
@@ -119,6 +132,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   const handleCategorySelect = (category: string) => {
     const section = document.getElementById(`section-${category}`);
+    isCategoryClickScrollRef.current = true;
     if (section) {
       const sectionTop = section.getBoundingClientRect().top + window.scrollY;
       const offsetTop = sectionTop - categoryNavHeight - 24;
@@ -218,6 +232,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
             activeCategory={activeCategory}
             onSelect={handleCategorySelect}
             navRef={categoryNavRef}
+            chipsContainerRef={chipsContainerRef}
           />
 
           <div className="relative z-10 mt-6 space-y-8 sm:mt-8 sm:space-y-10">
