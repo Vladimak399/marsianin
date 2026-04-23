@@ -174,10 +174,10 @@ export default function Hero() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.22, ease: premiumEase }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_7%,rgba(255,132,59,0.12),transparent_34%),radial-gradient(circle_at_85%_78%,rgba(255,150,75,0.09),transparent_38%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_7%,rgba(255,132,59,0.14),transparent_36%),radial-gradient(circle_at_85%_78%,rgba(255,150,75,0.11),transparent_40%),linear-gradient(145deg,rgba(255,244,235,0.58)_0%,rgba(255,248,242,0.24)_56%,rgba(255,252,248,0.08)_100%)]" />
       <div
         aria-hidden
-        className="absolute inset-0 opacity-35 [background-image:linear-gradient(to_right,rgba(23,23,23,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.07)_1px,transparent_1px)] [background-size:72px_72px] sm:[background-size:92px_92px]"
+        className="absolute inset-0 opacity-45 [background-image:linear-gradient(to_right,rgba(255,106,44,0.34)_1.2px,transparent_1.2px),linear-gradient(to_bottom,rgba(255,106,44,0.34)_1.2px,transparent_1.2px)] [background-size:52px_52px] sm:[background-size:78px_78px] lg:[background-size:98px_98px]"
       />
 
       <motion.div
