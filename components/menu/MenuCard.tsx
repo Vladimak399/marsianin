@@ -1,5 +1,9 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { MenuItem } from '@/data/menu';
+import { cardHover } from '@/lib/animations';
 import NutritionTable from './NutritionTable';
 
 type MenuCardProps = {
@@ -8,7 +12,13 @@ type MenuCardProps = {
 
 export default function MenuCard({ item }: MenuCardProps) {
   return (
-    <article className="group flex h-full flex-col border border-grid bg-white p-4 transition-colors hover:border-neutral-400">
+    <motion.article
+      className="group flex h-full flex-col border border-grid bg-white p-4 transition-colors hover:border-neutral-400"
+      initial="rest"
+      whileHover="hover"
+      variants={cardHover}
+      layout
+    >
       <div className="relative aspect-[4/3] w-full overflow-hidden border border-grid bg-neutral-50">
         <Image
           src={item.image}
@@ -28,6 +38,6 @@ export default function MenuCard({ item }: MenuCardProps) {
           <NutritionTable nutrition={item.nutrition} />
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
