@@ -24,7 +24,7 @@ export default function CategoryNav({ categories, activeCategory, onSelect }: Ca
               type="button"
               onClick={() => onSelect(category)}
               data-category-chip={category}
-              className="relative min-h-10 snap-start whitespace-nowrap rounded-sm border px-3.5 py-2 text-[11px] tracking-[0.12em]"
+              className="relative min-h-10 snap-start whitespace-nowrap rounded-sm border px-3.5 py-2 font-sans text-[11px] tracking-[0.12em] lowercase"
               animate={{
                 borderColor: isActive ? '#ff8a38' : '#d4d4d4',
                 color: isActive ? '#171717' : '#6b7280',
