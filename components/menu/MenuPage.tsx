@@ -60,12 +60,10 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
         if (visible[0]) {
           const next = visible[0].target.getAttribute('data-category');
-          if (next) {
-            setActiveCategory(next);
-          }
+          if (next) setActiveCategory(next);
         }
       },
-      { rootMargin: '-28% 0px -58% 0px', threshold: [0.2, 0.45, 0.7] }
+      { rootMargin: '-24% 0px -60% 0px', threshold: [0.2, 0.45, 0.7] }
     );
 
     const sections = document.querySelectorAll<HTMLElement>('[data-category]');
@@ -73,6 +71,11 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const activeChip = document.querySelector<HTMLElement>(`[data-category-chip="${activeCategory}"]`);
+    activeChip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [activeCategory]);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
     const currentSearch = typeof window === 'undefined' ? '' : window.location.search;
@@ -90,9 +93,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   const handleCategorySelect = (category: string) => {
     const section = document.getElementById(`section-${category}`);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setActiveCategory(category);
     updateQuery(activeLocation, category);
   };

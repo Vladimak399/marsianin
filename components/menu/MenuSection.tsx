@@ -17,14 +17,14 @@ export default function MenuSection({ section, selectedLocation, onOpenItem }: M
     <motion.section
       id={`section-${section.category}`}
       data-category={section.category}
-      className="scroll-mt-32 border-t border-grid pt-8 first:border-t-0 first:pt-0 sm:scroll-mt-36 sm:pt-10"
+      className="scroll-mt-36 border-t border-grid pt-8 first:border-t-0 first:pt-0 sm:scroll-mt-40 sm:pt-10"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
       variants={fadeUp}
     >
       <header className="mb-4 flex items-end justify-between gap-4 sm:mb-6">
-        <h2 className="text-[1.45rem] font-semibold uppercase tracking-[0.04em] text-neutral-900 sm:text-3xl">{section.category}</h2>
+        <h2 className="text-[1.3rem] font-semibold uppercase tracking-[0.05em] text-neutral-900 sm:text-3xl">{section.category}</h2>
         <p className="text-[11px] uppercase tracking-[0.16em] text-neutral-500">{section.items.length} поз.</p>
       </header>
       <motion.div
