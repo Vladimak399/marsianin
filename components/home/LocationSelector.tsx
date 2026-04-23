@@ -13,7 +13,7 @@ type LocationSelectorProps = {
 
 export default function LocationSelector({ selectedLocation, onSelect, disabled = false }: LocationSelectorProps) {
   return (
-    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 pb-2 pt-8 sm:grid-cols-3">
       {locations.map((location) => {
         const isSelected = selectedLocation === location.id;
         const isDimmed = Boolean(selectedLocation) && !isSelected;
@@ -25,25 +25,30 @@ export default function LocationSelector({ selectedLocation, onSelect, disabled 
             layoutId={`location-${location.id}`}
             onClick={(event) => onSelect(location.id, event)}
             disabled={disabled}
-            className="group relative overflow-hidden border border-grid bg-white px-6 py-10 text-left transition-colors disabled:cursor-wait"
+            className="group relative overflow-hidden border border-[#dfdfdf] bg-[#f7f7f7] px-7 py-10 text-left shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-colors disabled:cursor-wait"
             animate={{
-              borderColor: isSelected ? '#ff6a00' : '#e8e8e8',
-              backgroundColor: isSelected ? '#171717' : '#ffffff',
-              scale: isSelected ? 1.05 : 1,
-              opacity: isDimmed ? 0.35 : 1
+              borderColor: isSelected ? '#ff5a1f' : '#dfdfdf',
+              backgroundColor: '#f7f7f7',
+              scale: isSelected ? 1.04 : 1,
+              opacity: isDimmed ? 0.42 : 1,
+              boxShadow: isSelected ? '0 16px 36px rgba(0, 0, 0, 0.12)' : '0 2px 10px rgba(0, 0, 0, 0.02)'
             }}
-            whileHover={{ y: -2 }}
+            whileHover={{ y: -4 }}
             whileTap={{ y: 0 }}
-            transition={{ duration: 0.15, ease: premiumEase }}
+            transition={{ duration: 0.18, ease: premiumEase }}
           >
-            <span className="mb-8 block text-xs uppercase tracking-[0.3em] text-neutral-500">узел</span>
+            <span className="mb-3 block text-xs uppercase tracking-[0.45em] text-[#6c6c6c]">точка</span>
             <span
-              className={`block text-5xl font-semibold uppercase leading-none tracking-[0.08em] sm:text-6xl ${
-                isSelected ? 'text-white' : 'text-neutral-900'
+              className={`block text-[112px] font-medium uppercase leading-none tracking-[0.02em] sm:text-[132px] ${
+                isSelected ? 'text-[#ff5a1f]' : 'text-[#131720]'
               }`}
             >
               {location.label}
             </span>
+            <span className="mt-2 block text-sm uppercase tracking-[0.28em] text-[#8a8a8a]">
+              [ x: 0{String(locations.indexOf(location) + 1)} ] [ y: {location.label.slice(1)} ]
+            </span>
+            <span className="mt-3 block text-3xl text-[#8f8f8f]">+</span>
           </motion.button>
         );
       })}
