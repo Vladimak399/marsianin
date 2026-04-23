@@ -2,15 +2,21 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
 import { cardHover } from '@/lib/animations';
 import NutritionTable from './NutritionTable';
 
 type MenuCardProps = {
   item: MenuItem;
+  selectedLocation: LocationId | null;
 };
 
-export default function MenuCard({ item }: MenuCardProps) {
+export default function MenuCard({ item, selectedLocation }: MenuCardProps) {
+  const fallbackLocation: LocationId = 'o12';
+  const location = selectedLocation ?? fallbackLocation;
+  const price = item.priceByLocation[location];
+
   return (
     <motion.article
       className="group flex h-full flex-col border border-grid bg-white p-4 transition-colors hover:border-neutral-400"
@@ -31,7 +37,7 @@ export default function MenuCard({ item }: MenuCardProps) {
       <div className="mt-4 flex flex-1 flex-col">
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-lg font-medium uppercase tracking-wide text-neutral-900">{item.name}</h3>
-          <p className="shrink-0 text-lg font-semibold text-accent">{item.price} ₽</p>
+          <p className="shrink-0 text-lg font-semibold text-accent">{price} ₽</p>
         </div>
         <p className="mt-2 text-sm leading-relaxed text-neutral-600">{item.description}</p>
         <div className="mt-auto">
