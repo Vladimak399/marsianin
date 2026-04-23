@@ -1,20 +1,16 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import LocationSelector from '@/components/home/LocationSelector';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { premiumEase } from '@/lib/animations';
 import { LocationId } from '@/data/locations';
 
-const DECISION_DELAY = 100;
-const TELEPORT_DELAY = 460;
-
 export default function Hero() {
   const router = useRouter();
-  const { selectedLocation, setSelectedLocation, isTeleporting, setIsTeleporting, setTeleportOrigin } = useLocation();
-  const [isCollapsing, setIsCollapsing] = useState(false);
+  const { selectedLocation, setSelectedLocation } = useLocation();
 
   const currentDate = useMemo(() => {
     return new Date().toLocaleDateString('ru-RU', {
@@ -32,34 +28,17 @@ export default function Hero() {
   }, []);
 
   const handleTeleport = useCallback(
-    (location: LocationId, event: MouseEvent<HTMLButtonElement>) => {
-      if (isTeleporting) return;
-
-      const rect = event.currentTarget.getBoundingClientRect();
-      setTeleportOrigin({
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
-      });
-
+    (location: LocationId, _event: MouseEvent<HTMLButtonElement>) => {
       setSelectedLocation(location);
-
-      window.setTimeout(() => {
-        setIsCollapsing(true);
-        setIsTeleporting(true);
-
-        window.setTimeout(() => {
-          router.push(`/menu?location=${location}`);
-        }, TELEPORT_DELAY);
-      }, DECISION_DELAY);
+      router.push(`/menu?location=${location}`);
     },
-    [isTeleporting, router, setIsTeleporting, setSelectedLocation, setTeleportOrigin]
+    [router, setSelectedLocation]
   );
 
   return (
     <motion.section
       className="relative min-h-screen overflow-hidden border border-[#ececec] bg-[#f6f6f6]"
-      style={{ pointerEvents: isTeleporting ? 'none' : 'auto' }}
-      animate={{ opacity: isCollapsing ? 0.2 : 1, scale: isCollapsing ? 0.98 : 1 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.25, ease: premiumEase }}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.8),rgba(240,240,240,0.95))]" />
@@ -104,7 +83,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <LocationSelector selectedLocation={selectedLocation} onSelect={handleTeleport} disabled={isTeleporting} />
+        <LocationSelector selectedLocation={selectedLocation} onSelect={handleTeleport} />
 
         <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[#dedede] pt-5 text-[10px] uppercase tracking-[0.38em] text-[#9a9a9a]">
           <span>system / ms-012</span>
