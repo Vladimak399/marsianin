@@ -26,7 +26,8 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
   const [switchPulseKey, setSwitchPulseKey] = useState(0);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
 
   useEffect(() => {
@@ -99,7 +100,14 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   };
 
   const handleOpenDetails = (item: MenuItem, category: string) => {
-    setSelectedItem(item);
+    const section = menuData.find((entry) => entry.category === category);
+    const items = section?.items ?? [];
+    const nextIndex = items.findIndex((entry) => entry.id === item.id);
+
+    if (nextIndex < 0) return;
+
+    setViewerItems(items);
+    setActiveIndex(nextIndex);
     setSelectedItemCategory(category);
   };
 
@@ -192,10 +200,16 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
       </div>
 
       <MenuDetailView
-        item={selectedItem}
+        item={viewerItems[activeIndex] ?? null}
+        items={viewerItems}
+        activeIndex={activeIndex}
         category={selectedItemCategory}
         selectedLocation={activeLocation}
-        onClose={() => setSelectedItem(null)}
+        onChangeIndex={setActiveIndex}
+        onClose={() => {
+          setViewerItems([]);
+          setActiveIndex(0);
+        }}
       />
     </main>
   );
