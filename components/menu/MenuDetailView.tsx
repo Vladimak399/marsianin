@@ -19,48 +19,47 @@ export default function MenuDetailView({ item, category, selectedLocation, onClo
     <AnimatePresence>
       {item ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-3 backdrop-blur-[2px] sm:items-center sm:p-8"
+          className="fixed inset-0 z-50 bg-black/35 backdrop-blur-[2px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18, ease: premiumEase }}
+          transition={{ duration: 0.16, ease: premiumEase }}
           onClick={onClose}
         >
           <motion.article
-            className="w-full max-w-3xl border border-grid bg-white"
+            className="absolute inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-2xl border border-grid bg-white sm:inset-8 sm:mx-auto sm:max-h-[min(90vh,760px)] sm:max-w-3xl sm:rounded-none"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.22, ease: premiumEase }}
+            exit={{ opacity: 0, y: 14 }}
+            transition={{ duration: 0.2, ease: premiumEase }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="relative min-h-[240px] border-b border-grid bg-[#f9efe6] md:min-h-[420px] md:border-b-0 md:border-r">
-                <Image src={item.image} alt={item.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 55vw" />
+            <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-neutral-300 sm:hidden" />
+            <div className="grid grid-cols-1 sm:grid-cols-[1.08fr_0.92fr]">
+              <div className="relative min-h-[240px] border-b border-grid bg-[#f9efe6] sm:min-h-[440px] sm:border-b-0 sm:border-r">
+                <Image src={item.image} alt={item.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 50vw" />
               </div>
               <div className="flex flex-col p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4 border-b border-grid pb-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-neutral-500">{category}</p>
-                    <h2 className="mt-2 text-2xl font-semibold uppercase tracking-[0.06em] text-neutral-900">{item.name}</h2>
+                    <p className="text-[10px] uppercase tracking-[0.26em] text-neutral-500">{category}</p>
+                    <h2 className="mt-2 text-[1.5rem] font-semibold uppercase tracking-[0.05em] text-neutral-900 sm:text-2xl">{item.name}</h2>
                   </div>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="text-xs uppercase tracking-[0.2em] text-neutral-500 transition-colors hover:text-neutral-900"
+                    className="min-h-10 text-xs uppercase tracking-[0.2em] text-neutral-500 transition-colors hover:text-neutral-900"
                   >
                     закрыть
                   </button>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-neutral-700">{item.description}</p>
                 <div className="mt-4 border border-grid bg-[#ffefe2] px-4 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-600">цена / {selectedLocation}</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-600">цена / {selectedLocation.toUpperCase()}</p>
                   <p className="mt-1 text-2xl font-semibold text-neutral-900">{item.priceByLocation[selectedLocation]} ₽</p>
                 </div>
                 <NutritionTable nutrition={item.nutrition} />
-                {item.techNote ? (
-                  <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-neutral-500">{item.techNote}</p>
-                ) : null}
+                {item.techNote ? <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-neutral-500">{item.techNote}</p> : null}
               </div>
             </div>
           </motion.article>
