@@ -9,17 +9,24 @@ import { nodeTransition } from '@/lib/animations';
 
 export default function TransitionLayer({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { isTeleporting, setIsTeleporting } = useLocation();
+  const { isTeleporting, setIsTeleporting, selectedLocation, teleportOrigin } = useLocation();
 
   useEffect(() => {
     if (!isTeleporting) return;
 
     const timer = window.setTimeout(() => {
       setIsTeleporting(false);
-    }, 120);
+    }, 140);
 
     return () => window.clearTimeout(timer);
   }, [pathname, isTeleporting, setIsTeleporting]);
+
+  useEffect(() => {
+    document.body.style.overflow = isTeleporting ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isTeleporting]);
 
   return (
     <LayoutGroup id="system-flow">
@@ -29,7 +36,11 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
         </motion.div>
       </AnimatePresence>
 
-      <AnimatePresence>{isTeleporting ? <TeleportOverlay key="teleport-overlay" /> : null}</AnimatePresence>
+      <AnimatePresence>
+        {isTeleporting ? (
+          <TeleportOverlay key="teleport-overlay" origin={teleportOrigin} locationLabel={selectedLocation?.toUpperCase()} />
+        ) : null}
+      </AnimatePresence>
     </LayoutGroup>
   );
 }
