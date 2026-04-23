@@ -1,15 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { LocationId } from '@/data/locations';
 import { MenuCategory } from '@/data/menu';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import MenuCard from './MenuCard';
 
 type MenuSectionProps = {
   section: MenuCategory;
+  selectedLocation: LocationId | null;
 };
 
-export default function MenuSection({ section }: MenuSectionProps) {
+export default function MenuSection({ section, selectedLocation }: MenuSectionProps) {
   return (
     <motion.section
       id={section.category}
@@ -20,9 +22,7 @@ export default function MenuSection({ section }: MenuSectionProps) {
       variants={fadeUp}
     >
       <header className="mb-6 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-semibold uppercase tracking-wide text-neutral-900 sm:text-3xl">
-          {section.category}
-        </h2>
+        <h2 className="text-2xl font-semibold uppercase tracking-wide text-neutral-900 sm:text-3xl">{section.category}</h2>
         <p className="text-xs uppercase tracking-wider text-neutral-500">{section.items.length} поз.</p>
       </header>
       <motion.div
@@ -34,7 +34,7 @@ export default function MenuSection({ section }: MenuSectionProps) {
       >
         {section.items.map((item) => (
           <motion.div key={item.name} variants={fadeUp} layout>
-            <MenuCard item={item} />
+            <MenuCard item={item} selectedLocation={selectedLocation} />
           </motion.div>
         ))}
       </motion.div>
