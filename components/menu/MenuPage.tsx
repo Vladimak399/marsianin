@@ -20,6 +20,8 @@ type MenuPageProps = {
   initialCategory?: string;
 };
 
+type CategoryChangeSource = 'intersection-observer' | 'chip-click';
+
 export default function MenuPage({ initialLocation, initialCategory }: MenuPageProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -29,9 +31,9 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
+  const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
-  const isCategoryClickScrollRef = useRef(false);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
 
   useEffect(() => {
@@ -85,7 +87,10 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
         if (visible[0]) {
           const next = visible[0].target.getAttribute('data-category');
-          if (next) setActiveCategory(next);
+          if (next) {
+            setCategoryChangeSource('intersection-observer');
+            setActiveCategory(next);
+          }
         }
       },
       {
@@ -107,14 +112,16 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     const activeChip = container.querySelector<HTMLElement>(`[data-category-chip="${activeCategory}"]`);
     if (!activeChip) return;
 
-    const behavior: ScrollBehavior = isCategoryClickScrollRef.current ? 'smooth' : 'auto';
+    const behavior: ScrollBehavior = categoryChangeSource === 'chip-click' ? 'smooth' : 'auto';
     const targetLeft = activeChip.offsetLeft + activeChip.offsetWidth / 2 - container.clientWidth / 2;
     const maxLeft = Math.max(container.scrollWidth - container.clientWidth, 0);
     const left = Math.min(Math.max(targetLeft, 0), maxLeft);
 
     container.scrollTo({ left, behavior });
-    isCategoryClickScrollRef.current = false;
-  }, [activeCategory]);
+    if (categoryChangeSource === 'chip-click') {
+      setCategoryChangeSource('intersection-observer');
+    }
+  }, [activeCategory, categoryChangeSource]);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
     const currentSearch = typeof window === 'undefined' ? '' : window.location.search;
@@ -132,7 +139,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   const handleCategorySelect = (category: string) => {
     const section = document.getElementById(`section-${category}`);
-    isCategoryClickScrollRef.current = true;
+    setCategoryChangeSource('chip-click');
     if (section) {
       const sectionTop = section.getBoundingClientRect().top + window.scrollY;
       const offsetTop = sectionTop - categoryNavHeight - 24;
