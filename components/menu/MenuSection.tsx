@@ -2,23 +2,25 @@
 
 import { motion } from 'framer-motion';
 import { LocationId } from '@/data/locations';
-import { MenuCategory } from '@/data/menu';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import MenuCard from './MenuCard';
 
 type MenuSectionProps = {
   section: MenuCategory;
   selectedLocation: LocationId | null;
+  onOpenItem: (item: MenuItem, category: string) => void;
 };
 
-export default function MenuSection({ section, selectedLocation }: MenuSectionProps) {
+export default function MenuSection({ section, selectedLocation, onOpenItem }: MenuSectionProps) {
   return (
     <motion.section
-      id={section.category}
-      className="scroll-mt-24 border-t border-grid pt-10 first:border-t-0 first:pt-0"
+      id={`section-${section.category}`}
+      data-category={section.category}
+      className="scroll-mt-28 border-t border-grid pt-10 first:border-t-0 first:pt-0"
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
       variants={fadeUp}
     >
       <header className="mb-6 flex items-end justify-between gap-4">
@@ -33,8 +35,8 @@ export default function MenuSection({ section, selectedLocation }: MenuSectionPr
         viewport={{ once: true }}
       >
         {section.items.map((item) => (
-          <motion.div key={item.name} variants={fadeUp} layout>
-            <MenuCard item={item} selectedLocation={selectedLocation} />
+          <motion.div key={item.id} variants={fadeUp} layout>
+            <MenuCard item={item} category={section.category} selectedLocation={selectedLocation} onOpen={onOpenItem} />
           </motion.div>
         ))}
       </motion.div>
