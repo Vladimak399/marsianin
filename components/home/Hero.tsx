@@ -356,7 +356,15 @@ export default function Hero() {
                           : 'border-[#e3d0c2] bg-[#fffbf8]'
                       }`}
                     >
-                      <p className={`leading-none tracking-[0.01em] ${isActive ? 'text-[1.62rem] text-[#ff6d2d]' : 'text-[1.28rem] text-[#4a443e]'}`}>
+                      <p
+                        className={`leading-none tracking-[0.01em] ${
+                          isActive
+                            ? 'text-[1.68rem] font-bold text-[#ff6d2d] drop-shadow-[0_0_12px_rgba(255,109,45,0.28)]'
+                            : isNearest
+                              ? 'text-[1.34rem] font-semibold text-[#d87945]'
+                              : 'text-[1.34rem] font-semibold text-[#cb7e54]'
+                        }`}
+                      >
                         {location.label}
                       </p>
                       <p className={`mt-1 text-[9px] tracking-[0.14em] ${isNearest ? 'text-[#da5f2b]' : 'text-[#8b7f76]'}`}>
@@ -421,11 +429,11 @@ export default function Hero() {
                     {node.technical}
                   </div>
                   <div
-                    className="font-medium leading-[0.88] tracking-[0.01em]"
+                    className={`leading-[0.88] tracking-[0.01em] ${isActive ? 'font-bold' : 'font-semibold'}`}
                     style={{
-                      fontSize: isActive ? 'clamp(3.2rem,5.8vw,5.3rem)' : 'clamp(2.8rem,5vw,4.8rem)',
-                      color: isActive ? '#ff6d2d' : '#1f1f1f',
-                      textShadow: isActive ? '0 0 22px rgba(255, 109, 45, 0.32)' : 'none',
+                      fontSize: isActive ? 'clamp(3.28rem,5.95vw,5.42rem)' : 'clamp(2.84rem,5.1vw,4.9rem)',
+                      color: isActive ? '#ff6d2d' : isDimmed ? '#c56a3e' : '#d17646',
+                      textShadow: isActive ? '0 0 24px rgba(255, 109, 45, 0.34)' : isFocused ? '0 0 12px rgba(255, 122, 68, 0.16)' : 'none',
                       filter: isDimmed ? 'saturate(0.82)' : 'saturate(1)'
                     }}
                   >
