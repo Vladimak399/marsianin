@@ -1,34 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Hero from '@/components/home/Hero';
 import MenuSection from '@/components/menu/MenuSection';
-import GridOverlay from '@/components/ui/GridOverlay';
-import PrimaryButton from '@/components/ui/PrimaryButton';
 import { menuData } from '@/data/menu';
 import { fadeUp } from '@/lib/animations';
 
 export default function Home() {
   return (
-    <motion.main
-      className="relative mx-auto min-h-screen max-w-[1240px] px-4 pb-10 pt-6 sm:px-6 lg:px-8"
-      initial="hidden"
-      animate="show"
-      variants={fadeUp}
-    >
-      <GridOverlay />
-      <section className="relative z-10 border border-grid bg-white px-5 py-14 sm:px-8">
-        <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">кофейня</p>
-        <h1 className="mt-3 text-5xl font-semibold uppercase leading-none tracking-tight text-neutral-900 sm:text-7xl">
-          марсианин
-        </h1>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-600 sm:text-base">
-          Локальная кофейня с инженерным подходом к меню: понятный состав, единая подача, фиксированная
-          граммовка и прозрачное КБЖУ для каждого блюда.
-        </p>
-        <div className="mt-7">
-          <PrimaryButton href="#menu">смотреть меню</PrimaryButton>
-        </div>
-      </section>
+    <main className="relative mx-auto min-h-screen max-w-[1240px] px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+      <Hero />
 
       <motion.section
         id="menu"
@@ -75,6 +56,6 @@ export default function Home() {
           </ul>
         </div>
       </motion.footer>
-    </motion.main>
+    </main>
   );
 }
