@@ -14,7 +14,6 @@ type NodeConfig = {
   x: number;
   y: number;
   technical: string;
-  coords: string;
 };
 
 type GeolocationState = 'idle' | 'loading' | 'ready' | 'denied' | 'unsupported' | 'error';
@@ -24,22 +23,19 @@ const nodes: NodeConfig[] = [
     id: 'o12',
     x: 18,
     y: 63,
-    technical: 'стартовый сектор',
-    coords: 'x: 05 | y: 12'
+    technical: 'стартовый сектор'
   },
   {
     id: 'k10',
     x: 62,
     y: 31,
-    technical: 'кофейный протокол',
-    coords: 'x: 18 | y: 10'
+    technical: 'кофейный протокол'
   },
   {
     id: 'p7',
     x: 81,
     y: 70,
-    technical: 'финальный вектор',
-    coords: 'x: 24 | y: 07'
+    technical: 'финальный вектор'
   }
 ];
 
@@ -279,9 +275,9 @@ export default function Hero() {
           </div>
 
           <div className="pointer-events-none mt-5 flex items-center justify-between text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
-            <span>y: 10</span>
-            <span>y: 05</span>
-            <span>y: 00</span>
+            <span>северный ориентир</span>
+            <span>центральная линия</span>
+            <span>южный ориентир</span>
           </div>
 
           <div className="relative hidden h-full min-h-[420px] lg:block">
@@ -328,7 +324,9 @@ export default function Hero() {
                   <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium leading-[0.88] tracking-[0.01em] text-[#1d1d1d]">
                     {location.label}
                   </div>
-                  <div className="mt-1.5 text-[10px] tracking-[0.16em] text-[#7a7a7a]">{node.coords}</div>
+                  <div className="mt-1.5 text-[10px] tracking-[0.16em] text-[#7a7a7a]">
+                    {location.lat.toFixed(4)}° / {location.lng.toFixed(4)}°
+                  </div>
                   <div className="mt-1.5 flex items-center gap-3 text-[10px] tracking-[0.16em]">
                     <span
                       className={`h-2.5 w-2.5 rounded-full border ${
@@ -345,17 +343,17 @@ export default function Hero() {
             })}
 
             <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
-              <span>y: 30</span>
-              <span>y: 20</span>
-              <span>y: 10</span>
-              <span>y: 00</span>
+              <span>север</span>
+              <span>северо-восток</span>
+              <span>восток</span>
+              <span>юго-восток</span>
             </div>
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
-              <span>x: 00</span>
-              <span>x: 08</span>
-              <span>x: 16</span>
-              <span>x: 24</span>
-              <span>x: 32</span>
+              <span>западный сектор</span>
+              <span>запад</span>
+              <span>центр</span>
+              <span>восток</span>
+              <span>восточный сектор</span>
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ type LocationSelectorProps = {
 export default function LocationSelector({ selectedLocation, onSelect, disabled = false }: LocationSelectorProps) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-      {locations.map((location, index) => {
+      {locations.map((location) => {
         const isSelected = selectedLocation === location.id;
 
         return (
@@ -49,7 +49,9 @@ export default function LocationSelector({ selectedLocation, onSelect, disabled 
                 }`}
               />
             </div>
-            <p className="mt-2 text-[11px] tracking-[0.14em] text-[#7d7d7d]">[x: 0{index + 1}] [y: {location.label.slice(1)}]</p>
+            <p className="mt-2 text-[11px] tracking-[0.14em] text-[#7d7d7d]">
+              {location.lat.toFixed(4)}° / {location.lng.toFixed(4)}°
+            </p>
           </motion.button>
         );
       })}
