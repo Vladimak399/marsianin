@@ -197,7 +197,7 @@ export default function Hero() {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1240px] flex-col px-4 pb-5 pt-5 sm:px-6 sm:pt-6 lg:px-12">
+      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1240px] flex-col px-4 pb-5 pt-5 text-left sm:px-6 sm:pt-6 lg:px-12">
         <header className="flex items-start justify-between gap-3 text-[10px] tracking-[0.16em] text-[#808080]">
           <div className="w-full max-w-[210px] text-left sm:max-w-[260px]">
             <div className="flex items-start gap-2 sm:gap-2.5">
@@ -227,7 +227,7 @@ export default function Hero() {
         </header>
 
         <div className="relative mt-6 flex-1 lg:mt-8">
-          <div className="relative z-20 max-w-[640px] space-y-3 sm:space-y-4">
+          <div className="relative z-20 max-w-[640px] space-y-3 text-left sm:space-y-4">
             <p className="text-[10px] tracking-[0.18em] text-[#777777]">координаты · навигация · выбор</p>
             <h1 className="text-[clamp(1.85rem,9vw,3.6rem)] font-semibold leading-[0.95] tracking-[0.01em] text-[#121212]">
               выберите
@@ -315,7 +315,7 @@ export default function Hero() {
             />
           </div>
 
-          <div className="pointer-events-none mt-5 flex items-center justify-between text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
+          <div className="pointer-events-none mt-5 grid gap-1.5 text-left text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
             <span>северный ориентир</span>
             <span>центральная линия</span>
             <span>южный ориентир</span>
@@ -408,13 +408,13 @@ export default function Hero() {
               );
             })}
 
-            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
+            <div className="pointer-events-none absolute left-0 top-0 flex flex-col items-start gap-1 text-left text-[9px] tracking-[0.16em] text-[#9b9b9b]">
               <span>север</span>
               <span>северо-восток</span>
               <span>восток</span>
               <span>юго-восток</span>
             </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
+            <div className="pointer-events-none absolute bottom-0 left-0 flex flex-col items-start gap-1 text-left text-[9px] tracking-[0.16em] text-[#9b9b9b]">
               <span>западный сектор</span>
               <span>запад</span>
               <span>центр</span>
