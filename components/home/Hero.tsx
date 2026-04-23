@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from '@/components/providers/LocationProvider';
@@ -198,9 +199,23 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1240px] flex-col px-4 pb-5 pt-5 sm:px-6 sm:pt-6 lg:px-12">
         <header className="flex items-start justify-between gap-3 text-[10px] tracking-[0.16em] text-[#808080]">
-          <div>
-            <p className="text-[clamp(1.55rem,8vw,2.2rem)] leading-none tracking-[0.03em] text-[#202020]">марсианин</p>
-            <p className="mt-1 text-[9px] tracking-[0.16em] text-[#9c9c9c]">система выбора точки</p>
+          <div className="w-full max-w-[210px] text-left sm:max-w-[260px]">
+            <div className="flex items-start gap-2 sm:gap-2.5">
+              <Image
+                src="/logo.svg"
+                alt="Логотип Марсианин"
+                width={40}
+                height={40}
+                priority
+                className="h-8 w-8 shrink-0 sm:h-10 sm:w-10"
+              />
+              <div className="min-w-0">
+                <p className="text-[clamp(1.2rem,6vw,2rem)] leading-none tracking-[0.03em] text-[#202020]">марсианин</p>
+                <p className="mt-1 text-[8px] leading-snug tracking-[0.12em] text-[#8f8f8f] sm:text-[9px] sm:tracking-[0.14em]">
+                  Марсианин, кофейня, где есть жизнь.
+                </p>
+              </div>
+            </div>
           </div>
           <button
             type="button"
