@@ -1,11 +1,22 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import MenuSection from '@/components/menu/MenuSection';
+import GridOverlay from '@/components/ui/GridOverlay';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { menuData } from '@/data/menu';
+import { fadeUp } from '@/lib/animations';
 
 export default function Home() {
   return (
-    <main className="mx-auto min-h-screen max-w-[1240px] px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-      <section className="border border-grid bg-white px-5 py-14 sm:px-8">
+    <motion.main
+      className="relative mx-auto min-h-screen max-w-[1240px] px-4 pb-10 pt-6 sm:px-6 lg:px-8"
+      initial="hidden"
+      animate="show"
+      variants={fadeUp}
+    >
+      <GridOverlay />
+      <section className="relative z-10 border border-grid bg-white px-5 py-14 sm:px-8">
         <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">кофейня</p>
         <h1 className="mt-3 text-5xl font-semibold uppercase leading-none tracking-tight text-neutral-900 sm:text-7xl">
           марсианин
@@ -19,7 +30,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="menu" className="mt-8 border border-grid bg-white px-5 py-10 sm:px-8">
+      <motion.section
+        id="menu"
+        className="relative z-10 mt-8 border border-grid bg-white px-5 py-10 sm:px-8"
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        variants={fadeUp}
+      >
         <header className="mb-8">
           <h2 className="text-3xl font-semibold uppercase tracking-tight text-neutral-900 sm:text-4xl">меню</h2>
           <p className="mt-2 text-sm text-neutral-600">Завтраки, яйца, творог, пасты и напитки.</p>
@@ -29,9 +47,15 @@ export default function Home() {
             <MenuSection key={section.category} section={section} />
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <footer className="mt-8 grid gap-5 border border-grid bg-white px-5 py-8 text-sm text-neutral-700 sm:grid-cols-3 sm:px-8">
+      <motion.footer
+        className="relative z-10 mt-8 grid gap-5 border border-grid bg-white px-5 py-8 text-sm text-neutral-700 sm:grid-cols-3 sm:px-8"
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        variants={fadeUp}
+      >
         <div>
           <h3 className="text-xs uppercase tracking-[0.18em] text-neutral-500">адрес</h3>
           <p className="mt-2">Москва, ул. Новая, 17</p>
@@ -50,7 +74,7 @@ export default function Home() {
             <li>hello@marsianin.cafe</li>
           </ul>
         </div>
-      </footer>
-    </main>
+      </motion.footer>
+    </motion.main>
   );
 }
