@@ -34,10 +34,10 @@ export default function LocationSelector({ selectedLocation, onSelect, disabled 
             whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.16, ease: premiumEase }}
           >
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[#8d877f]">точка</span>
+            <span className="text-[10px] tracking-[0.18em] text-[#8d877f]">точка</span>
             <div className="mt-2 flex items-end justify-between gap-4">
               <span
-                className={`text-[clamp(2.15rem,10vw,3.25rem)] font-semibold uppercase leading-[0.9] tracking-[0.04em] ${
+                className={`text-[clamp(2.15rem,10vw,3.25rem)] font-semibold leading-[0.9] tracking-[0.01em] ${
                   isSelected ? 'text-[#ff6430]' : 'text-[#181818]'
                 }`}
               >
@@ -49,7 +49,7 @@ export default function LocationSelector({ selectedLocation, onSelect, disabled 
                 }`}
               />
             </div>
-            <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-[#7d7d7d]">[x: 0{index + 1}] [y: {location.label.slice(1)}]</p>
+            <p className="mt-2 text-[11px] tracking-[0.14em] text-[#7d7d7d]">[x: 0{index + 1}] [y: {location.label.slice(1)}]</p>
           </motion.button>
         );
       })}

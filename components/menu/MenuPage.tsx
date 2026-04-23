@@ -131,17 +131,17 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
               {currentLocation ? (
                 <motion.div
                   layoutId={`location-${currentLocation.id}`}
-                  className="border border-accent bg-neutral-900 px-3 py-1.5 text-[1.55rem] font-semibold uppercase tracking-[0.1em] text-white sm:px-4 sm:py-2 sm:text-2xl"
+                  className="border border-accent bg-neutral-900 px-3 py-1.5 text-[1.55rem] font-semibold tracking-[0.04em] text-white sm:px-4 sm:py-2 sm:text-2xl"
                 >
                   {currentLocation.label}
                 </motion.div>
               ) : null}
               <div>
-                <h1 className="text-[1.45rem] font-semibold uppercase tracking-[0.06em] text-neutral-900 sm:text-3xl">меню системы</h1>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">mobile-first catalog</p>
+                <h1 className="text-[1.45rem] font-semibold tracking-[0.02em] text-neutral-900 sm:text-3xl">меню</h1>
+                <p className="text-[10px] tracking-[0.14em] text-neutral-500">каталог по точкам</p>
               </div>
             </div>
-            <Link href="/" className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 hover:text-accent">
+            <Link href="/" className="text-[11px] tracking-[0.14em] text-neutral-500 hover:text-accent">
               сменить точку
             </Link>
           </motion.div>
@@ -161,7 +161,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
                   layout
                   layoutId={`location-${location.id}-switch`}
                   onClick={() => handleLocationSwitch(location.id)}
-                  className="min-h-10 whitespace-nowrap border px-4 py-2 text-xs uppercase tracking-[0.2em]"
+                  className="min-h-10 whitespace-nowrap border px-4 py-2 text-xs tracking-[0.12em]"
                   animate={{
                     borderColor: isActive ? '#ff6a00' : '#d4d4d4',
                     color: isActive ? '#171717' : '#737373',

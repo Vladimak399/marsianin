@@ -5,7 +5,7 @@ import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'r
 import { motion } from 'framer-motion';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { premiumEase } from '@/lib/animations';
-import { LocationId } from '@/data/locations';
+import { getLocationLabel, LocationId } from '@/data/locations';
 import LocationSelector from './LocationSelector';
 
 type NodeConfig = {
@@ -21,30 +21,30 @@ type NodeConfig = {
 const nodes: NodeConfig[] = [
   {
     id: 'o12',
-    label: 'O12',
+    label: 'o12',
     x: 18,
     y: 63,
-    subLabel: 'node O12',
-    technical: 'origin sector',
-    coords: 'X: 05 | Y: 12'
+    subLabel: 'точка o12',
+    technical: 'стартовый сектор',
+    coords: 'x: 05 | y: 12'
   },
   {
     id: 'k10',
-    label: 'K10',
+    label: 'k10',
     x: 62,
     y: 31,
-    subLabel: 'active route',
-    technical: 'brew protocol',
-    coords: 'X: 18 | Y: 10'
+    subLabel: 'активный маршрут',
+    technical: 'кофейный протокол',
+    coords: 'x: 18 | y: 10'
   },
   {
     id: 'p7',
-    label: 'P7',
+    label: 'п7',
     x: 81,
     y: 70,
-    subLabel: 'node P7',
-    technical: 'finish vector',
-    coords: 'X: 24 | Y: 07'
+    subLabel: 'точка п7',
+    technical: 'финальный вектор',
+    coords: 'x: 24 | y: 07'
   }
 ];
 
@@ -139,15 +139,15 @@ export default function Hero() {
       />
 
       <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1240px] flex-col px-4 pb-5 pt-5 sm:px-6 sm:pt-6 lg:px-12">
-        <header className="flex items-start justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-[#808080]">
+        <header className="flex items-start justify-between gap-3 text-[10px] tracking-[0.16em] text-[#808080]">
           <div>
-            <p className="text-[clamp(1.55rem,8vw,2.2rem)] leading-none tracking-[0.06em] text-[#202020]">марсианин</p>
-            <p className="mt-1 text-[9px] tracking-[0.28em] text-[#9c9c9c]">taste observation system</p>
+            <p className="text-[clamp(1.55rem,8vw,2.2rem)] leading-none tracking-[0.03em] text-[#202020]">марсианин</p>
+            <p className="mt-1 text-[9px] tracking-[0.16em] text-[#9c9c9c]">система выбора точки</p>
           </div>
           <button
             type="button"
             onClick={() => router.push(`/menu?location=${selectedLocation ?? 'o12'}&category=завтраки`)}
-            className="min-h-10 border border-[#d8d2cb] px-3 py-2 text-[10px] tracking-[0.24em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
+            className="min-h-10 border border-[#d8d2cb] px-3 py-2 text-[10px] tracking-[0.12em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
           >
             меню
           </button>
@@ -155,14 +155,14 @@ export default function Hero() {
 
         <div className="relative mt-6 flex-1 lg:mt-8">
           <div className="relative z-20 max-w-[580px] space-y-3 sm:space-y-4">
-            <p className="text-[10px] uppercase tracking-[0.32em] text-[#777777]">grid / navigation / mobile input</p>
-            <h1 className="text-[clamp(1.85rem,9vw,3.6rem)] font-semibold uppercase leading-[0.95] tracking-[0.02em] text-[#121212]">
+            <p className="text-[10px] tracking-[0.18em] text-[#777777]">координаты · навигация · выбор</p>
+            <h1 className="text-[clamp(1.85rem,9vw,3.6rem)] font-semibold leading-[0.95] tracking-[0.01em] text-[#121212]">
               выберите
               <br />
               точку входа
             </h1>
             <p className="max-w-[520px] text-[clamp(0.9rem,3.6vw,1.08rem)] leading-relaxed text-[#666666]">
-              Сначала мобильный сценарий: выберите узел одной рукой и сразу переходите к меню своей точки.
+              выберите ближайшую точку и переходите к меню. всё собрано для быстрого выбора на телефоне.
             </p>
           </div>
 
@@ -176,10 +176,10 @@ export default function Hero() {
             />
           </div>
 
-          <div className="pointer-events-none mt-5 flex items-center justify-between text-[9px] uppercase tracking-[0.28em] text-[#929292] lg:hidden">
-            <span>Y: 10</span>
-            <span>Y: 05</span>
-            <span>Y: 00</span>
+          <div className="pointer-events-none mt-5 flex items-center justify-between text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
+            <span>y: 10</span>
+            <span>y: 05</span>
+            <span>y: 00</span>
           </div>
 
           <div className="relative hidden h-full min-h-[420px] lg:block">
@@ -220,12 +220,12 @@ export default function Hero() {
                   animate={{ opacity: isDimmed ? 0.42 : 1, scale: isActive ? 1.03 : 1 }}
                   transition={{ duration: 0.18, ease: premiumEase }}
                 >
-                  <div className="mb-2 text-[9px] uppercase tracking-[0.32em] text-[#8d8d8d]">{node.technical}</div>
-                  <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium uppercase leading-[0.88] tracking-[0.03em] text-[#1d1d1d]">
+                  <div className="mb-2 text-[9px] tracking-[0.16em] text-[#8d8d8d]">{node.technical}</div>
+                  <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium leading-[0.88] tracking-[0.01em] text-[#1d1d1d]">
                     {node.label}
                   </div>
-                  <div className="mt-1.5 text-[10px] uppercase tracking-[0.3em] text-[#7a7a7a]">{node.coords}</div>
-                  <div className="mt-1.5 flex items-center gap-3 text-[10px] uppercase tracking-[0.32em]">
+                  <div className="mt-1.5 text-[10px] tracking-[0.16em] text-[#7a7a7a]">{node.coords}</div>
+                  <div className="mt-1.5 flex items-center gap-3 text-[10px] tracking-[0.16em]">
                     <span className="h-2 w-2 rounded-full border border-[#ff7a44] bg-[#fff5ef]" />
                     <span className={isFocused ? 'text-[#ff6e37]' : 'text-[#777777]'}>{node.subLabel}</span>
                   </div>
@@ -233,27 +233,27 @@ export default function Hero() {
               );
             })}
 
-            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between text-[9px] uppercase tracking-[0.3em] text-[#9b9b9b]">
-              <span>Y: 30</span>
-              <span>Y: 20</span>
-              <span>Y: 10</span>
-              <span>Y: 00</span>
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
+              <span>y: 30</span>
+              <span>y: 20</span>
+              <span>y: 10</span>
+              <span>y: 00</span>
             </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-between text-[9px] uppercase tracking-[0.3em] text-[#9b9b9b]">
-              <span>X: 00</span>
-              <span>X: 08</span>
-              <span>X: 16</span>
-              <span>X: 24</span>
-              <span>X: 32</span>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-between text-[9px] tracking-[0.16em] text-[#9b9b9b]">
+              <span>x: 00</span>
+              <span>x: 08</span>
+              <span>x: 16</span>
+              <span>x: 24</span>
+              <span>x: 32</span>
             </div>
           </div>
         </div>
 
-        <footer className="mt-5 grid grid-cols-1 gap-2 border-t border-[#ddd7d1] pt-3 text-[9px] uppercase tracking-[0.24em] text-[#8d8d8d] sm:grid-cols-2 lg:grid-cols-4">
-          <span>system status / precision</span>
-          <span>current route / {(selectedLocation ?? 'o12').toUpperCase()}</span>
-          <span>active nodes / O12 K10 P7</span>
-          <span>date / {currentDate}</span>
+        <footer className="mt-5 grid grid-cols-1 gap-2 border-t border-[#ddd7d1] pt-3 text-[9px] tracking-[0.14em] text-[#8d8d8d] sm:grid-cols-2 lg:grid-cols-4">
+          <span>статус системы · стабильно</span>
+          <span>текущая точка · {getLocationLabel(selectedLocation ?? 'o12')}</span>
+          <span>доступные точки · o12 k10 п7</span>
+          <span>дата · {currentDate}</span>
         </footer>
       </div>
     </motion.section>

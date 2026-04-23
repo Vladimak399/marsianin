@@ -24,8 +24,8 @@ export default function MenuSection({ section, selectedLocation, onOpenItem }: M
       variants={fadeUp}
     >
       <header className="mb-4 flex items-end justify-between gap-4 sm:mb-6">
-        <h2 className="text-[1.3rem] font-semibold uppercase tracking-[0.05em] text-neutral-900 sm:text-3xl">{section.category}</h2>
-        <p className="text-[11px] uppercase tracking-[0.16em] text-neutral-500">{section.items.length} поз.</p>
+        <h2 className="text-[1.3rem] font-semibold tracking-[0.02em] text-neutral-900 sm:text-3xl">{section.category}</h2>
+        <p className="text-[11px] tracking-[0.12em] text-neutral-500">{section.items.length} поз.</p>
       </header>
       <motion.div
         className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3"
