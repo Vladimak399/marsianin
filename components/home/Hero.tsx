@@ -42,6 +42,7 @@ const nodes: NodeConfig[] = [
 const locationById = Object.fromEntries(locations.map((location) => [location.id, location])) as Record<LocationId, (typeof locations)[number]>;
 
 export default function Hero() {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
   const router = useRouter();
   const sectionRef = useRef<HTMLElement | null>(null);
   const routeTimerRef = useRef<number | null>(null);
@@ -66,6 +67,15 @@ export default function Hero() {
 
     return ranked[0] ?? null;
   }, [userPosition]);
+
+  const pointDistances = useMemo(
+    () =>
+      locations.map((location) => ({
+        id: location.id,
+        distanceKm: userPosition ? haversineDistanceKm(userPosition, { lat: location.lat, lng: location.lng }) : null
+      })),
+    [userPosition]
+  );
 
   const focusNodeId = hoveredNode ?? selectedLocation ?? nearestPoint?.id ?? 'o12';
   const focusNode = nodes.find((node) => node.id === focusNodeId) ?? nodes[0];
@@ -237,6 +247,22 @@ export default function Hero() {
                 )}
               </div>
             </div>
+
+            {isDevelopment ? (
+              <div className="border border-dashed border-[#d8d2cb] bg-[#fffdfb] px-2 py-1.5 font-mono text-[9px] tracking-normal text-[#6e6660]">
+                <p>
+                  user:{' '}
+                  {userPosition ? `${userPosition.lat.toFixed(4)}, ${userPosition.lng.toFixed(4)}` : 'n/a'}
+                </p>
+                <p>
+                  dist · o12:{' '}
+                  {pointDistances.find((point) => point.id === 'o12')?.distanceKm?.toFixed(2) ?? 'n/a'} км · k10:{' '}
+                  {pointDistances.find((point) => point.id === 'k10')?.distanceKm?.toFixed(2) ?? 'n/a'} км · p7:{' '}
+                  {pointDistances.find((point) => point.id === 'p7')?.distanceKm?.toFixed(2) ?? 'n/a'} км
+                </p>
+                <p>nearest: {nearestPoint?.id ?? 'n/a'}</p>
+              </div>
+            ) : null}
 
             <div className="flex flex-wrap gap-2">
               <button
