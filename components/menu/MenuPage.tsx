@@ -6,10 +6,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
-import { menuData } from '@/data/menu';
+import { MenuItem, menuData } from '@/data/menu';
 import GridOverlay from '@/components/ui/GridOverlay';
 import { premiumEase } from '@/lib/animations';
-import MenuCard from './MenuCard';
+import CategoryNav from './CategoryNav';
+import MenuDetailView from './MenuDetailView';
+import MenuSection from './MenuSection';
 
 const DEFAULT_LOCATION: LocationId = 'o12';
 
@@ -22,8 +24,10 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const router = useRouter();
   const pathname = usePathname();
   const { selectedLocation, setSelectedLocation } = useLocation();
-  const [activeCategory, setActiveCategory] = useState(menuData[0].category);
+  const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
   const [switchPulseKey, setSwitchPulseKey] = useState(0);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedItemCategory, setSelectedItemCategory] = useState('');
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -36,31 +40,46 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     }
   }, [initialLocation, setSelectedLocation]);
 
-  useEffect(() => {
-    if (!initialCategory) return;
-
-    const normalizedCategory = initialCategory.toLowerCase();
-    const isKnownCategory = menuData.some((section) => section.category === normalizedCategory);
-
-    if (isKnownCategory) {
-      setActiveCategory(normalizedCategory);
-    }
-  }, [initialCategory]);
-
-  const currentCategory = useMemo(
-    () => menuData.find((section) => section.category === activeCategory) ?? menuData[0],
-    [activeCategory]
-  );
-
+  const categories = useMemo(() => menuData.map((section) => section.category), []);
   const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
+
+  useEffect(() => {
+    if (!initialCategory) return;
+    if (categories.includes(initialCategory.toLowerCase())) {
+      setActiveCategory(initialCategory.toLowerCase());
+    }
+  }, [categories, initialCategory]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visible[0]) {
+          const next = visible[0].target.getAttribute('data-category');
+          if (next) {
+            setActiveCategory(next);
+          }
+        }
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: [0.2, 0.45, 0.7] }
+    );
+
+    const sections = document.querySelectorAll<HTMLElement>('[data-category]');
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
     const currentSearch = typeof window === 'undefined' ? '' : window.location.search;
     const params = new URLSearchParams(currentSearch);
     params.set('location', nextLocation);
     params.set('category', nextCategory);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleLocationSwitch = (location: LocationId) => {
@@ -69,138 +88,111 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     updateQuery(location, activeCategory);
   };
 
-  const handleCategorySwitch = (category: string) => {
+  const handleCategorySelect = (category: string) => {
+    const section = document.getElementById(`section-${category}`);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     setActiveCategory(category);
     updateQuery(activeLocation, category);
   };
 
+  const handleOpenDetails = (item: MenuItem, category: string) => {
+    setSelectedItem(item);
+    setSelectedItemCategory(category);
+  };
+
   return (
-    <main className="relative mx-auto min-h-screen max-w-[1240px] px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-      <section className="relative overflow-hidden border border-grid bg-white px-5 py-8 sm:px-8">
-        <GridOverlay className="z-0" />
+    <main className="relative min-h-screen overflow-hidden px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_5%,rgba(255,130,44,0.18),transparent_40%),radial-gradient(circle_at_85%_25%,rgba(255,155,90,0.14),transparent_35%),linear-gradient(#f8f8f8,#f4f4f4)]" />
+      <div className="relative mx-auto max-w-[1240px]">
+        <section className="relative overflow-hidden border border-grid bg-white/88 px-5 py-8 sm:px-8">
+          <GridOverlay className="z-0" />
 
-        <AnimatePresence>
+          <AnimatePresence>
+            <motion.div
+              key={switchPulseKey}
+              className="pointer-events-none absolute inset-0 z-[1] bg-neutral-900"
+              initial={{ opacity: 0.08 }}
+              animate={{ opacity: 0 }}
+              exit={{ opacity: 0.08 }}
+              transition={{ duration: 0.15, ease: premiumEase }}
+            />
+          </AnimatePresence>
+
           <motion.div
-            key={switchPulseKey}
-            className="pointer-events-none absolute inset-0 z-[1] bg-neutral-900"
-            initial={{ opacity: 0.1 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0.1 }}
-            transition={{ duration: 0.15, ease: premiumEase }}
-          />
-        </AnimatePresence>
-
-        <motion.div
-          className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-grid pb-5"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, ease: premiumEase }}
-        >
-          <div className="flex flex-wrap items-center gap-4">
-            {currentLocation ? (
-              <motion.div
-                layoutId={`location-${currentLocation.id}`}
-                className="border border-accent bg-neutral-900 px-4 py-2 text-2xl font-semibold uppercase tracking-[0.12em] text-white"
-              >
-                {currentLocation.label}
-              </motion.div>
-            ) : null}
-            <h1 className="text-3xl font-semibold uppercase tracking-[0.08em] text-neutral-900">меню системы</h1>
-          </div>
-          <Link href="/" className="text-xs uppercase tracking-[0.2em] text-neutral-500 hover:text-accent">
-            сменить точку
-          </Link>
-        </motion.div>
-
-        <motion.div
-          className="relative z-10 mt-6 flex flex-wrap items-center gap-2 border-b border-grid pb-4"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.08, ease: premiumEase }}
-        >
-          {locations.map((location) => {
-            const isActive = activeLocation === location.id;
-            return (
-              <motion.button
-                key={location.id}
-                type="button"
-                layout
-                layoutId={`location-${location.id}-switch`}
-                onClick={() => handleLocationSwitch(location.id)}
-                className="border px-4 py-2 text-xs uppercase tracking-[0.2em]"
-                animate={{
-                  borderColor: isActive ? '#ff6a00' : '#d4d4d4',
-                  color: isActive ? '#171717' : '#737373',
-                  backgroundColor: isActive ? '#fff2e8' : '#ffffff'
-                }}
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.2, ease: premiumEase }}
-              >
-                {location.label}
-              </motion.button>
-            );
-          })}
-        </motion.div>
-
-        <motion.div
-          className="relative z-10 mt-6 flex flex-wrap gap-2"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, delay: 0.14, ease: premiumEase }}
-        >
-          {menuData.map((section) => {
-            const isActive = section.category === activeCategory;
-            return (
-              <motion.button
-                key={section.category}
-                type="button"
-                layout
-                onClick={() => handleCategorySwitch(section.category)}
-                className="border px-4 py-2 text-xs uppercase tracking-[0.2em]"
-                animate={{
-                  borderColor: isActive ? '#ff6a00' : '#d4d4d4',
-                  color: isActive ? '#171717' : '#737373',
-                  backgroundColor: isActive ? '#fff2e8' : '#ffffff'
-                }}
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.2, ease: premiumEase }}
-              >
-                {section.category}
-              </motion.button>
-            );
-          })}
-        </motion.div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentCategory.category}
-            className="relative z-10 mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-            initial="hidden"
-            animate="show"
-            exit="hidden"
-            variants={{
-              hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: { staggerChildren: 0.05, delayChildren: 0.2 }
-              }
-            }}
+            className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-grid pb-5"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.24, ease: premiumEase }}
-            layout
           >
-            {currentCategory.items.map((item) => (
-              <motion.div
-                key={`${activeLocation}-${currentCategory.category}-${item.name}`}
-                layout
-                variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
-                transition={{ duration: 0.2, ease: premiumEase }}
-              >
-                <MenuCard item={item} selectedLocation={activeLocation} />
-              </motion.div>
-            ))}
+            <div className="flex flex-wrap items-center gap-4">
+              {currentLocation ? (
+                <motion.div
+                  layoutId={`location-${currentLocation.id}`}
+                  className="border border-accent bg-neutral-900 px-4 py-2 text-2xl font-semibold uppercase tracking-[0.12em] text-white"
+                >
+                  {currentLocation.label}
+                </motion.div>
+              ) : null}
+              <h1 className="text-3xl font-semibold uppercase tracking-[0.08em] text-neutral-900">меню системы</h1>
+            </div>
+            <Link href="/" className="text-xs uppercase tracking-[0.2em] text-neutral-500 hover:text-accent">
+              сменить точку
+            </Link>
           </motion.div>
-        </AnimatePresence>
-      </section>
+
+          <motion.div
+            className="relative z-10 mt-6 flex flex-wrap items-center gap-2 border-b border-grid pb-4"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, delay: 0.08, ease: premiumEase }}
+          >
+            {locations.map((location) => {
+              const isActive = activeLocation === location.id;
+              return (
+                <motion.button
+                  key={location.id}
+                  type="button"
+                  layout
+                  layoutId={`location-${location.id}-switch`}
+                  onClick={() => handleLocationSwitch(location.id)}
+                  className="border px-4 py-2 text-xs uppercase tracking-[0.2em]"
+                  animate={{
+                    borderColor: isActive ? '#ff6a00' : '#d4d4d4',
+                    color: isActive ? '#171717' : '#737373',
+                    backgroundColor: isActive ? '#fff2e8' : '#ffffff'
+                  }}
+                  whileHover={{ y: -1 }}
+                  transition={{ duration: 0.2, ease: premiumEase }}
+                >
+                  {location.label}
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          <CategoryNav categories={categories} activeCategory={activeCategory} onSelect={handleCategorySelect} />
+
+          <div className="relative z-10 mt-8 space-y-10">
+            {menuData.map((section) => (
+              <MenuSection
+                key={section.category}
+                section={section}
+                selectedLocation={activeLocation}
+                onOpenItem={handleOpenDetails}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <MenuDetailView
+        item={selectedItem}
+        category={selectedItemCategory}
+        selectedLocation={activeLocation}
+        onClose={() => setSelectedItem(null)}
+      />
     </main>
   );
 }

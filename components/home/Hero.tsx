@@ -30,10 +30,15 @@ export default function Hero() {
   const handleTeleport = useCallback(
     (location: LocationId, _event: MouseEvent<HTMLButtonElement>) => {
       setSelectedLocation(location);
-      router.push(`/menu?location=${location}`);
+      router.push(`/menu?location=${location}&category=завтраки`);
     },
     [router, setSelectedLocation]
   );
+
+  const goToMenu = () => {
+    const location = selectedLocation ?? 'o12';
+    router.push(`/menu?location=${location}&category=завтраки`);
+  };
 
   return (
     <motion.section
@@ -41,7 +46,7 @@ export default function Hero() {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.25, ease: premiumEase }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.8),rgba(240,240,240,0.95))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_8%,rgba(255,122,45,0.28),transparent_42%),radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.9),rgba(240,240,240,0.96))]" />
       <div
         aria-hidden
         className="absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(17,17,17,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(17,17,17,0.07)_1px,transparent_1px)] [background-size:360px_220px]"
@@ -54,13 +59,19 @@ export default function Hero() {
             <p className="text-[10px] uppercase tracking-[0.5em] text-[#ff5a1f]">марсианин</p>
             <p className="mt-0.5 text-[9px] uppercase tracking-[0.36em] text-[#b3b3b3]">кофейная система</p>
           </div>
-          <div className="mt-1 flex items-center gap-4 text-[10px] uppercase tracking-[0.32em] text-[#8f8f8f]">
+          <motion.button
+            type="button"
+            onClick={goToMenu}
+            className="mt-1 inline-flex items-center gap-4 border border-[#d5d5d5] bg-white/85 px-3 py-2 text-[10px] uppercase tracking-[0.32em] text-[#575757]"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <span>меню</span>
             <span className="space-y-1">
-              <span className="block h-px w-6 bg-[#b0b0b0]" />
-              <span className="block h-px w-6 bg-[#b0b0b0]" />
+              <span className="block h-px w-6 bg-[#969696]" />
+              <span className="block h-px w-6 bg-[#969696]" />
             </span>
-          </div>
+          </motion.button>
         </header>
 
         <div className="mt-5 grid flex-1 grid-cols-1 gap-4 lg:mt-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-6">
@@ -69,7 +80,7 @@ export default function Hero() {
             <h1 className="max-w-4xl text-[clamp(2.2rem,5vw,4.9rem)] font-semibold uppercase leading-[0.92] tracking-[0.028em] text-[#131720]">
               выберите точку <br /> и начните маршрут
             </h1>
-            <p className="max-w-xl text-[clamp(1rem,1.45vw,1.45rem)] leading-[1.45] text-[#9f9f9f]">
+            <p className="max-w-xl text-[clamp(1rem,1.45vw,1.45rem)] leading-[1.45] text-[#7e7e7e]">
               Каждая точка — это уникальный протокол вкуса, данные, процесс и внимание к деталям.
             </p>
           </div>
