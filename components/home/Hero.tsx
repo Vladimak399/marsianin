@@ -77,6 +77,7 @@ export default function Hero() {
       })),
     [userPosition]
   );
+  const currentContactLocation = locationById[selectedLocation ?? nearestPoint?.id ?? 'o12'];
 
   const focusNodeId = hoveredNode ?? selectedLocation ?? nearestPoint?.id ?? 'o12';
   const focusNode = nodes.find((node) => node.id === focusNodeId) ?? nodes[0];
@@ -261,6 +262,20 @@ export default function Hero() {
                   <p className="mt-1 text-[11px] text-[#3f3a36]">определение недоступно, выберите вручную</p>
                 )}
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 border border-[#f0c8ae] bg-[#fff4ec] p-3">
+              <div className="text-[10px] tracking-[0.14em] text-[#905b3b]">
+                <p>
+                  активная точка · <span className="text-[#7a4629]">{currentContactLocation.label}</span>
+                </p>
+                <p className="mt-1 text-[11px] tracking-[0.04em] text-[#6f4b37]">{currentContactLocation.phone}</p>
+              </div>
+              <a
+                href={`tel:${currentContactLocation.phoneTel}`}
+                className="ml-auto inline-flex min-h-10 items-center justify-center border border-[#f09a67] bg-[#ffd8bf] px-4 py-2 font-sans text-[11px] tracking-[0.12em] text-[#9c461d] transition-colors hover:bg-[#ffceb0]"
+              >
+                позвонить
+              </a>
             </div>
 
             {isDevelopment ? (

@@ -192,9 +192,19 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
                 <p className="text-[10px] tracking-[0.14em] text-neutral-500">каталог по точкам</p>
               </div>
             </div>
-            <Link href="/" className="text-[11px] tracking-[0.14em] text-neutral-500 hover:text-accent">
-              сменить точку
-            </Link>
+            <div className="flex items-center gap-2">
+              {currentLocation ? (
+                <a
+                  href={`tel:${currentLocation.phoneTel}`}
+                  className="inline-flex min-h-10 items-center justify-center border border-[#f0a16f] bg-[#ffe3cf] px-3 py-2 font-sans text-[11px] tracking-[0.12em] text-[#a55226] transition-colors hover:bg-[#ffd6b8]"
+                >
+                  позвонить
+                </a>
+              ) : null}
+              <Link href="/" className="inline-flex min-h-10 items-center text-[11px] tracking-[0.14em] text-neutral-500 hover:text-accent">
+                сменить точку
+              </Link>
+            </div>
           </motion.div>
 
           <motion.div
