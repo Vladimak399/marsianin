@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { menuData } from '@/data/menu';
@@ -10,11 +11,16 @@ import GridOverlay from '@/components/ui/GridOverlay';
 import { premiumEase } from '@/lib/animations';
 import MenuCard from './MenuCard';
 
+const DEFAULT_LOCATION: LocationId = 'o12';
+
 type MenuPageProps = {
   initialLocation?: string;
+  initialCategory?: string;
 };
 
-export default function MenuPage({ initialLocation }: MenuPageProps) {
+export default function MenuPage({ initialLocation, initialCategory }: MenuPageProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [activeCategory, setActiveCategory] = useState(menuData[0].category);
   const [switchPulseKey, setSwitchPulseKey] = useState(0);
@@ -30,17 +36,42 @@ export default function MenuPage({ initialLocation }: MenuPageProps) {
     }
   }, [initialLocation, setSelectedLocation]);
 
+  useEffect(() => {
+    if (!initialCategory) return;
+
+    const normalizedCategory = initialCategory.toLowerCase();
+    const isKnownCategory = menuData.some((section) => section.category === normalizedCategory);
+
+    if (isKnownCategory) {
+      setActiveCategory(normalizedCategory);
+    }
+  }, [initialCategory]);
+
   const currentCategory = useMemo(
     () => menuData.find((section) => section.category === activeCategory) ?? menuData[0],
     [activeCategory]
   );
 
-  const activeLocation = selectedLocation ?? 'o12';
+  const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
+
+  const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
+    const currentSearch = typeof window === 'undefined' ? '' : window.location.search;
+    const params = new URLSearchParams(currentSearch);
+    params.set('location', nextLocation);
+    params.set('category', nextCategory);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const handleLocationSwitch = (location: LocationId) => {
     setSelectedLocation(location);
     setSwitchPulseKey((prev) => prev + 1);
+    updateQuery(location, activeCategory);
+  };
+
+  const handleCategorySwitch = (category: string) => {
+    setActiveCategory(category);
+    updateQuery(activeLocation, category);
   };
 
   return (
@@ -124,7 +155,7 @@ export default function MenuPage({ initialLocation }: MenuPageProps) {
                 key={section.category}
                 type="button"
                 layout
-                onClick={() => setActiveCategory(section.category)}
+                onClick={() => handleCategorySwitch(section.category)}
                 className="border px-4 py-2 text-xs uppercase tracking-[0.2em]"
                 animate={{
                   borderColor: isActive ? '#ff6a00' : '#d4d4d4',
