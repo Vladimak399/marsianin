@@ -11,10 +11,10 @@ type CategoryNavProps = {
 
 export default function CategoryNav({ categories, activeCategory, onSelect }: CategoryNavProps) {
   return (
-    <div className="sticky top-2 z-40 mt-4 border border-grid bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(249,247,243,0.92))] px-2.5 py-2 backdrop-blur supports-[backdrop-filter]:bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(249,247,243,0.84))] sm:top-3 sm:mt-6 sm:px-3">
+    <div className="sticky top-2 z-40 mt-4 border border-grid bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(249,247,243,0.92))] px-2 py-1.5 backdrop-blur supports-[backdrop-filter]:bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(249,247,243,0.84))] sm:top-3 sm:mt-6 sm:px-3 sm:py-2">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,transparent_8%,transparent_92%,rgba(255,255,255,0.88)_100%)]" />
 
-      <div className="relative flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="relative flex snap-x snap-mandatory gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((category) => {
           const isActive = category === activeCategory;
 
@@ -24,7 +24,7 @@ export default function CategoryNav({ categories, activeCategory, onSelect }: Ca
               type="button"
               onClick={() => onSelect(category)}
               data-category-chip={category}
-              className="relative min-h-10 snap-start whitespace-nowrap rounded-sm border px-3.5 py-2 text-[11px] uppercase tracking-[0.2em]"
+              className="relative min-h-9 snap-start whitespace-nowrap rounded-sm border px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] sm:min-h-10 sm:px-3.5 sm:py-2 sm:text-[11px]"
               animate={{
                 borderColor: isActive ? '#ff8a38' : '#d4d4d4',
                 color: isActive ? '#171717' : '#6b7280',

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
-import { MenuItem, menuData } from '@/data/menu';
+import { menuData } from '@/data/menu';
 import GridOverlay from '@/components/ui/GridOverlay';
 import { premiumEase } from '@/lib/animations';
 import CategoryNav from './CategoryNav';
@@ -20,14 +20,18 @@ type MenuPageProps = {
   initialCategory?: string;
 };
 
+type ViewerState = {
+  category: string;
+  activeIndex: number;
+} | null;
+
 export default function MenuPage({ initialLocation, initialCategory }: MenuPageProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
   const [switchPulseKey, setSwitchPulseKey] = useState(0);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [selectedItemCategory, setSelectedItemCategory] = useState('');
+  const [viewerState, setViewerState] = useState<ViewerState>(null);
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -43,6 +47,17 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const categories = useMemo(() => menuData.map((section) => section.category), []);
   const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
+
+  const categoryItemsMap = useMemo(
+    () =>
+      menuData.reduce<Record<string, (typeof menuData)[number]['items']>>((acc, section) => {
+        acc[section.category] = section.items;
+        return acc;
+      }, {}),
+    []
+  );
+
+  const viewerItems = viewerState ? categoryItemsMap[viewerState.category] ?? [] : [];
 
   useEffect(() => {
     if (!initialCategory) return;
@@ -63,7 +78,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
           if (next) setActiveCategory(next);
         }
       },
-      { rootMargin: '-24% 0px -60% 0px', threshold: [0.2, 0.45, 0.7] }
+      { rootMargin: '-26% 0px -58% 0px', threshold: [0.2, 0.45, 0.72] }
     );
 
     const sections = document.querySelectorAll<HTMLElement>('[data-category]');
@@ -98,9 +113,19 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     updateQuery(activeLocation, category);
   };
 
-  const handleOpenDetails = (item: MenuItem, category: string) => {
-    setSelectedItem(item);
-    setSelectedItemCategory(category);
+  const handleOpenDetails = (category: string, itemIndex: number) => {
+    setViewerState({ category, activeIndex: itemIndex });
+  };
+
+  const handleViewerClose = () => setViewerState(null);
+
+  const handleViewerSelectIndex = (nextIndex: number) => {
+    setViewerState((current) => {
+      if (!current) return current;
+      const items = categoryItemsMap[current.category] ?? [];
+      const clamped = Math.max(0, Math.min(items.length - 1, nextIndex));
+      return { ...current, activeIndex: clamped };
+    });
   };
 
   return (
@@ -192,10 +217,12 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
       </div>
 
       <MenuDetailView
-        item={selectedItem}
-        category={selectedItemCategory}
+        items={viewerItems}
+        activeIndex={viewerState?.activeIndex ?? -1}
+        category={viewerState?.category ?? ''}
         selectedLocation={activeLocation}
-        onClose={() => setSelectedItem(null)}
+        onClose={handleViewerClose}
+        onSelectIndex={handleViewerSelectIndex}
       />
     </main>
   );

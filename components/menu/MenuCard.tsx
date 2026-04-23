@@ -8,11 +8,12 @@ import { MenuItem } from '@/data/menu';
 type MenuCardProps = {
   item: MenuItem;
   category: string;
+  itemIndex: number;
   selectedLocation: LocationId | null;
-  onOpen: (item: MenuItem, category: string) => void;
+  onOpen: (category: string, itemIndex: number) => void;
 };
 
-export default function MenuCard({ item, category, selectedLocation, onOpen }: MenuCardProps) {
+export default function MenuCard({ item, category, itemIndex, selectedLocation, onOpen }: MenuCardProps) {
   const fallbackLocation: LocationId = 'o12';
   const location = selectedLocation ?? fallbackLocation;
   const price = item.priceByLocation[location];
@@ -20,7 +21,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen }: M
   return (
     <motion.button
       type="button"
-      onClick={() => onOpen(item, category)}
+      onClick={() => onOpen(category, itemIndex)}
       className="group flex w-full flex-col overflow-hidden rounded-sm border border-grid bg-white text-left"
       whileTap={{ scale: 0.992 }}
       transition={{ duration: 0.14 }}
