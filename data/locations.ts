@@ -1,14 +1,14 @@
 export const locations = [
   {
     id: 'o12',
-    label: 'o12',
+    label: 'о12',
     lat: 54.7107,
     lng: 20.4526,
     address: 'калининград, ул октябрьская 12'
   },
   {
     id: 'k10',
-    label: 'k10',
+    label: 'к10',
     lat: 54.7086,
     lng: 20.449,
     address: 'калининград, ул костромская 10'
