@@ -358,14 +358,26 @@ export default function Hero() {
                   onClick={() => handleNodeClick(node.id)}
                   className="group absolute -translate-x-1/2 -translate-y-1/2 text-left"
                   style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                  animate={{ opacity: isDimmed ? 0.42 : 1, scale: isActive ? 1.03 : 1 }}
-                  transition={{ duration: 0.18, ease: premiumEase }}
+                  animate={{ opacity: isDimmed ? 0.58 : 1, scale: isActive ? 1.06 : 1 }}
+                  whileHover={{ scale: isActive ? 1.08 : 1.03, y: -2 }}
+                  whileFocus={{ scale: isActive ? 1.08 : 1.03, y: -2 }}
+                  transition={{ duration: 0.2, ease: premiumEase }}
                 >
-                  <div className="mb-2 text-[9px] tracking-[0.16em] text-[#8d8d8d]">{node.technical}</div>
-                  <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium leading-[0.88] tracking-[0.01em] text-[#1d1d1d]">
+                  <div className={`mb-2 text-[9px] tracking-[0.16em] ${isDimmed ? 'text-[#9f9f9f]' : 'text-[#868686]'}`}>
+                    {node.technical}
+                  </div>
+                  <div
+                    className="font-medium leading-[0.88] tracking-[0.01em]"
+                    style={{
+                      fontSize: isActive ? 'clamp(3.2rem,5.8vw,5.3rem)' : 'clamp(2.8rem,5vw,4.8rem)',
+                      color: isActive ? '#ff6d2d' : '#1f1f1f',
+                      textShadow: isActive ? '0 0 22px rgba(255, 109, 45, 0.32)' : 'none',
+                      filter: isDimmed ? 'saturate(0.82)' : 'saturate(1)'
+                    }}
+                  >
                     {location.label}
                   </div>
-                  <div className="mt-1.5 text-[10px] tracking-[0.16em] text-[#7a7a7a]">
+                  <div className={`mt-1.5 text-[10px] tracking-[0.16em] ${isDimmed ? 'text-[#8c8c8c]' : 'text-[#767676]'}`}>
                     {location.lat.toFixed(4)}° / {location.lng.toFixed(4)}°
                   </div>
                   <div className="mt-1.5 flex items-center gap-3 text-[10px] tracking-[0.16em]">
@@ -378,7 +390,20 @@ export default function Hero() {
                       {isNearest ? 'ближайший узел' : `точка ${location.label}`}
                     </span>
                   </div>
-                  <div className="mt-1 text-[9px] tracking-[0.12em] text-[#9c8f84]">{location.address}</div>
+                  <div className={`mt-1 text-[9px] tracking-[0.12em] ${isDimmed ? 'text-[#ac9f95]' : 'text-[#9c8f84]'}`}>
+                    {location.address}
+                  </div>
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-x-3 -inset-y-2 rounded-md"
+                    animate={{
+                      boxShadow: isActive
+                        ? '0 0 0 1px rgba(255,122,68,0.26), 0 10px 34px rgba(255,109,45,0.25)'
+                        : '0 0 0 1px rgba(255,122,68,0)',
+                      opacity: isActive ? 1 : 0
+                    }}
+                    transition={{ duration: 0.22, ease: premiumEase }}
+                  />
                 </motion.button>
               );
             })}
