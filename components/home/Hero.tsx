@@ -77,7 +77,8 @@ export default function Hero() {
       })),
     [userPosition]
   );
-  const currentContactLocation = locationById[selectedLocation ?? nearestPoint?.id ?? 'o12'];
+  const activeLocationId = selectedLocation ?? nearestPoint?.id ?? 'o12';
+  const currentContactLocation = locationById[activeLocationId];
 
   const focusNodeId = hoveredNode ?? selectedLocation ?? nearestPoint?.id ?? 'o12';
   const focusNode = nodes.find((node) => node.id === focusNodeId) ?? nodes[0];
@@ -272,7 +273,7 @@ export default function Hero() {
               </div>
               <a
                 href={`tel:${currentContactLocation.phoneTel}`}
-                className="ml-auto inline-flex min-h-10 items-center justify-center border border-[#f09a67] bg-[#ffd8bf] px-4 py-2 font-sans text-[11px] tracking-[0.12em] text-[#9c461d] transition-colors hover:bg-[#ffceb0]"
+                className="ml-auto inline-flex min-h-11 items-center justify-center border border-[#f09a67] bg-[#ffd8bf] px-4 py-2 font-sans text-[11px] tracking-[0.12em] text-[#9c461d] shadow-[0_8px_20px_rgba(255,109,45,0.22)] transition-colors hover:bg-[#ffceb0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a43] focus-visible:ring-offset-1"
               >
                 позвонить
               </a>
@@ -377,6 +378,18 @@ export default function Hero() {
             </div>
           </div>
 
+          <div className="mt-3 grid gap-2 border border-[#f0c8ae] bg-[#fff4ec] p-3 lg:hidden">
+            <p className="text-[10px] tracking-[0.14em] text-[#905b3b]">
+              связь с выбранной точкой · <span className="text-[#7a4629]">{currentContactLocation.label}</span>
+            </p>
+            <a
+              href={`tel:${currentContactLocation.phoneTel}`}
+              className="inline-flex min-h-11 w-full items-center justify-center border border-[#ef925b] bg-[#ffd4b8] px-4 py-2 text-[12px] tracking-[0.12em] text-[#8e3d17] shadow-[0_10px_22px_rgba(255,109,45,0.24)] transition-colors hover:bg-[#ffc9a8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a43] focus-visible:ring-offset-1"
+            >
+              позвонить · {currentContactLocation.phone}
+            </a>
+          </div>
+
           <div className="pointer-events-none mt-5 grid gap-1.5 text-left text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
             <span>северный ориентир</span>
             <span>центральная линия</span>
@@ -386,20 +399,20 @@ export default function Hero() {
           <div className="relative hidden h-full min-h-[420px] lg:block">
             <motion.div
               aria-hidden
-              className="pointer-events-none absolute left-0 right-0 border-t border-[#ff7a43]/70"
+              className="pointer-events-none absolute left-0 right-0 border-t border-[#ff7a43]/75 shadow-[0_0_18px_rgba(255,122,67,0.4)]"
               animate={{ top: `${focusNode.y}%`, opacity: hoveredNode || selectedLocation || nearestPoint ? 1 : 0.7 }}
               transition={{ duration: 0.2, ease: premiumEase }}
             />
             <motion.div
               aria-hidden
-              className="pointer-events-none absolute bottom-0 top-0 border-l border-[#ff7a43]/70"
+              className="pointer-events-none absolute bottom-0 top-0 border-l border-[#ff7a43]/75 shadow-[0_0_18px_rgba(255,122,67,0.4)]"
               animate={{ left: `${focusNode.x}%`, opacity: hoveredNode || selectedLocation || nearestPoint ? 1 : 0.7 }}
               transition={{ duration: 0.2, ease: premiumEase }}
             />
             <motion.div
               aria-hidden
               className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6e37] bg-[#fff4ee]"
-              animate={{ left: `${focusNode.x}%`, top: `${focusNode.y}%`, scale: hoveredNode ? 1.08 : 1 }}
+              animate={{ left: `${focusNode.x}%`, top: `${focusNode.y}%`, scale: hoveredNode ? 1.08 : 1.04 }}
               transition={{ duration: 0.16, ease: premiumEase }}
             />
 
@@ -456,11 +469,25 @@ export default function Hero() {
                     {location.address}
                   </div>
                   <motion.div
+                    className="mt-2 overflow-hidden"
+                    initial={false}
+                    animate={{ height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.2, ease: premiumEase }}
+                  >
+                    <a
+                      href={`tel:${location.phoneTel}`}
+                      onClick={(event) => event.stopPropagation()}
+                      className="pointer-events-auto inline-flex min-h-10 items-center justify-center border border-[#ef945f] bg-[#ffd8bf] px-3 py-2 text-[10px] tracking-[0.12em] text-[#8f421c] shadow-[0_8px_20px_rgba(255,109,45,0.22)] transition-colors hover:bg-[#ffcfb0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a43] focus-visible:ring-offset-1"
+                    >
+                      позвонить · {location.phone}
+                    </a>
+                  </motion.div>
+                  <motion.div
                     aria-hidden
                     className="pointer-events-none absolute -inset-x-3 -inset-y-2 rounded-md"
                     animate={{
                       boxShadow: isActive
-                        ? '0 0 0 1px rgba(255,122,68,0.26), 0 10px 34px rgba(255,109,45,0.25)'
+                        ? '0 0 0 1px rgba(255,122,68,0.35), 0 0 34px rgba(255,109,45,0.2), 0 12px 40px rgba(255,109,45,0.2)'
                         : '0 0 0 1px rgba(255,122,68,0)',
                       opacity: isActive ? 1 : 0
                     }}
