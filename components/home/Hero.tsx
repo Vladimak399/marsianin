@@ -1,107 +1,257 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MouseEvent, useCallback, useMemo } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import LocationSelector from '@/components/home/LocationSelector';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { premiumEase } from '@/lib/animations';
 import { LocationId } from '@/data/locations';
 
+type NodeConfig = {
+  id: LocationId;
+  label: string;
+  x: number;
+  y: number;
+  subLabel: string;
+  technical: string;
+  coords: string;
+};
+
+const nodes: NodeConfig[] = [
+  {
+    id: 'o12',
+    label: 'O12',
+    x: 18,
+    y: 63,
+    subLabel: 'node O12',
+    technical: 'origin sector',
+    coords: 'X: 05 | Y: 12'
+  },
+  {
+    id: 'k10',
+    label: 'K10',
+    x: 62,
+    y: 31,
+    subLabel: 'active route',
+    technical: 'brew protocol',
+    coords: 'X: 18 | Y: 10'
+  },
+  {
+    id: 'p7',
+    label: 'P7',
+    x: 81,
+    y: 70,
+    subLabel: 'node P7',
+    technical: 'finish vector',
+    coords: 'X: 24 | Y: 07'
+  }
+];
+
 export default function Hero() {
   const router = useRouter();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const routeTimerRef = useRef<number | null>(null);
   const { selectedLocation, setSelectedLocation } = useLocation();
+  const [hoveredNode, setHoveredNode] = useState<LocationId | null>(null);
+  const [cursor, setCursor] = useState({ x: 50, y: 50, inside: false });
 
-  const currentDate = useMemo(() => {
-    return new Date().toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  }, []);
+  const focusNodeId = hoveredNode ?? selectedLocation;
+  const focusNode = nodes.find((node) => node.id === focusNodeId) ?? null;
 
-  const currentTime = useMemo(() => {
-    return new Date().toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }, []);
-
-  const handleTeleport = useCallback(
-    (location: LocationId, _event: MouseEvent<HTMLButtonElement>) => {
-      setSelectedLocation(location);
-      router.push(`/menu?location=${location}&category=завтраки`);
-    },
-    [router, setSelectedLocation]
+  const currentDate = useMemo(
+    () =>
+      new Date().toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }),
+    []
   );
 
-  const goToMenu = () => {
-    const location = selectedLocation ?? 'o12';
-    router.push(`/menu?location=${location}&category=завтраки`);
+  useEffect(
+    () => () => {
+      if (routeTimerRef.current) {
+        window.clearTimeout(routeTimerRef.current);
+      }
+    },
+    []
+  );
+
+  const handleMove = useCallback((event: MouseEvent<HTMLElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+    setCursor({ x, y, inside: true });
+  }, []);
+
+  const handleLeave = () => {
+    setCursor((prev) => ({ ...prev, inside: false }));
+    setHoveredNode(null);
+  };
+
+  const handleNodeClick = (location: LocationId) => {
+    setSelectedLocation(location);
+
+    if (routeTimerRef.current) {
+      window.clearTimeout(routeTimerRef.current);
+    }
+
+    routeTimerRef.current = window.setTimeout(() => {
+      router.push(`/menu?location=${location}&category=завтраки`);
+    }, 220);
   };
 
   return (
     <motion.section
-      className="relative h-full overflow-hidden border border-[#ececec] bg-[#f6f6f6]"
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.25, ease: premiumEase }}
+      ref={sectionRef}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="relative h-full overflow-hidden border border-[#e6e0da] bg-[#f8f5f1]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.28, ease: premiumEase }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_8%,rgba(255,122,45,0.28),transparent_42%),radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.9),rgba(240,240,240,0.96))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_15%,rgba(255,132,59,0.11),transparent_40%),radial-gradient(circle_at_80%_78%,rgba(255,150,75,0.08),transparent_35%)]" />
       <div
         aria-hidden
-        className="absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(17,17,17,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(17,17,17,0.07)_1px,transparent_1px)] [background-size:360px_220px]"
+        className="absolute inset-0 opacity-45 [background-image:linear-gradient(to_right,rgba(23,23,23,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.07)_1px,transparent_1px)] [background-size:95px_95px]"
       />
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1700px] flex-col px-5 pb-4 pt-5 sm:px-8 sm:pb-5 sm:pt-6 lg:px-12 lg:pb-6 lg:pt-7">
-        <header className="flex items-start justify-between text-[#9f9f9f]">
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+        animate={{
+          left: `${cursor.x}%`,
+          top: `${cursor.y}%`,
+          width: cursor.inside ? 360 : 280,
+          height: cursor.inside ? 360 : 280,
+          opacity: cursor.inside ? 0.36 : 0
+        }}
+        transition={{ duration: 0.2, ease: premiumEase }}
+        style={{
+          background:
+            'radial-gradient(circle, rgba(255,114,40,0.22) 0%, rgba(255,114,40,0.08) 35%, rgba(255,114,40,0) 75%)'
+        }}
+      />
+
+      {focusNode && (
+        <>
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute left-0 right-0 border-t border-[#ff7a43]/70"
+            animate={{ top: `${focusNode.y}%`, opacity: hoveredNode || selectedLocation ? 1 : 0.7 }}
+            transition={{ duration: 0.22, ease: premiumEase }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 top-0 border-l border-[#ff7a43]/70"
+            animate={{ left: `${focusNode.x}%`, opacity: hoveredNode || selectedLocation ? 1 : 0.7 }}
+            transition={{ duration: 0.22, ease: premiumEase }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6e37] bg-[#fff4ee]"
+            animate={{ left: `${focusNode.x}%`, top: `${focusNode.y}%`, scale: hoveredNode ? 1.1 : 1 }}
+            transition={{ duration: 0.18, ease: premiumEase }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+            animate={{
+              left: `${focusNode.x}%`,
+              top: `${focusNode.y}%`,
+              width: selectedLocation ? 250 : 190,
+              height: selectedLocation ? 250 : 190,
+              opacity: selectedLocation ? 0.4 : 0.26
+            }}
+            transition={{ duration: 0.22, ease: premiumEase }}
+            style={{
+              background:
+                'radial-gradient(circle, rgba(255,126,51,0.24) 0%, rgba(255,126,51,0.06) 45%, rgba(255,126,51,0) 76%)'
+            }}
+          />
+        </>
+      )}
+
+      <div className="relative z-10 flex h-full w-full flex-col px-5 pb-5 pt-5 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12">
+        <header className="flex items-start justify-between text-[10px] uppercase tracking-[0.34em] text-[#808080]">
           <div>
-            <p className="text-[38px] leading-none text-[#b7b7b7] sm:text-[42px] lg:text-[46px]">Y</p>
-            <p className="text-[10px] uppercase tracking-[0.5em] text-[#ff5a1f]">марсианин</p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-[0.36em] text-[#b3b3b3]">кофейная система</p>
+            <p className="text-[1.95rem] leading-none tracking-[0.06em] text-[#202020]">марсианин</p>
+            <p className="mt-1 text-[9px] tracking-[0.36em] text-[#9c9c9c]">taste observation system</p>
           </div>
-          <motion.button
+          <button
             type="button"
-            onClick={goToMenu}
-            className="mt-1 inline-flex items-center gap-4 border border-[#d5d5d5] bg-white/85 px-3 py-2 text-[10px] uppercase tracking-[0.32em] text-[#575757]"
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push(`/menu?location=${selectedLocation ?? 'o12'}&category=завтраки`)}
+            className="border border-[#d8d2cb] px-3 py-2 text-[9px] tracking-[0.32em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
           >
-            <span>меню</span>
-            <span className="space-y-1">
-              <span className="block h-px w-6 bg-[#969696]" />
-              <span className="block h-px w-6 bg-[#969696]" />
-            </span>
-          </motion.button>
+            меню
+          </button>
         </header>
 
-        <div className="mt-5 grid flex-1 grid-cols-1 gap-4 lg:mt-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-6">
-          <div className="space-y-4 pt-1 lg:space-y-5">
-            <p className="text-[10px] uppercase tracking-[0.48em] text-[#616161] sm:text-xs">исследуйте систему</p>
-            <h1 className="max-w-4xl text-[clamp(2.2rem,5vw,4.9rem)] font-semibold uppercase leading-[0.92] tracking-[0.028em] text-[#131720]">
-              выберите точку <br /> и начните маршрут
+        <div className="relative mt-10 flex-1 lg:mt-8">
+          <div className="pointer-events-none absolute left-0 top-0 max-w-[680px] space-y-4">
+            <p className="text-[10px] uppercase tracking-[0.36em] text-[#777777]">grid / navigation / input</p>
+            <h1 className="text-[clamp(2.2rem,6vw,5.4rem)] font-semibold uppercase leading-[0.9] tracking-[0.02em] text-[#121212]">
+              выберите
+              <br />
+              точку входа
             </h1>
-            <p className="max-w-xl text-[clamp(1rem,1.45vw,1.45rem)] leading-[1.45] text-[#7e7e7e]">
-              Каждая точка — это уникальный протокол вкуса, данные, процесс и внимание к деталям.
+            <p className="max-w-[480px] text-[clamp(0.95rem,1.2vw,1.2rem)] leading-relaxed text-[#666666]">
+              Вкус — это наблюдение. Маршрут — это выбор. Откройте узел и продолжайте движение по системе.
             </p>
           </div>
 
-          <div className="hidden items-start justify-end pt-2 lg:flex">
-            <div className="max-w-sm border-l border-[#d8d8d8] pl-6 text-[11px] uppercase tracking-[0.38em] text-[#7f7f7f]">
-              coffee navigation system
-              <br />
-              ms — 012 research grid
-            </div>
+          {nodes.map((node) => {
+            const isActive = selectedLocation === node.id;
+            const isFocused = focusNodeId === node.id;
+            const isDimmed = Boolean(focusNodeId) && !isFocused;
+
+            return (
+              <motion.button
+                key={node.id}
+                type="button"
+                onMouseEnter={() => setHoveredNode(node.id)}
+                onFocus={() => setHoveredNode(node.id)}
+                onBlur={() => setHoveredNode(null)}
+                onClick={() => handleNodeClick(node.id)}
+                className="group absolute -translate-x-1/2 -translate-y-1/2 text-left"
+                style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                animate={{ opacity: isDimmed ? 0.42 : 1, scale: isActive ? 1.03 : 1 }}
+                transition={{ duration: 0.18, ease: premiumEase }}
+              >
+                <div className="mb-2 text-[9px] uppercase tracking-[0.32em] text-[#8d8d8d]">{node.technical}</div>
+                <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium uppercase leading-[0.88] tracking-[0.03em] text-[#1d1d1d]">
+                  {node.label}
+                </div>
+                <div className="mt-1.5 text-[10px] uppercase tracking-[0.3em] text-[#7a7a7a]">{node.coords}</div>
+                <div className="mt-1.5 flex items-center gap-3 text-[10px] uppercase tracking-[0.32em]">
+                  <span className="h-2 w-2 rounded-full border border-[#ff7a44] bg-[#fff5ef]" />
+                  <span className={isFocused ? 'text-[#ff6e37]' : 'text-[#777777]'}>{node.subLabel}</span>
+                </div>
+              </motion.button>
+            );
+          })}
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between text-[9px] uppercase tracking-[0.3em] text-[#9b9b9b]">
+            <span>Y: 30</span>
+            <span>Y: 20</span>
+            <span>Y: 10</span>
+            <span>Y: 00</span>
+          </div>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-between text-[9px] uppercase tracking-[0.3em] text-[#9b9b9b]">
+            <span>X: 00</span>
+            <span>X: 08</span>
+            <span>X: 16</span>
+            <span>X: 24</span>
+            <span>X: 32</span>
           </div>
         </div>
 
-        <LocationSelector selectedLocation={selectedLocation} onSelect={handleTeleport} />
-
-        <footer className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-[#dedede] pt-3 text-[9px] uppercase tracking-[0.3em] text-[#9a9a9a] sm:text-[10px] sm:tracking-[0.34em]">
-          <span>system / ms-012</span>
-          <span>grid lock / 3×5</span>
-          <span>
-            date / {currentDate} <span className="ml-4">time / {currentTime}</span>
-          </span>
+        <footer className="grid grid-cols-2 gap-3 border-t border-[#ddd7d1] pt-3 text-[9px] uppercase tracking-[0.28em] text-[#8d8d8d] sm:grid-cols-4">
+          <span>system status / precision</span>
+          <span>current route / {selectedLocation ?? 'none'}</span>
+          <span>active nodes / O12 K10 P7</span>
+          <span>date / {currentDate}</span>
         </footer>
       </div>
     </motion.section>
