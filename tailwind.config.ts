@@ -12,7 +12,7 @@ const config: Config = {
         grid: '#e8e8e8'
       },
       fontFamily: {
-        sans: ['Halvar', 'Inter', 'Segoe UI', 'system-ui', 'sans-serif']
+        sans: ['var(--font-halvar-mittel)']
       }
     }
   },
