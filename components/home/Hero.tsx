@@ -4,49 +4,46 @@ import { useRouter } from 'next/navigation';
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from '@/components/providers/LocationProvider';
+import { getLocationLabel, LocationId, locations } from '@/data/locations';
 import { premiumEase } from '@/lib/animations';
-import { getLocationLabel, LocationId } from '@/data/locations';
+import { Coordinates, haversineDistanceKm } from '@/lib/geo';
 import LocationSelector from './LocationSelector';
 
 type NodeConfig = {
   id: LocationId;
-  label: string;
   x: number;
   y: number;
-  subLabel: string;
   technical: string;
   coords: string;
 };
 
+type GeolocationState = 'idle' | 'loading' | 'ready' | 'denied' | 'unsupported' | 'error';
+
 const nodes: NodeConfig[] = [
   {
     id: 'o12',
-    label: 'o12',
     x: 18,
     y: 63,
-    subLabel: 'точка o12',
     technical: 'стартовый сектор',
     coords: 'x: 05 | y: 12'
   },
   {
     id: 'k10',
-    label: 'k10',
     x: 62,
     y: 31,
-    subLabel: 'активный маршрут',
     technical: 'кофейный протокол',
     coords: 'x: 18 | y: 10'
   },
   {
     id: 'p7',
-    label: 'п7',
     x: 81,
     y: 70,
-    subLabel: 'точка п7',
     technical: 'финальный вектор',
     coords: 'x: 24 | y: 07'
   }
 ];
+
+const locationById = Object.fromEntries(locations.map((location) => [location.id, location])) as Record<LocationId, (typeof locations)[number]>;
 
 export default function Hero() {
   const router = useRouter();
@@ -55,8 +52,26 @@ export default function Hero() {
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [hoveredNode, setHoveredNode] = useState<LocationId | null>(null);
   const [cursor, setCursor] = useState({ x: 50, y: 50, inside: false });
+  const [geoState, setGeoState] = useState<GeolocationState>('idle');
+  const [geoMessage, setGeoMessage] = useState('ожидание геопозиции');
+  const [userPosition, setUserPosition] = useState<Coordinates | null>(null);
 
-  const focusNodeId = hoveredNode ?? selectedLocation ?? 'o12';
+  const nearestPoint = useMemo(() => {
+    if (!userPosition) {
+      return null;
+    }
+
+    const ranked = locations
+      .map((location) => ({
+        ...location,
+        distanceKm: haversineDistanceKm(userPosition, { lat: location.lat, lng: location.lng })
+      }))
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+
+    return ranked[0] ?? null;
+  }, [userPosition]);
+
+  const focusNodeId = hoveredNode ?? selectedLocation ?? nearestPoint?.id ?? 'o12';
   const focusNode = nodes.find((node) => node.id === focusNodeId) ?? nodes[0];
 
   const currentDate = useMemo(
@@ -77,6 +92,43 @@ export default function Hero() {
     },
     []
   );
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) {
+      setGeoState('unsupported');
+      setGeoMessage('геолокация не поддерживается');
+      return;
+    }
+
+    setGeoState('loading');
+    setGeoMessage('запрашиваем доступ к координатам');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserPosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setGeoState('ready');
+        setGeoMessage('координаты получены');
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setGeoState('denied');
+          setGeoMessage('доступ к геолокации отклонён');
+          return;
+        }
+
+        setGeoState('error');
+        setGeoMessage('не удалось определить позицию');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 60_000
+      }
+    );
+  }, []);
 
   const handleMove = useCallback((event: MouseEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -154,7 +206,7 @@ export default function Hero() {
         </header>
 
         <div className="relative mt-6 flex-1 lg:mt-8">
-          <div className="relative z-20 max-w-[580px] space-y-3 sm:space-y-4">
+          <div className="relative z-20 max-w-[640px] space-y-3 sm:space-y-4">
             <p className="text-[10px] tracking-[0.18em] text-[#777777]">координаты · навигация · выбор</p>
             <h1 className="text-[clamp(1.85rem,9vw,3.6rem)] font-semibold leading-[0.95] tracking-[0.01em] text-[#121212]">
               выберите
@@ -162,8 +214,58 @@ export default function Hero() {
               точку входа
             </h1>
             <p className="max-w-[520px] text-[clamp(0.9rem,3.6vw,1.08rem)] leading-relaxed text-[#666666]">
-              выберите ближайшую точку и переходите к меню. всё собрано для быстрого выбора на телефоне.
+              показываем ваше положение, определяем ближайшую точку и даём переход одним действием.
             </p>
+
+            <div className="grid gap-2 border border-[#ddcfc4] bg-[#fff8f2]/80 p-3 text-[10px] tracking-[0.14em] text-[#6b625b] sm:grid-cols-2">
+              <div>
+                <p className="text-[#9a7f69]">положение пользователя</p>
+                <p className="mt-1 text-[11px] text-[#3f3a36]">{geoMessage}</p>
+                {userPosition ? (
+                  <p className="mt-1 text-[10px] text-[#5b534c]">
+                    lat {userPosition.lat.toFixed(4)} · lng {userPosition.lng.toFixed(4)}
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <p className="text-[#9a7f69]">ближайшая точка</p>
+                {nearestPoint ? (
+                  <>
+                    <p className="mt-1 text-[11px] text-[#3f3a36]">
+                      {nearestPoint.label} · {nearestPoint.distanceKm.toFixed(2)} км
+                    </p>
+                    <p className="mt-1 text-[10px] text-[#5b534c]">{nearestPoint.address}</p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[11px] text-[#3f3a36]">определение недоступно, выберите вручную</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={!nearestPoint}
+                onClick={() => {
+                  if (!nearestPoint) {
+                    return;
+                  }
+
+                  setSelectedLocation(nearestPoint.id);
+                  goToMenu(nearestPoint.id);
+                }}
+                className="min-h-10 border border-[#ff7a43] bg-[#fff1e8] px-3 py-2 text-[10px] tracking-[0.14em] text-[#b34b1f] transition-colors hover:bg-[#ffe7da] disabled:cursor-not-allowed disabled:border-[#e1d5cc] disabled:bg-[#f3efeb] disabled:text-[#9f9389]"
+              >
+                перейти в ближайшую точку
+              </button>
+              <button
+                type="button"
+                onClick={() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="min-h-10 border border-[#d8d2cb] bg-transparent px-3 py-2 text-[10px] tracking-[0.14em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
+              >
+                выбрать вручную
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 lg:hidden">
@@ -186,13 +288,13 @@ export default function Hero() {
             <motion.div
               aria-hidden
               className="pointer-events-none absolute left-0 right-0 border-t border-[#ff7a43]/70"
-              animate={{ top: `${focusNode.y}%`, opacity: hoveredNode || selectedLocation ? 1 : 0.7 }}
+              animate={{ top: `${focusNode.y}%`, opacity: hoveredNode || selectedLocation || nearestPoint ? 1 : 0.7 }}
               transition={{ duration: 0.2, ease: premiumEase }}
             />
             <motion.div
               aria-hidden
               className="pointer-events-none absolute bottom-0 top-0 border-l border-[#ff7a43]/70"
-              animate={{ left: `${focusNode.x}%`, opacity: hoveredNode || selectedLocation ? 1 : 0.7 }}
+              animate={{ left: `${focusNode.x}%`, opacity: hoveredNode || selectedLocation || nearestPoint ? 1 : 0.7 }}
               transition={{ duration: 0.2, ease: premiumEase }}
             />
             <motion.div
@@ -204,8 +306,10 @@ export default function Hero() {
 
             {nodes.map((node) => {
               const isActive = selectedLocation === node.id;
+              const isNearest = nearestPoint?.id === node.id;
               const isFocused = focusNodeId === node.id;
               const isDimmed = Boolean(focusNodeId) && !isFocused;
+              const location = locationById[node.id];
 
               return (
                 <motion.button
@@ -222,13 +326,20 @@ export default function Hero() {
                 >
                   <div className="mb-2 text-[9px] tracking-[0.16em] text-[#8d8d8d]">{node.technical}</div>
                   <div className="text-[clamp(2.8rem,5vw,4.8rem)] font-medium leading-[0.88] tracking-[0.01em] text-[#1d1d1d]">
-                    {node.label}
+                    {location.label}
                   </div>
                   <div className="mt-1.5 text-[10px] tracking-[0.16em] text-[#7a7a7a]">{node.coords}</div>
                   <div className="mt-1.5 flex items-center gap-3 text-[10px] tracking-[0.16em]">
-                    <span className="h-2 w-2 rounded-full border border-[#ff7a44] bg-[#fff5ef]" />
-                    <span className={isFocused ? 'text-[#ff6e37]' : 'text-[#777777]'}>{node.subLabel}</span>
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full border ${
+                        isNearest ? 'border-[#ff6e37] bg-[#ff6e37]' : 'border-[#ff7a44] bg-[#fff5ef]'
+                      }`}
+                    />
+                    <span className={isNearest ? 'text-[#ff6e37]' : isFocused ? 'text-[#ff6e37]' : 'text-[#777777]'}>
+                      {isNearest ? 'ближайший узел' : `точка ${location.label}`}
+                    </span>
                   </div>
+                  <div className="mt-1 text-[9px] tracking-[0.12em] text-[#9c8f84]">{location.address}</div>
                 </motion.button>
               );
             })}
@@ -250,9 +361,9 @@ export default function Hero() {
         </div>
 
         <footer className="mt-5 grid grid-cols-1 gap-2 border-t border-[#ddd7d1] pt-3 text-[9px] tracking-[0.14em] text-[#8d8d8d] sm:grid-cols-2 lg:grid-cols-4">
-          <span>статус системы · стабильно</span>
+          <span>статус системы · {geoState}</span>
           <span>текущая точка · {getLocationLabel(selectedLocation ?? 'o12')}</span>
-          <span>доступные точки · o12 k10 п7</span>
+          <span>ближайшая · {nearestPoint ? getLocationLabel(nearestPoint.id) : 'ручной выбор'}</span>
           <span>дата · {currentDate}</span>
         </footer>
       </div>
