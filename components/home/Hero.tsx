@@ -197,8 +197,8 @@ export default function Hero() {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1240px] flex-col px-4 pb-5 pt-5 sm:px-6 sm:pt-6 lg:px-12">
-        <header className="flex items-start justify-between gap-3 text-[10px] tracking-[0.16em] text-[#808080]">
+      <div className="relative z-10 mx-auto flex h-svh w-full max-w-[1240px] flex-col overflow-hidden px-4 pb-4 pt-4 sm:min-h-svh sm:h-auto sm:px-6 sm:pt-6 lg:px-12">
+        <header className="hidden items-start justify-between gap-3 text-[10px] tracking-[0.16em] text-[#808080] sm:flex">
           <div className="w-full max-w-[210px] text-left sm:max-w-[260px]">
             <div className="flex items-start gap-2 sm:gap-2.5">
               <Image
@@ -226,8 +226,8 @@ export default function Hero() {
           </button>
         </header>
 
-        <div className="relative mt-6 flex-1 lg:mt-8">
-          <div className="relative z-20 max-w-[640px] space-y-3 sm:space-y-4">
+        <div className="relative mt-3 flex min-h-0 flex-1 sm:mt-6 lg:mt-8">
+          <div className="relative z-20 hidden max-w-[640px] space-y-3 sm:block sm:space-y-4">
             <p className="text-[10px] tracking-[0.18em] text-[#777777]">координаты · навигация · выбор</p>
             <h1 className="text-[clamp(1.85rem,9vw,3.6rem)] font-semibold leading-[0.95] tracking-[0.01em] text-[#121212]">
               выберите
@@ -305,17 +305,77 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="mt-6 lg:hidden">
-            <LocationSelector
-              selectedLocation={selectedLocation}
-              onSelect={(location) => {
-                setSelectedLocation(location);
-                goToMenu(location);
-              }}
-            />
+          <div className="flex min-h-0 flex-1 flex-col lg:hidden">
+            <div className="shrink-0 border border-[#e0d7cf] bg-[#fff9f4] px-3 py-2.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-2">
+                  <Image src="/logo.svg" alt="Логотип Марсианин" width={30} height={30} priority className="h-7 w-7 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[1.15rem] leading-none tracking-[0.03em] text-[#202020]">марсианин</p>
+                    <p className="mt-1 text-[8px] leading-snug tracking-[0.12em] text-[#8f8f8f]">
+                      Марсианин, кофейня, где есть жизнь.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/menu?location=${selectedLocation ?? 'o12'}&category=завтраки`)}
+                  className="min-h-9 shrink-0 border border-[#d8d2cb] px-2.5 py-1.5 text-[9px] tracking-[0.12em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
+                >
+                  меню
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 shrink-0 text-center">
+              <p className="text-[9px] tracking-[0.18em] text-[#777777]">координаты · навигация · выбор</p>
+              <h1 className="mt-1 text-[clamp(1.6rem,8vw,2.3rem)] font-semibold leading-[0.92] tracking-[0.01em] text-[#121212]">
+                выберите точку входа
+              </h1>
+            </div>
+
+            <div className="mt-3 flex min-h-0 flex-1 items-center justify-center">
+              <LocationSelector
+                variant="mobile-dots"
+                selectedLocation={selectedLocation}
+                onSelect={(location) => {
+                  setSelectedLocation(location);
+                  goToMenu(location);
+                }}
+              />
+            </div>
+
+            <div className="mt-2 shrink-0 text-center text-[9px] tracking-[0.14em] text-[#929292]">
+              <span>нажмите на точку для перехода в меню</span>
+            </div>
+
+            <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={!nearestPoint}
+                onClick={() => {
+                  if (!nearestPoint) {
+                    return;
+                  }
+
+                  setSelectedLocation(nearestPoint.id);
+                  goToMenu(nearestPoint.id);
+                }}
+                className="min-h-10 border border-[#ff7a43] bg-[#fff1e8] px-2 py-2 text-[9px] tracking-[0.12em] text-[#b34b1f] transition-colors hover:bg-[#ffe7da] disabled:cursor-not-allowed disabled:border-[#e1d5cc] disabled:bg-[#f3efeb] disabled:text-[#9f9389]"
+              >
+                ближайшая точка
+              </button>
+              <button
+                type="button"
+                onClick={() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="min-h-10 border border-[#d8d2cb] bg-transparent px-2 py-2 text-[9px] tracking-[0.12em] text-[#6f6f6f] transition-colors hover:bg-[#ffffffa6]"
+              >
+                выбрать вручную
+              </button>
+            </div>
           </div>
 
-          <div className="pointer-events-none mt-5 flex items-center justify-between text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
+          <div className="pointer-events-none mt-5 hidden items-center justify-between text-[9px] tracking-[0.14em] text-[#929292] lg:hidden">
             <span>северный ориентир</span>
             <span>центральная линия</span>
             <span>южный ориентир</span>
@@ -424,7 +484,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <footer className="mt-5 grid grid-cols-1 gap-2 border-t border-[#ddd7d1] pt-3 text-[9px] tracking-[0.14em] text-[#8d8d8d] sm:grid-cols-2 lg:grid-cols-4">
+        <footer className="mt-4 grid shrink-0 grid-cols-2 gap-2 border-t border-[#ddd7d1] pt-3 text-[8px] tracking-[0.12em] text-[#8d8d8d] sm:mt-5 sm:grid-cols-2 sm:text-[9px] sm:tracking-[0.14em] lg:grid-cols-4">
           <span>статус системы · {geoState}</span>
           <span>текущая точка · {getLocationLabel(selectedLocation ?? 'o12')}</span>
           <span>ближайшая · {nearestPoint ? getLocationLabel(nearestPoint.id) : 'ручной выбор'}</span>

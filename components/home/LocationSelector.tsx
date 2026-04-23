@@ -9,9 +9,60 @@ type LocationSelectorProps = {
   selectedLocation: LocationId | null;
   onSelect: (location: LocationId, event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  variant?: 'cards' | 'mobile-dots';
 };
 
-export default function LocationSelector({ selectedLocation, onSelect, disabled = false }: LocationSelectorProps) {
+export default function LocationSelector({
+  selectedLocation,
+  onSelect,
+  disabled = false,
+  variant = 'cards'
+}: LocationSelectorProps) {
+  if (variant === 'mobile-dots') {
+    return (
+      <div className="flex items-center justify-center gap-4">
+        {locations.map((location) => {
+          const isSelected = selectedLocation === location.id;
+
+          return (
+            <motion.button
+              key={location.id}
+              type="button"
+              layout
+              layoutId={`mobile-location-${location.id}`}
+              onClick={(event) => onSelect(location.id, event)}
+              disabled={disabled}
+              className="group flex min-h-[148px] min-w-[92px] flex-col items-center justify-center rounded-sm border bg-[#faf8f5] px-2 py-3 text-center transition-colors disabled:cursor-wait"
+              animate={{
+                borderColor: isSelected ? '#ff6430' : '#d9d3cc',
+                backgroundColor: isSelected ? '#fff1e8' : '#faf8f5',
+                boxShadow: isSelected ? '0 18px 36px rgba(255, 100, 48, 0.24)' : '0 3px 10px rgba(0, 0, 0, 0.04)',
+                scale: isSelected ? 1.04 : 0.94,
+                opacity: isSelected ? 1 : 0.72
+              }}
+              whileTap={{ scale: isSelected ? 1.01 : 0.92 }}
+              transition={{ duration: 0.18, ease: premiumEase }}
+              style={{ filter: isSelected ? 'saturate(1)' : 'saturate(0.8)' }}
+            >
+              <span className={`text-[9px] tracking-[0.16em] ${isSelected ? 'text-[#8b664f]' : 'text-[#968e86]'}`}>точка</span>
+              <span
+                className={`mt-2 font-semibold leading-[0.88] tracking-[0.01em] ${isSelected ? 'text-[#ff6430]' : 'text-[#2b2b2b]'}`}
+                style={{ fontSize: isSelected ? 'clamp(2.9rem,15vw,4.15rem)' : 'clamp(2.5rem,12.5vw,3.6rem)' }}
+              >
+                {location.label}
+              </span>
+              <span
+                className={`mt-2 h-3 w-3 rounded-full border ${
+                  isSelected ? 'border-[#ff6430] bg-[#ff6430]' : 'border-[#8f8f8f] bg-transparent'
+                }`}
+              />
+            </motion.button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
       {locations.map((location) => {
