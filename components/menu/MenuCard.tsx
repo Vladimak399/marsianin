@@ -38,17 +38,17 @@ export default function MenuCard({ item, category, selectedLocation, onOpen }: M
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[1rem] font-semibold uppercase leading-snug tracking-[0.04em] text-neutral-900 sm:text-lg">{item.name}</h3>
+          <h3 className="text-[1rem] font-semibold leading-snug tracking-[0.01em] text-neutral-900 sm:text-lg">{item.name}</h3>
           <p className="shrink-0 text-[1.1rem] font-semibold text-accent">{price} ₽</p>
         </div>
 
         <p className="text-sm leading-relaxed text-neutral-600">{item.description}</p>
 
         <div className="mt-auto border-t border-grid pt-3">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-neutral-500">
-            КБЖУ: {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
+          <p className="text-[11px] tracking-[0.12em] text-neutral-500">
+            кбжу: {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
           </p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-neutral-500">нажмите для деталей</p>
+          <p className="mt-2 text-[10px] tracking-[0.14em] text-neutral-500">подробности</p>
         </div>
       </div>
     </motion.button>

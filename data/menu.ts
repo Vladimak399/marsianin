@@ -40,7 +40,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(1100, 1050, 990),
         image: getMockMenuImage('breakfast'),
         nutrition: { calories: 650, protein: 25, fat: 30, carbs: 60 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'breakfast-2',
@@ -49,7 +49,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(820, 790, 740),
         image: getMockMenuImage('breakfast'),
         nutrition: { calories: 520, protein: 14, fat: 20, carbs: 68 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'breakfast-3',
@@ -58,7 +58,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(760, 730, 690),
         image: getMockMenuImage('breakfast'),
         nutrition: { calories: 480, protein: 24, fat: 17, carbs: 58 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       }
     ]
   },
@@ -72,7 +72,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(690, 660, 620),
         image: getMockMenuImage('eggs'),
         nutrition: { calories: 420, protein: 24, fat: 33, carbs: 6 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'eggs-2',
@@ -81,7 +81,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(850, 810, 770),
         image: getMockMenuImage('eggs'),
         nutrition: { calories: 460, protein: 22, fat: 28, carbs: 30 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'eggs-3',
@@ -90,7 +90,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(780, 740, 710),
         image: getMockMenuImage('eggs'),
         nutrition: { calories: 500, protein: 21, fat: 29, carbs: 38 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       }
     ]
   },
@@ -104,7 +104,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(730, 700, 670),
         image: getMockMenuImage('cottage'),
         nutrition: { calories: 410, protein: 28, fat: 14, carbs: 42 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'cottage-2',
@@ -113,7 +113,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(690, 660, 630),
         image: getMockMenuImage('cottage'),
         nutrition: { calories: 450, protein: 26, fat: 13, carbs: 55 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'cottage-3',
@@ -122,7 +122,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(740, 710, 680),
         image: getMockMenuImage('cottage'),
         nutrition: { calories: 470, protein: 25, fat: 24, carbs: 31 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       }
     ]
   },
@@ -136,7 +136,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(980, 940, 900),
         image: getMockMenuImage('pasta'),
         nutrition: { calories: 610, protein: 20, fat: 22, carbs: 80 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'pasta-2',
@@ -145,7 +145,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(1140, 1090, 1040),
         image: getMockMenuImage('pasta'),
         nutrition: { calories: 690, protein: 35, fat: 26, carbs: 76 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'pasta-3',
@@ -154,7 +154,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(1020, 980, 930),
         image: getMockMenuImage('pasta'),
         nutrition: { calories: 640, protein: 18, fat: 24, carbs: 84 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       }
     ]
   },
@@ -168,7 +168,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(240, 220, 210),
         image: getMockMenuImage('drinks'),
         nutrition: { calories: 6, protein: 0, fat: 0, carbs: 1 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'drinks-2',
@@ -177,7 +177,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(320, 300, 280),
         image: getMockMenuImage('drinks'),
         nutrition: { calories: 8, protein: 1, fat: 0, carbs: 1 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'drinks-3',
@@ -186,7 +186,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(380, 360, 340),
         image: getMockMenuImage('drinks'),
         nutrition: { calories: 135, protein: 7, fat: 7, carbs: 10 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       },
       {
         id: 'drinks-4',
@@ -195,7 +195,7 @@ export const menuData: MenuCategory[] = [
         priceByLocation: price(420, 400, 370),
         image: getMockMenuImage('drinks'),
         nutrition: { calories: 150, protein: 6, fat: 7, carbs: 15 },
-        techNote: 'mock image / orange matte / v1'
+        techNote: 'макет фото · оранжевый матовый фон · v1'
       }
     ]
   }
