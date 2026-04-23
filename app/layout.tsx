@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import Providers from '@/components/providers/Providers';
+import { halvarMittel } from '@/lib/fonts';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://marsianin.cafe'),
@@ -26,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
-      <body className="min-h-screen bg-white"><Providers>{children}</Providers></body>
+    <html lang="ru" className={halvarMittel.variable}>
+      <body className="min-h-screen bg-white font-sans"><Providers>{children}</Providers></body>
     </html>
   );
 }
