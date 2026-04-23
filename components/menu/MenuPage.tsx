@@ -65,7 +65,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
           }
         }
       },
-      { rootMargin: '-30% 0px -55% 0px', threshold: [0.2, 0.45, 0.7] }
+      { rootMargin: '-28% 0px -58% 0px', threshold: [0.2, 0.45, 0.7] }
     );
 
     const sections = document.querySelectorAll<HTMLElement>('[data-category]');
@@ -103,50 +103,53 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_5%,rgba(255,130,44,0.18),transparent_40%),radial-gradient(circle_at_85%_25%,rgba(255,155,90,0.14),transparent_35%),linear-gradient(#f8f8f8,#f4f4f4)]" />
+    <main className="relative min-h-svh overflow-hidden px-3 pb-12 pt-3 sm:px-6 sm:pt-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,130,44,0.18),transparent_32%),radial-gradient(circle_at_88%_22%,rgba(255,155,90,0.13),transparent_30%),linear-gradient(#faf8f5,#f5f4f1)]" />
       <div className="relative mx-auto max-w-[1240px]">
-        <section className="relative overflow-hidden border border-grid bg-white/88 px-5 py-8 sm:px-8">
-          <GridOverlay className="z-0" />
+        <section className="relative overflow-hidden border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
+          <GridOverlay className="z-0 opacity-70" />
 
           <AnimatePresence>
             <motion.div
               key={switchPulseKey}
               className="pointer-events-none absolute inset-0 z-[1] bg-neutral-900"
-              initial={{ opacity: 0.08 }}
+              initial={{ opacity: 0.07 }}
               animate={{ opacity: 0 }}
-              exit={{ opacity: 0.08 }}
-              transition={{ duration: 0.15, ease: premiumEase }}
+              exit={{ opacity: 0.07 }}
+              transition={{ duration: 0.12, ease: premiumEase }}
             />
           </AnimatePresence>
 
           <motion.div
-            className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-grid pb-5"
+            className="relative z-10 flex flex-col gap-4 border-b border-grid pb-4 sm:flex-row sm:items-center sm:justify-between sm:pb-5"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.24, ease: premiumEase }}
+            transition={{ duration: 0.2, ease: premiumEase }}
           >
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               {currentLocation ? (
                 <motion.div
                   layoutId={`location-${currentLocation.id}`}
-                  className="border border-accent bg-neutral-900 px-4 py-2 text-2xl font-semibold uppercase tracking-[0.12em] text-white"
+                  className="border border-accent bg-neutral-900 px-3 py-1.5 text-[1.55rem] font-semibold uppercase tracking-[0.1em] text-white sm:px-4 sm:py-2 sm:text-2xl"
                 >
                   {currentLocation.label}
                 </motion.div>
               ) : null}
-              <h1 className="text-3xl font-semibold uppercase tracking-[0.08em] text-neutral-900">меню системы</h1>
+              <div>
+                <h1 className="text-[1.45rem] font-semibold uppercase tracking-[0.06em] text-neutral-900 sm:text-3xl">меню системы</h1>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">mobile-first catalog</p>
+              </div>
             </div>
-            <Link href="/" className="text-xs uppercase tracking-[0.2em] text-neutral-500 hover:text-accent">
+            <Link href="/" className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 hover:text-accent">
               сменить точку
             </Link>
           </motion.div>
 
           <motion.div
-            className="relative z-10 mt-6 flex flex-wrap items-center gap-2 border-b border-grid pb-4"
+            className="relative z-10 mt-4 flex gap-2 overflow-x-auto border-b border-grid pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.24, delay: 0.08, ease: premiumEase }}
+            transition={{ duration: 0.2, delay: 0.04, ease: premiumEase }}
           >
             {locations.map((location) => {
               const isActive = activeLocation === location.id;
@@ -157,14 +160,14 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
                   layout
                   layoutId={`location-${location.id}-switch`}
                   onClick={() => handleLocationSwitch(location.id)}
-                  className="border px-4 py-2 text-xs uppercase tracking-[0.2em]"
+                  className="min-h-10 whitespace-nowrap border px-4 py-2 text-xs uppercase tracking-[0.2em]"
                   animate={{
                     borderColor: isActive ? '#ff6a00' : '#d4d4d4',
                     color: isActive ? '#171717' : '#737373',
                     backgroundColor: isActive ? '#fff2e8' : '#ffffff'
                   }}
-                  whileHover={{ y: -1 }}
-                  transition={{ duration: 0.2, ease: premiumEase }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.16, ease: premiumEase }}
                 >
                   {location.label}
                 </motion.button>
@@ -174,7 +177,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
           <CategoryNav categories={categories} activeCategory={activeCategory} onSelect={handleCategorySelect} />
 
-          <div className="relative z-10 mt-8 space-y-10">
+          <div className="relative z-10 mt-6 space-y-8 sm:mt-8 sm:space-y-10">
             {menuData.map((section) => (
               <MenuSection
                 key={section.category}

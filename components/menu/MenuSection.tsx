@@ -17,18 +17,18 @@ export default function MenuSection({ section, selectedLocation, onOpenItem }: M
     <motion.section
       id={`section-${section.category}`}
       data-category={section.category}
-      className="scroll-mt-28 border-t border-grid pt-10 first:border-t-0 first:pt-0"
+      className="scroll-mt-32 border-t border-grid pt-8 first:border-t-0 first:pt-0 sm:scroll-mt-36 sm:pt-10"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
       variants={fadeUp}
     >
-      <header className="mb-6 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-semibold uppercase tracking-wide text-neutral-900 sm:text-3xl">{section.category}</h2>
-        <p className="text-xs uppercase tracking-wider text-neutral-500">{section.items.length} поз.</p>
+      <header className="mb-4 flex items-end justify-between gap-4 sm:mb-6">
+        <h2 className="text-[1.45rem] font-semibold uppercase tracking-[0.04em] text-neutral-900 sm:text-3xl">{section.category}</h2>
+        <p className="text-[11px] uppercase tracking-[0.16em] text-neutral-500">{section.items.length} поз.</p>
       </header>
       <motion.div
-        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+        className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3"
         variants={staggerContainer}
         initial="hidden"
         whileInView="show"

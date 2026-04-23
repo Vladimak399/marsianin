@@ -25,6 +25,7 @@ body {
   background: radial-gradient(circle at 15% 5%, rgba(255, 138, 66, 0.14), transparent 40%), #f3f3f3;
   color: #171717;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
 }
 
 a {
