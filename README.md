@@ -45,3 +45,13 @@ npm run dev
 - SEO metadata добавлены в `app/layout.tsx`
 - favicon добавлен в `public/favicon.svg`
 - изображения оптимизируются через `next/image` и современные форматы (`avif`, `webp`) в `next.config.mjs`
+
+## Деплой на Vercel
+
+Если после подключения GitHub-репозитория Vercel показывает `404: NOT_FOUND`, проверьте:
+
+- Root Directory указывает на корень проекта (где лежит `package.json`);
+- Framework Preset = **Next.js**;
+- в репозитории есть `vercel.json` с `framework: "nextjs"`.
+
+В этом проекте `vercel.json` уже добавлен, чтобы Vercel не определял пресет как `Other`.
