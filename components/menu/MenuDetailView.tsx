@@ -27,20 +27,33 @@ export default function MenuDetailView({ item, category, selectedLocation, onClo
           onClick={onClose}
         >
           <motion.article
-            className="absolute inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-2xl border border-grid bg-white sm:inset-8 sm:mx-auto sm:max-h-[min(90vh,760px)] sm:max-w-3xl sm:rounded-none"
+            className="absolute inset-0 overflow-y-auto border-grid bg-white sm:inset-8 sm:mx-auto sm:max-h-[min(90vh,760px)] sm:max-w-3xl sm:overflow-hidden sm:border"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 14 }}
             transition={{ duration: 0.2, ease: premiumEase }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-neutral-300 sm:hidden" />
+            <div className="sticky top-0 z-10 border-b border-grid bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
+              <div className="mx-auto mb-2 h-1.5 w-14 rounded-full bg-neutral-300" />
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-neutral-500">{category}</p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="min-h-10 text-xs uppercase tracking-[0.2em] text-neutral-500 transition-colors active:text-neutral-900"
+                >
+                  закрыть
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-[1.08fr_0.92fr]">
-              <div className="relative min-h-[240px] border-b border-grid bg-[#f9efe6] sm:min-h-[440px] sm:border-b-0 sm:border-r">
+              <div className="relative min-h-[260px] border-b border-grid bg-[#f9efe6] sm:min-h-[440px] sm:border-b-0 sm:border-r">
                 <Image src={item.image} alt={item.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 50vw" />
               </div>
               <div className="flex flex-col p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4 border-b border-grid pb-4">
+                <div className="hidden items-start justify-between gap-4 border-b border-grid pb-4 sm:flex">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.26em] text-neutral-500">{category}</p>
                     <h2 className="mt-2 text-[1.5rem] font-semibold uppercase tracking-[0.05em] text-neutral-900 sm:text-2xl">{item.name}</h2>
@@ -53,11 +66,15 @@ export default function MenuDetailView({ item, category, selectedLocation, onClo
                     закрыть
                   </button>
                 </div>
+
+                <h2 className="text-[1.45rem] font-semibold uppercase tracking-[0.05em] text-neutral-900 sm:hidden">{item.name}</h2>
                 <p className="mt-4 text-sm leading-relaxed text-neutral-700">{item.description}</p>
+
                 <div className="mt-4 border border-grid bg-[#ffefe2] px-4 py-3">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-600">цена / {selectedLocation.toUpperCase()}</p>
                   <p className="mt-1 text-2xl font-semibold text-neutral-900">{item.priceByLocation[selectedLocation]} ₽</p>
                 </div>
+
                 <NutritionTable nutrition={item.nutrition} />
                 {item.techNote ? <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-neutral-500">{item.techNote}</p> : null}
               </div>
