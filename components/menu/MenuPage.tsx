@@ -238,12 +238,9 @@ export default function MenuPage({
                     key={location.id}
                     type="button"
                     onClick={() => handleLocationSwitch(location.id)}
-                    className="min-h-12 whitespace-nowrap border bg-white/72 px-3 py-2 text-left text-xs backdrop-blur-sm"
-                    animate={{
-                      borderColor: isActive ? 'rgba(237,106,50,.82)' : 'rgba(0,0,0,.065)',
-                      color: isActive ? '#ed6a32' : '#403e3e',
-                      backgroundColor: 'rgba(255,255,255,.72)'
-                    }}
+                    className={`min-h-12 whitespace-nowrap border bg-white/72 px-3 py-2 text-left text-xs backdrop-blur-sm transition-colors ${
+                      isActive ? 'border-[#ed6a32]/80 text-[#ed6a32]' : 'border-black/[0.065] text-[#403e3e] hover:border-[#ed6a32]/45 hover:text-[#ed6a32]'
+                    }`}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.16, ease: premiumEase }}
                   >

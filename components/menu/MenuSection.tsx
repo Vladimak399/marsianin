@@ -1,9 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { LocationId } from '@/data/locations';
 import { MenuCategory, MenuItem } from '@/data/menu';
-import { fadeUp } from '@/lib/animations';
 import MenuCard from './MenuCard';
 
 type MenuSectionProps = {
@@ -22,15 +20,14 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
       </header>
       <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
         {section.items.map((item, index) => (
-          <motion.div key={item.id} variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-8% 0px -8% 0px' }}>
-            <MenuCard
-              item={item}
-              category={section.category}
-              selectedLocation={selectedLocation}
-              onOpen={onOpenItem}
-              priority={isFirstSection && index === 0}
-            />
-          </motion.div>
+          <MenuCard
+            key={item.id}
+            item={item}
+            category={section.category}
+            selectedLocation={selectedLocation}
+            onOpen={onOpenItem}
+            priority={isFirstSection && index === 0}
+          />
         ))}
       </div>
     </section>
