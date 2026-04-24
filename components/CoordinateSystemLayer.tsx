@@ -13,7 +13,6 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
   const reduceMotion = useReducedMotion();
   const isOpen = mode === 'open';
   const isMenu = mode === 'menu';
-  const isTransition = mode === 'transition';
 
   const baseOpacity = muted ? 0.05 : isOpen ? 0.075 : isMenu ? 0.062 : 0.07;
   const axisOpacity = muted ? 0.16 : isOpen ? 0.24 : 0.2;
@@ -53,20 +52,10 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
 
       <motion.div
         className="absolute left-[calc(22%-3px)] top-[26%] h-[7px] w-[7px] rounded-full border border-[#ed6a32]/60"
-        animate={{ opacity: muted ? 0.35 : 0.7, scale: isTransition && !reduceMotion ? [1, 1.2, 1] : 1, y: shiftY * 0.5 }}
-        transition={{ duration: reduceMotion ? 0.01 : 1.2, repeat: reduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
+        animate={{ opacity: muted ? 0.35 : 0.7, y: shiftY * 0.5 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: premiumEase }}
       />
 
-      <div className="absolute left-4 top-4 font-halvar text-[9px] tracking-[0.1em] text-[#ed6a32]/58">координаты точки</div>
-      <div className="absolute right-4 top-4 font-halvar text-[9px] tracking-[0.1em] text-black/30">активная точка</div>
-      <div className="absolute bottom-4 right-4 font-halvar text-[9px] tracking-[0.1em] text-black/28">маршрут меню</div>
-
-      <div className="absolute left-[22%] top-[26%]">
-        <div className="absolute -left-[11px] -top-[26px] h-4 w-px bg-[#ed6a32]/48" />
-        <div className="absolute -left-[11px] top-[34px] h-4 w-px bg-[#ed6a32]/48" />
-        <div className="absolute left-[30px] -top-[3px] h-px w-4 bg-[#ed6a32]/48" />
-        <div className="absolute -left-[49px] -top-[3px] h-px w-4 bg-[#ed6a32]/48" />
-      </div>
     </div>
   );
 }

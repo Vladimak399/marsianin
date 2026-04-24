@@ -24,16 +24,10 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       type="button"
       onClick={() => onOpen(item, category)}
       className="group relative grid w-full grid-cols-[112px_1fr] overflow-hidden border border-black/[0.065] bg-white/78 text-left backdrop-blur-sm sm:flex sm:flex-col [will-change:transform]"
-      whileHover={{ scale: 1.004, y: -1 }}
       whileTap={{ scale: 0.992 }}
       transition={{ duration: 0.14, ease: premiumEase }}
     >
-      <motion.div
-        className="pointer-events-none absolute bottom-0 left-0 z-10 h-px w-full origin-left scale-x-0 bg-[#ed6a32]/70 [will-change:transform]"
-        initial={false}
-        whileHover={{ scaleX: 1 }}
-        transition={{ duration: 0.28, ease: premiumEase }}
-      />
+      <div className="pointer-events-none absolute bottom-0 left-0 z-10 h-px w-full bg-[#ed6a32]/24" />
       <div className="relative min-h-[146px] w-full overflow-hidden border-r border-black/[0.065] bg-white/70 sm:aspect-[16/10] sm:min-h-0 sm:border-b sm:border-r-0">
         <Image
           src={item.image}
