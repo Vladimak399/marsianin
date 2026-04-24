@@ -6,22 +6,22 @@ type NutritionTableProps = {
 
 export default function NutritionTable({ nutrition }: NutritionTableProps) {
   return (
-    <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-grid pt-3 text-xs text-neutral-600 sm:grid-cols-4">
-      <div>
-        <dt className="tracking-[0.08em]">белки</dt>
-        <dd className="mt-1 text-sm text-neutral-900">{nutrition.protein} г</dd>
+    <dl className="mt-4 grid grid-cols-2 gap-2 border-t border-black/[0.055] pt-4 text-xs text-[#403e3e] sm:grid-cols-4">
+      <div className="border border-black/[0.065] bg-white/72 p-3">
+        <dt className="mars-coordinate-label text-[#ed6a32]">белки</dt>
+        <dd className="mt-1 text-sm text-[#0b0b0b]">{nutrition.protein} г</dd>
       </div>
-      <div>
-        <dt className="tracking-[0.08em]">жиры</dt>
-        <dd className="mt-1 text-sm text-neutral-900">{nutrition.fat} г</dd>
+      <div className="border border-black/[0.065] bg-white/72 p-3">
+        <dt className="mars-coordinate-label text-[#ed6a32]">жиры</dt>
+        <dd className="mt-1 text-sm text-[#0b0b0b]">{nutrition.fat} г</dd>
       </div>
-      <div>
-        <dt className="tracking-[0.08em]">углеводы</dt>
-        <dd className="mt-1 text-sm text-neutral-900">{nutrition.carbs} г</dd>
+      <div className="border border-black/[0.065] bg-white/72 p-3">
+        <dt className="mars-coordinate-label text-[#ed6a32]">углеводы</dt>
+        <dd className="mt-1 text-sm text-[#0b0b0b]">{nutrition.carbs} г</dd>
       </div>
-      <div>
-        <dt className="tracking-[0.08em]">калории</dt>
-        <dd className="mt-1 text-sm text-neutral-900">{nutrition.calories} ккал</dd>
+      <div className="border border-black/[0.065] bg-white/72 p-3">
+        <dt className="mars-coordinate-label text-[#ed6a32]">калории</dt>
+        <dd className="mt-1 text-sm text-[#0b0b0b]">{nutrition.calories} ккал</dd>
       </div>
     </dl>
   );
