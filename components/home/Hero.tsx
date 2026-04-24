@@ -158,11 +158,12 @@ function UserLocationPanel({
         </div>
         {nearest ? (
           <motion.div className="text-right" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.48, duration: 0.34 }}>
-            <div className="text-[9px] tracking-[0.1em] text-black/34">ближайшая</div>
-            <div className="mt-1">
+            <div className="text-[9px] tracking-[0.1em] text-black/34">ближайшая точка</div>
+            <div className="mt-1.5 flex flex-col items-end">
+              <div className="mb-0.5 text-[8px] tracking-[0.08em] text-black/32">код точки</div>
               <GateCode id={nearest.code} size="small" />
             </div>
-            <div className="mt-1 text-[9px] text-black/38">{nearest.distance.toFixed(2)} km</div>
+            <div className="mt-1 text-[9px] text-black/32">{nearest.distance.toFixed(2)} km</div>
           </motion.div>
         ) : null}
       </div>
