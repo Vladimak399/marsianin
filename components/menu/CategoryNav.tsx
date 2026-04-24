@@ -16,9 +16,9 @@ export default function CategoryNav({ categories, activeCategory, onSelect, navR
   return (
     <div
       ref={navRef}
-      className="sticky top-2 z-50 mt-4 border border-grid bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,247,243,0.95))] px-2 py-1.5 shadow-[0_6px_20px_rgba(0,0,0,0.04)] backdrop-blur supports-[backdrop-filter]:bg-[linear-gradient(180deg,rgba(255,255,255,0.93),rgba(249,247,243,0.88))] sm:top-3 sm:mt-6 sm:px-3 sm:py-2"
+      className="sticky top-3 z-50 mt-5 border border-black/[0.065] bg-white/86 px-2 py-1.5 shadow-[0_10px_28px_rgba(64,62,62,0.06)] backdrop-blur-sm"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,transparent_8%,transparent_92%,rgba(255,255,255,0.92)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.96)_0%,transparent_8%,transparent_92%,rgba(255,255,255,0.96)_100%)]" />
 
       <div
         ref={chipsContainerRef}
@@ -33,18 +33,18 @@ export default function CategoryNav({ categories, activeCategory, onSelect, navR
               type="button"
               onClick={() => onSelect(category)}
               data-category-chip={category}
-              className="relative min-h-9 snap-start whitespace-nowrap rounded-sm border px-3 py-1.5 font-sans text-[11px] tracking-[0.11em] lowercase"
+              className="relative min-h-9 snap-start whitespace-nowrap border px-3 py-1.5 font-sans text-[11px] tracking-[0.08em] lowercase"
               animate={{
-                borderColor: isActive ? '#ff8a38' : '#d4d4d4',
-                color: isActive ? '#171717' : '#6b7280',
-                backgroundColor: isActive ? '#fff1e3' : '#ffffff'
+                borderColor: isActive ? 'rgba(237,106,50,.82)' : 'rgba(0,0,0,.065)',
+                color: isActive ? '#ed6a32' : '#403e3e',
+                backgroundColor: 'rgba(255,255,255,.72)'
               }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.16, ease: premiumEase }}
               aria-current={isActive ? 'true' : 'false'}
             >
               <motion.span
-                className="absolute inset-x-2 -bottom-px h-px bg-gradient-to-r from-transparent via-accent/80 to-transparent"
+                className="absolute inset-x-2 -bottom-px h-px bg-[#ed6a32]"
                 initial={false}
                 animate={{ opacity: isActive ? 1 : 0 }}
                 transition={{ duration: 0.18, ease: premiumEase }}
