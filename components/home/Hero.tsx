@@ -244,6 +244,7 @@ function GateNode({
   point,
   selected,
   phase,
+  isBusy,
   onSelect,
   index,
   nearestId
@@ -251,6 +252,7 @@ function GateNode({
   point: LocationPoint;
   selected: LocationPoint | null;
   phase: Phase;
+  isBusy: boolean;
   onSelect: (point: LocationPoint) => void;
   index: number;
   nearestId: string | null;
@@ -263,10 +265,12 @@ function GateNode({
   return (
     <motion.button
       type="button"
-      className="absolute z-30 -translate-y-1/2 cursor-pointer text-left outline-none"
+      className={`absolute z-30 -translate-y-1/2 text-left outline-none transition-opacity ${
+        isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
+      }`}
       style={{ left: `${point.visual.x}%`, top: `${point.visual.y}%` }}
       onClick={() => onSelect(point)}
-      disabled={phase !== 'map'}
+      disabled={isBusy}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: hidden ? 0 : isDimmed ? 0.14 : 1, y: 0, scale: isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
       transition={{ duration: 0.44, delay: phase === 'map' ? index * 0.065 : 0, ease: easeOut }}
@@ -402,11 +406,13 @@ function MenuRow({
 
 function OpenScreen({
   selected,
+  isBusy,
   onBack,
   onSwitch,
   onOpenCategory
 }: {
   selected: LocationPoint;
+  isBusy: boolean;
   onBack: () => void;
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
@@ -416,6 +422,7 @@ function OpenScreen({
 
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.065] bg-white/86 px-3 py-2 text-[10px] tracking-[0.06em] text-black/58 shadow-sm backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
+  const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
 
   return (
     <motion.div
@@ -448,7 +455,12 @@ function OpenScreen({
         >
           {LOCATIONS.map((point, index) => (
             <span key={point.id} className="contents">
-              <button type="button" onClick={() => onSwitch(point)} className="relative flex h-full items-center justify-center">
+              <button
+                type="button"
+                onClick={() => onSwitch(point)}
+                disabled={isBusy}
+                className={`relative flex h-full items-center justify-center transition-opacity ${isBusy ? 'cursor-progress opacity-70' : ''}`}
+              >
                 <span className={point.id === selected.id ? 'text-[#ed6a32]' : 'text-black/28'}>
                   <GateCode id={point.code} size="small" />
                 </span>
@@ -481,9 +493,12 @@ function OpenScreen({
         <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: easeOut }}>
           <Link
             href={menuHref}
-            className="mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 bg-[#ed6a32] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition hover:bg-[#df5f2c] [will-change:transform]"
+            aria-disabled={isBusy}
+            className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition [will-change:transform] ${
+              isBusy ? 'pointer-events-none cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:bg-[#df5f2c]'
+            }`}
           >
-            открыть каталог меню
+            {mainCtaText}
           </Link>
         </motion.div>
 
@@ -537,6 +552,7 @@ function DesktopScene({
   selected,
   phase,
   nearest,
+  isBusy,
   onSelect,
   onBack,
   onSwitch,
@@ -545,6 +561,7 @@ function DesktopScene({
   selected: LocationPoint | null;
   phase: Phase;
   nearest: NearestLocation | null;
+  isBusy: boolean;
   onSelect: (point: LocationPoint) => void;
   onBack: () => void;
   onSwitch: (point: LocationPoint) => void;
@@ -577,7 +594,10 @@ function DesktopScene({
                 key={`desktop-switch-${point.id}`}
                 type="button"
                 onClick={() => (phase === 'open' ? onSwitch(point) : onSelect(point))}
-                className="border border-black/[0.065] bg-white/72 px-3 py-3 text-left backdrop-blur-sm transition hover:border-[#ed6a32]/45"
+                disabled={isBusy}
+                className={`border border-black/[0.065] bg-white/72 px-3 py-3 text-left backdrop-blur-sm transition ${
+                  isBusy ? 'cursor-progress opacity-70' : 'hover:border-[#ed6a32]/45'
+                }`}
               >
                 <GateCode id={point.code} size="small" />
                 <div className="mt-1 text-[10px] text-black/42">{point.title}</div>
@@ -632,8 +652,10 @@ function DesktopScene({
                 key={`desktop-node-${point.id}`}
                 type="button"
                 onClick={() => onSelect(point)}
-                disabled={phase !== 'map'}
-                className="absolute z-20 w-[230px] -translate-x-1/2 -translate-y-1/2 border bg-white/88 p-4 text-left backdrop-blur-sm"
+                disabled={isBusy}
+                className={`absolute z-20 w-[230px] -translate-x-1/2 -translate-y-1/2 border bg-white/88 p-4 text-left backdrop-blur-sm transition-opacity ${
+                  isBusy ? 'cursor-progress opacity-80' : ''
+                }`}
                 style={{ left: `${visual.x}%`, top: `${visual.y}%` }}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{
@@ -654,7 +676,7 @@ function DesktopScene({
 
           <AnimatePresence>
             {phase === 'open' && selected ? (
-              <OpenScreen selected={selected} onBack={onBack} onSwitch={onSwitch} onOpenCategory={onOpenCategory} />
+              <OpenScreen selected={selected} isBusy={isBusy} onBack={onBack} onSwitch={onSwitch} onOpenCategory={onOpenCategory} />
             ) : null}
           </AnimatePresence>
         </div>
@@ -674,6 +696,7 @@ export default function Hero() {
 
   const nearest = useMemo(() => getNearestLocation(userCoords), [userCoords]);
   const cameraY = useMemo(() => (selected ? 50 - selected.visual.y : 0), [selected]);
+  const isBusy = phase !== 'map' && phase !== 'open';
 
   function clearTimers() {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -786,18 +809,30 @@ export default function Hero() {
           transition={{ duration: 0.54, ease: gateEase }}
         >
           {LOCATIONS.map((point, index) => (
-            <GateNode key={point.id} point={point} selected={selected} phase={phase} onSelect={select} index={index} nearestId={nearest?.id ?? null} />
+            <GateNode
+              key={point.id}
+              point={point}
+              selected={selected}
+              phase={phase}
+              isBusy={isBusy}
+              onSelect={select}
+              index={index}
+              nearestId={nearest?.id ?? null}
+            />
           ))}
         </motion.div>
 
         <AnimatePresence>{selected && phase !== 'open' ? <LockCaption selected={selected} phase={phase} /> : null}</AnimatePresence>
         <DockTransition selected={selected} phase={phase} />
-        <AnimatePresence>{phase === 'open' && selected ? <OpenScreen selected={selected} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} /> : null}</AnimatePresence>
+        <AnimatePresence>
+          {phase === 'open' && selected ? <OpenScreen selected={selected} isBusy={isBusy} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} /> : null}
+        </AnimatePresence>
       </div>
       <DesktopScene
         selected={selected}
         phase={phase}
         nearest={nearest}
+        isBusy={isBusy}
         onSelect={select}
         onBack={back}
         onSwitch={switchPoint}

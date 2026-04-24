@@ -12,6 +12,7 @@ const OVERLAY_GRID_STYLE = {
 export default function TransitionLayer({ children }: { children: ReactNode }) {
   const { isTeleporting } = useLocation();
   const [useReducedMotion, setUseReducedMotion] = useState(false);
+  const [retainedChildren, setRetainedChildren] = useState<ReactNode>(children);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -29,20 +30,33 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isTeleporting) {
+      setRetainedChildren(children);
+    }
+  }, [children, isTeleporting]);
+
   const transitionClasses = useReducedMotion
     ? 'duration-75 ease-linear'
     : 'duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]';
 
   return (
     <>
-      {children}
+      <div className="relative min-h-svh">
+        {children}
+        {isTeleporting ? (
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-[110] overflow-hidden">
+            {retainedChildren}
+          </div>
+        ) : null}
+      </div>
       <div
         aria-hidden
         className={`fixed inset-0 pointer-events-none z-[120] overflow-hidden transition-opacity transition-transform ${transitionClasses} ${
           isTeleporting ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-[1.01]'
         }`}
       >
-        <div className="absolute inset-0 bg-[#fbf7ef]/95" />
+        <div className="absolute inset-0 bg-[#fbf7ef]/98" />
         <div className="absolute inset-0" style={OVERLAY_GRID_STYLE} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(255,160,82,0.24),transparent_56%),radial-gradient(circle_at_82%_68%,rgba(255,138,61,0.18),transparent_52%)]" />
       </div>
