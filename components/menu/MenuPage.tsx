@@ -42,7 +42,6 @@ export default function MenuPage({
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
   const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
-  const [isEntryOverlayOpen, setEntryOverlayOpen] = useState(true);
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
@@ -266,7 +265,7 @@ export default function MenuPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.04, ease: premiumEase }}
             >
-              {locations.map((location, index) => {
+              {locations.map((location) => {
                 const isActive = activeLocation === location.id;
                 return (
                   <button
@@ -277,7 +276,6 @@ export default function MenuPage({
                       isActive ? 'border-[#ed6a32]/80 text-[#ed6a32]' : 'border-black/[0.065] text-[#403e3e] hover:border-[#ed6a32]/45'
                     }`}
                   >
-                    <span className="mars-coordinate-label mr-3 text-black/40">{String(index + 1).padStart(2, '0')}</span>
                     <span className="font-black tracking-[-0.01em]">{location.label}</span>
                   </button>
                 );

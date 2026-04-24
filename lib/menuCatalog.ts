@@ -30,8 +30,8 @@ const sanitizeMenuItem = (item: Partial<MenuItem>, category: string, index: numb
 
   return {
     id: baseId,
-    name: item.name?.trim() || `позиция ${index + 1}`,
-    description: item.description?.trim() || 'описание обновляется',
+    name: typeof item.name === 'string' ? item.name.trim() : `позиция ${index + 1}`,
+    description: typeof item.description === 'string' ? item.description.trim() : '',
     image: item.image?.trim() || FALLBACK_IMAGE,
     priceByLocation: sanitizePriceByLocation(item.priceByLocation ?? {}),
     nutrition: {
