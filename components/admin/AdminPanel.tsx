@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
-const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = 'mars2026';
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 
 const createDraftItem = (): MenuItem => ({
@@ -29,7 +27,7 @@ const createDraftItem = (): MenuItem => ({
 });
 
 export default function AdminPanel() {
-  const { catalog, updateCatalog, restoreCatalog } = useMenuCatalog();
+  const { catalog, updateCatalog, restoreCatalog } = useMenuCatalog({ admin: true });
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +35,9 @@ export default function AdminPanel() {
   const [selectedCategory, setSelectedCategory] = useState(catalog[0]?.category ?? '');
   const [draftItem, setDraftItem] = useState<MenuItem>(createDraftItem());
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+
+  const draftImageInputRef = useRef<HTMLInputElement>(null);
 
   const activeCategory = useMemo(
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
@@ -53,23 +54,78 @@ export default function AdminPanel() {
     setIsAuthorized(window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok');
   }, []);
 
-  const handleLogin = (event: FormEvent) => {
+  const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (login.trim() === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ login, password })
+    });
+
+    if (response.ok) {
       window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
       setIsAuthorized(true);
       setAuthError('');
+      setSaveMessage('');
       return;
     }
 
-    setAuthError('Неверный логин или пароль');
+    const payload = (await response.json().catch(() => ({ message: 'Ошибка входа' }))) as { message: string };
+    setAuthError(payload.message);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
     window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
     setIsAuthorized(false);
     setPassword('');
+  };
+
+  const persistCatalog = async (nextCatalog: typeof catalog) => {
+    await updateCatalog(nextCatalog);
+    setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
+  };
+
+  const handleUploadImage = async (file: File, itemId?: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/admin/upload', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+
+    const payload = (await response.json().catch(() => ({ message: 'Не удалось загрузить файл' }))) as { url?: string; message?: string };
+    if (!response.ok || !payload.url) {
+      setSaveMessage(payload.message ?? 'Ошибка загрузки файла');
+      return;
+    }
+
+    if (!itemId) {
+      setDraftItem((prev) => ({ ...prev, image: payload.url ?? prev.image }));
+      return;
+    }
+
+    if (!activeCategory) return;
+    const nextCatalog = catalog.map((entry) => {
+      if (entry.category !== activeCategory.category) return entry;
+      return {
+        ...entry,
+        items: entry.items.map((item) => (item.id === itemId ? { ...item, image: payload.url ?? item.image } : item))
+      };
+    });
+
+    await persistCatalog(nextCatalog);
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>, itemId?: string) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    await handleUploadImage(file, itemId);
   };
 
   if (!isAuthorized) {
@@ -77,7 +133,7 @@ export default function AdminPanel() {
       <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
         <div className="mx-auto w-full max-w-md border border-black/[0.08] bg-white p-5">
           <h1 className="text-2xl font-semibold">Вход в админ-кабинет</h1>
-          <p className="mt-2 text-sm text-black/60">Для демо-доступа используйте логин и пароль, выданные команде.</p>
+          <p className="mt-2 text-sm text-black/60">Введите логин и пароль администратора.</p>
 
           <form onSubmit={handleLogin} className="mt-4 space-y-3">
             <input
@@ -105,27 +161,27 @@ export default function AdminPanel() {
     );
   }
 
-  const handleAddCategory = (event: FormEvent) => {
+  const handleAddCategory = async (event: FormEvent) => {
     event.preventDefault();
     const trimmed = newCategoryName.trim().toLowerCase();
     if (!trimmed) return;
     if (catalog.some((entry) => entry.category === trimmed)) return;
 
     const nextCatalog = [...catalog, { category: trimmed, items: [] }];
-    updateCatalog(nextCatalog);
+    await persistCatalog(nextCatalog);
     setSelectedCategory(trimmed);
     setNewCategoryName('');
   };
 
-  const handleRemoveCategory = (category: string) => {
+  const handleRemoveCategory = async (category: string) => {
     if (!confirm(`Удалить категорию «${category}»?`)) return;
 
     const nextCatalog = catalog.filter((entry) => entry.category !== category);
-    updateCatalog(nextCatalog.length > 0 ? nextCatalog : catalog);
+    await persistCatalog(nextCatalog.length > 0 ? nextCatalog : catalog);
     if (selectedCategory === category && nextCatalog[0]) setSelectedCategory(nextCatalog[0].category);
   };
 
-  const handleAddItem = (event: FormEvent) => {
+  const handleAddItem = async (event: FormEvent) => {
     event.preventDefault();
     if (!activeCategory) return;
 
@@ -137,19 +193,17 @@ export default function AdminPanel() {
           ...entry.items,
           {
             ...draftItem,
-            id: `${activeCategory.category}-${Date.now()}`,
-            name: draftItem.name.trim() || `новая позиция ${entry.items.length + 1}`,
-            description: draftItem.description.trim() || 'описание обновляется'
+            id: `${activeCategory.category}-${Date.now()}`
           }
         ]
       };
     });
 
-    updateCatalog(nextCatalog);
+    await persistCatalog(nextCatalog);
     setDraftItem(createDraftItem());
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
     if (!activeCategory) return;
 
     const nextCatalog = catalog.map((entry) => {
@@ -160,10 +214,10 @@ export default function AdminPanel() {
       };
     });
 
-    updateCatalog(nextCatalog);
+    await persistCatalog(nextCatalog);
   };
 
-  const handleUpdateItemField = (itemId: string, field: keyof MenuItem, value: string) => {
+  const handleUpdateItemField = async (itemId: string, field: keyof MenuItem, value: string) => {
     if (!activeCategory) return;
 
     const nextCatalog = catalog.map((entry) => {
@@ -174,7 +228,7 @@ export default function AdminPanel() {
       };
     });
 
-    updateCatalog(nextCatalog);
+    await persistCatalog(nextCatalog);
   };
 
   return (
@@ -183,7 +237,8 @@ export default function AdminPanel() {
         <header className="flex flex-wrap items-center justify-between gap-3 border border-black/[0.08] bg-white p-4">
           <div>
             <h1 className="text-2xl font-semibold">Админ-кабинет меню</h1>
-            <p className="text-sm text-black/60">Изменения сохраняются локально и не конфликтуют с публичным контентом.</p>
+            <p className="text-sm text-black/60">Изменения сохраняются на сервере и доступны после повторного входа.</p>
+            {saveMessage ? <p className="text-xs text-[#ed6a32]">{saveMessage}</p> : null}
           </div>
           <div className="flex gap-2">
             <Link href="/menu" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
@@ -192,7 +247,7 @@ export default function AdminPanel() {
             <button type="button" onClick={handleLogout} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Выйти
             </button>
-            <button type="button" onClick={restoreCatalog} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+            <button type="button" onClick={() => void restoreCatalog()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Сбросить изменения
             </button>
           </div>
@@ -213,13 +268,13 @@ export default function AdminPanel() {
                   >
                     {entry.category}
                   </button>
-                  <button type="button" onClick={() => handleRemoveCategory(entry.category)} className="border border-black/[0.1] px-2 text-sm">
+                  <button type="button" onClick={() => void handleRemoveCategory(entry.category)} className="border border-black/[0.1] px-2 text-sm">
                     ×
                   </button>
                 </div>
               ))}
             </div>
-            <form onSubmit={handleAddCategory} className="space-y-2">
+            <form onSubmit={(event) => void handleAddCategory(event)} className="space-y-2">
               <input
                 value={newCategoryName}
                 onChange={(event) => setNewCategoryName(event.target.value)}
@@ -241,20 +296,21 @@ export default function AdminPanel() {
                   <div className="grid gap-2 md:grid-cols-2">
                     <input
                       value={item.name}
-                      onChange={(event) => handleUpdateItemField(item.id, 'name', event.target.value)}
+                      onChange={(event) => void handleUpdateItemField(item.id, 'name', event.target.value)}
                       className="border border-black/[0.1] px-3 py-2 text-sm"
                       placeholder="Название"
                     />
-                    <input
-                      value={item.image}
-                      onChange={(event) => handleUpdateItemField(item.id, 'image', event.target.value)}
-                      className="border border-black/[0.1] px-3 py-2 text-sm"
-                      placeholder="Путь к изображению"
-                    />
+                    <div className="flex gap-2">
+                      <input value={item.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
+                      <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+                        +
+                        <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
+                      </label>
+                    </div>
                   </div>
                   <textarea
                     value={item.description}
-                    onChange={(event) => handleUpdateItemField(item.id, 'description', event.target.value)}
+                    onChange={(event) => void handleUpdateItemField(item.id, 'description', event.target.value)}
                     className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm"
                     placeholder="Описание"
                   />
@@ -280,7 +336,7 @@ export default function AdminPanel() {
                               };
                             });
 
-                            updateCatalog(nextCatalog);
+                            void persistCatalog(nextCatalog);
                           }}
                           className="w-full border border-black/[0.1] px-2 py-1"
                         />
@@ -288,14 +344,105 @@ export default function AdminPanel() {
                     ))}
                   </div>
 
-                  <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
+                  <div className="grid gap-2 md:grid-cols-4">
+                    <label className="text-sm">
+                      ккал
+                      <input
+                        type="number"
+                        value={item.nutrition.calories}
+                        onChange={(event) => {
+                          const value = Number(event.target.value);
+                          const nextCatalog = catalog.map((entry) =>
+                            entry.category !== activeCategory?.category
+                              ? entry
+                              : {
+                                  ...entry,
+                                  items: entry.items.map((entryItem) =>
+                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, calories: Number.isFinite(value) ? value : 0 } } : entryItem
+                                  )
+                                }
+                          );
+                          void persistCatalog(nextCatalog);
+                        }}
+                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
+                      />
+                    </label>
+                    <label className="text-sm">
+                      белки
+                      <input
+                        type="number"
+                        value={item.nutrition.protein}
+                        onChange={(event) => {
+                          const value = Number(event.target.value);
+                          const nextCatalog = catalog.map((entry) =>
+                            entry.category !== activeCategory?.category
+                              ? entry
+                              : {
+                                  ...entry,
+                                  items: entry.items.map((entryItem) =>
+                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, protein: Number.isFinite(value) ? value : 0 } } : entryItem
+                                  )
+                                }
+                          );
+                          void persistCatalog(nextCatalog);
+                        }}
+                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
+                      />
+                    </label>
+                    <label className="text-sm">
+                      жиры
+                      <input
+                        type="number"
+                        value={item.nutrition.fat}
+                        onChange={(event) => {
+                          const value = Number(event.target.value);
+                          const nextCatalog = catalog.map((entry) =>
+                            entry.category !== activeCategory?.category
+                              ? entry
+                              : {
+                                  ...entry,
+                                  items: entry.items.map((entryItem) =>
+                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, fat: Number.isFinite(value) ? value : 0 } } : entryItem
+                                  )
+                                }
+                          );
+                          void persistCatalog(nextCatalog);
+                        }}
+                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
+                      />
+                    </label>
+                    <label className="text-sm">
+                      углеводы
+                      <input
+                        type="number"
+                        value={item.nutrition.carbs}
+                        onChange={(event) => {
+                          const value = Number(event.target.value);
+                          const nextCatalog = catalog.map((entry) =>
+                            entry.category !== activeCategory?.category
+                              ? entry
+                              : {
+                                  ...entry,
+                                  items: entry.items.map((entryItem) =>
+                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, carbs: Number.isFinite(value) ? value : 0 } } : entryItem
+                                  )
+                                }
+                          );
+                          void persistCatalog(nextCatalog);
+                        }}
+                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
+                      />
+                    </label>
+                  </div>
+
+                  <button type="button" onClick={() => void handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
                     Удалить позицию
                   </button>
                 </article>
               ))}
             </div>
 
-            <form onSubmit={handleAddItem} className="space-y-3 border border-dashed border-black/[0.2] p-3">
+            <form onSubmit={(event) => void handleAddItem(event)} className="space-y-3 border border-dashed border-black/[0.2] p-3">
               <h3 className="font-medium">Добавить новую позицию</h3>
               <div className="grid gap-2 md:grid-cols-2">
                 <input
@@ -304,12 +451,19 @@ export default function AdminPanel() {
                   className="border border-black/[0.1] px-3 py-2 text-sm"
                   placeholder="Название"
                 />
-                <input
-                  value={draftItem.image}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, image: event.target.value }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="Путь к изображению"
-                />
+                <div className="flex gap-2">
+                  <input value={draftItem.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
+                  <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+                    +
+                  </button>
+                  <input
+                    ref={draftImageInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/avif"
+                    className="hidden"
+                    onChange={(event) => void handleFileChange(event)}
+                  />
+                </div>
               </div>
               <textarea
                 value={draftItem.description}
@@ -317,6 +471,38 @@ export default function AdminPanel() {
                 className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm"
                 placeholder="Описание"
               />
+
+              <div className="grid gap-2 md:grid-cols-4">
+                <input
+                  type="number"
+                  value={draftItem.nutrition.calories}
+                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, calories: Number(event.target.value) || 0 } }))}
+                  className="border border-black/[0.1] px-3 py-2 text-sm"
+                  placeholder="ккал"
+                />
+                <input
+                  type="number"
+                  value={draftItem.nutrition.protein}
+                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, protein: Number(event.target.value) || 0 } }))}
+                  className="border border-black/[0.1] px-3 py-2 text-sm"
+                  placeholder="белки"
+                />
+                <input
+                  type="number"
+                  value={draftItem.nutrition.fat}
+                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, fat: Number(event.target.value) || 0 } }))}
+                  className="border border-black/[0.1] px-3 py-2 text-sm"
+                  placeholder="жиры"
+                />
+                <input
+                  type="number"
+                  value={draftItem.nutrition.carbs}
+                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, carbs: Number(event.target.value) || 0 } }))}
+                  className="border border-black/[0.1] px-3 py-2 text-sm"
+                  placeholder="углеводы"
+                />
+              </div>
+
               <button type="submit" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
                 Добавить позицию
               </button>

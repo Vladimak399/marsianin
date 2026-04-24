@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { MenuCategory } from '@/data/menu';
 import { loadMenuCatalog, MENU_STORAGE_KEY, resetMenuCatalog, saveMenuCatalog, sanitizeMenuCatalog } from './menuCatalog';
 
-export const useMenuCatalog = () => {
+type UseMenuCatalogOptions = {
+  admin?: boolean;
+};
+
+export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   const [catalog, setCatalog] = useState<MenuCategory[]>(() => loadMenuCatalog());
 
   useEffect(() => {
@@ -17,16 +21,56 @@ export const useMenuCatalog = () => {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const updateCatalog = useCallback((nextCatalog: MenuCategory[]) => {
-    const normalized = sanitizeMenuCatalog(nextCatalog);
-    setCatalog(normalized);
-    saveMenuCatalog(normalized);
-  }, []);
+  useEffect(() => {
+    const syncFromServer = async () => {
+      const endpoint = options.admin ? '/api/admin/menu' : '/api/menu';
+      const response = await fetch(endpoint, { method: 'GET', credentials: 'include' });
+      if (!response.ok) return;
+      const payload = (await response.json()) as { catalog: MenuCategory[] };
+      const normalized = sanitizeMenuCatalog(payload.catalog);
+      setCatalog(normalized);
+      saveMenuCatalog(normalized);
+    };
 
-  const restoreCatalog = useCallback(() => {
+    void syncFromServer();
+  }, [options.admin]);
+
+  const updateCatalog = useCallback(
+    async (nextCatalog: MenuCategory[]) => {
+      const normalized = sanitizeMenuCatalog(nextCatalog);
+      setCatalog(normalized);
+      saveMenuCatalog(normalized);
+
+      if (!options.admin) return;
+
+      await fetch('/api/admin/menu', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ catalog: normalized })
+      });
+    },
+    [options.admin]
+  );
+
+  const restoreCatalog = useCallback(async () => {
     resetMenuCatalog();
-    setCatalog(loadMenuCatalog());
-  }, []);
+    const defaultCatalog = loadMenuCatalog();
+    setCatalog(defaultCatalog);
+
+    if (!options.admin) return;
+
+    await fetch('/api/admin/menu', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({ catalog: defaultCatalog })
+    });
+  }, [options.admin]);
 
   return { catalog, updateCatalog, restoreCatalog };
 };
