@@ -35,6 +35,8 @@ const LOCATIONS: LocationPoint[] = locations.map((location) => ({
   visual: LOCATION_META[location.id].visual
 }));
 
+const LOCATION_DETAILS = Object.fromEntries(locations.map((location) => [location.id, location])) as Record<LocationId, (typeof locations)[number]>;
+
 const MENU_PREVIEW = [
   { number: '01', title: 'кофе', text: 'классика и авторские напитки', category: 'напитки' },
   { number: '02', title: 'завтраки', text: 'с 8:00 до 14:00', category: 'завтраки' },
@@ -507,6 +509,11 @@ function OpenScreen({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const selectedLocation = LOCATION_DETAILS[selected.id];
+
+  const actionLinkClass =
+    'inline-flex min-h-11 items-center justify-center border border-black/[0.065] bg-white/86 px-3 py-2 text-[10px] tracking-[0.06em] text-black/58 shadow-sm backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
+
   return (
     <motion.div
       className="absolute inset-0 z-[80] overflow-hidden bg-white px-7 pb-8 pt-28"
@@ -524,6 +531,10 @@ function OpenScreen({
             {selected.title}
           </motion.div>
           <CoordinateTicker lat={selected.lat} lng={selected.lng} active className="mt-2 text-[10px] text-black/34" />
+          <div className="mt-4 space-y-1 text-[11px] text-black/56">
+            <p>{selectedLocation.address}</p>
+            <p>{selectedLocation.workingHours}</p>
+          </div>
         </motion.div>
 
         <motion.div
@@ -562,6 +573,29 @@ function OpenScreen({
               onOpen={() => onOpenCategory(item.category)}
             />
           ))}
+        </motion.div>
+
+        <motion.div
+          className="mt-4 grid grid-cols-2 gap-2"
+          initial={{ y: 14, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.34, ease: easeOut }}
+        >
+          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            доставка в яндекс еде
+          </a>
+          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            яндекс карты
+          </a>
+          <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            2гис
+          </a>
+          <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            оставить отзыв · яндекс
+          </a>
+          <a href={selectedLocation.links.reviews.twoGis} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2`}>
+            оставить отзыв · 2гис
+          </a>
         </motion.div>
       </div>
 
