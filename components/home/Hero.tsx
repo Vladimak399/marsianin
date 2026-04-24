@@ -230,6 +230,8 @@ function GateNode({
   const isDimmed = selected && !isActive;
   const isNearest = nearestId === point.id;
   const hidden = phase === 'open';
+  const shouldRollCoordinates = isActive || (isNearest && !selected && phase === 'map');
+  const rollKey = `coord-${point.id}-${isActive ? 1 : 0}-${isNearest && !selected && phase === 'map' ? 'nearest-map' : 'static'}`;
 
   return (
     <motion.button
@@ -269,7 +271,13 @@ function GateNode({
           <GateCode id={point.code} active={isActive || isNearest} />
           <div className="pt-1.5">
             <div className="text-[13px] tracking-[-0.02em] text-black/50">{point.title}</div>
-            <RollingCoordinate lat={point.lat} lng={point.lng} active={isActive && (phase === 'lock' || phase === 'docking')} className="mt-2 text-[9px] text-black/34" />
+            <RollingCoordinate
+              key={rollKey}
+              lat={point.lat}
+              lng={point.lng}
+              active={shouldRollCoordinates}
+              className="mt-2 text-[9px] text-black/34"
+            />
           </div>
         </div>
       </motion.div>
