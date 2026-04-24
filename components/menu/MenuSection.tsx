@@ -20,7 +20,7 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
         <h2 className="text-[1.35rem] font-semibold tracking-[-0.03em] text-[#0b0b0b]">{section.category}</h2>
         <p className="mars-coordinate-label text-xs text-[#ed6a32]">{section.items.length} поз.</p>
       </header>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
         {section.items.map((item, index) => (
           <motion.div key={item.id} variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-8% 0px -8% 0px' }}>
             <MenuCard

@@ -23,7 +23,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
     <motion.button
       type="button"
       onClick={() => onOpen(item, category)}
-      className="group relative flex w-full flex-col overflow-hidden border border-black/[0.065] bg-white/78 text-left backdrop-blur-sm"
+      className="group relative grid w-full grid-cols-[112px_1fr] overflow-hidden border border-black/[0.065] bg-white/78 text-left backdrop-blur-sm sm:flex sm:flex-col"
       whileTap={{ scale: 0.992 }}
       transition={{ duration: 0.14, ease: premiumEase }}
       layout
@@ -34,27 +34,27 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
         whileHover={{ width: '100%' }}
         transition={{ duration: 0.28, ease: premiumEase }}
       />
-      <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-black/[0.065] bg-white/70">
+      <div className="relative min-h-[146px] w-full overflow-hidden border-r border-black/[0.065] bg-white/70 sm:aspect-[16/10] sm:min-h-0 sm:border-b sm:border-r-0">
         <Image
           src={item.image}
           alt={item.name}
           fill
           priority={priority}
-          sizes="(max-width: 430px) 100vw, 430px"
+          sizes="(max-width: 640px) 112px, (max-width: 1024px) 430px, 33vw"
           className="object-cover opacity-90 transition-transform duration-300 sm:group-hover:scale-[1.015]"
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[1rem] font-semibold leading-snug tracking-[-0.02em] text-[#0b0b0b]">{item.name}</h3>
+      <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <h3 className="min-w-0 text-[0.98rem] font-semibold leading-snug tracking-[-0.02em] text-[#0b0b0b] sm:text-[1rem]">{item.name}</h3>
           <p className="shrink-0 text-[1.05rem] font-semibold text-[#ed6a32]">{price} ₽</p>
         </div>
 
-        <p className="text-sm leading-relaxed text-[#403e3e]">{item.description}</p>
+        <p className="line-clamp-2 text-[12px] leading-relaxed text-[#403e3e] sm:line-clamp-none sm:text-sm">{item.description}</p>
 
-        <div className="mt-auto border-t border-black/[0.055] pt-3">
-          <p className="mars-coordinate-label text-[11px] text-[#403e3e]">
+        <div className="mt-auto border-t border-black/[0.055] pt-2 sm:pt-3">
+          <p className="mars-coordinate-label text-[9px] text-[#403e3e] sm:text-[11px]">
             кбжу · {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
           </p>
         </div>

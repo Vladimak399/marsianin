@@ -165,9 +165,9 @@ export default function MenuPage({
   };
 
   return (
-    <main className="font-halvar relative min-h-svh overflow-x-hidden bg-[#f4f1ea] text-[#0b0b0b]">
-      <div className="relative mx-auto min-h-svh w-full max-w-[430px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04]">
-        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white">
+    <main className="font-halvar relative min-h-svh overflow-x-clip bg-[#f4f1ea] text-[#0b0b0b]">
+      <div className="relative mx-auto min-h-svh w-full max-w-[430px] bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:max-w-[1180px]">
+        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white lg:max-w-[1180px]">
           <div
             className="absolute inset-0 opacity-[0.085]"
             style={{
@@ -181,7 +181,7 @@ export default function MenuPage({
           <div className="absolute bottom-[-105px] right-[-210px] h-[360px] w-[650px] -rotate-[22deg] bg-[linear-gradient(90deg,rgba(237,106,50,0),rgba(237,106,50,.24),rgba(237,106,50,0))] opacity-10 blur-3xl" />
         </div>
 
-        <div className="relative z-10 px-7 pb-10 pt-9">
+        <div className="relative z-10 px-5 pb-10 pt-7 sm:px-7 sm:pt-9 lg:px-10">
           {entrySource === 'qr' && isEntryOverlayOpen ? (
             <div className="mb-4 border-y border-black/[0.055] bg-white/78 py-3 text-xs text-[#403e3e] backdrop-blur-sm">
               <div className="flex items-start justify-between gap-3">
@@ -277,7 +277,7 @@ export default function MenuPage({
               chipsContainerRef={chipsContainerRef}
             />
 
-            <div className="relative z-10 mt-7 space-y-8">
+            <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
               {menuData.map((section, index) => (
                 <MenuSection
                   key={section.category}
