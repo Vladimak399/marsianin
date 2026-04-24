@@ -36,9 +36,22 @@ function RollingGroup({ label, value, active, delay = 0 }: { label: 'lat' | 'lng
       <motion.div
         key={`${label}-${finalValue}`}
         className="[will-change:transform,opacity]"
-        initial={{ y: '-66.66%', opacity: 0.72 }}
-        animate={{ y: '-133.33%', opacity: 1 }}
-        transition={{ duration: 0.58, delay, ease: premiumEase }}
+        initial={{ y: '-58%', opacity: 0.5 }}
+        animate={{ y: ['-58%', '-138%', '-133.33%'], opacity: [0.5, 0.86, 1, 0.94, 1] }}
+        transition={{
+          y: {
+            duration: 0.82,
+            delay,
+            ease: premiumEase,
+            times: [0, 0.72, 1],
+          },
+          opacity: {
+            duration: 0.82,
+            delay,
+            ease: premiumEase,
+            times: [0, 0.55, 0.86, 0.93, 1],
+          },
+        }}
       >
         {rows.map((row) => (
           <div key={`${label}-${row}`}>{row}</div>
@@ -51,8 +64,8 @@ function RollingGroup({ label, value, active, delay = 0 }: { label: 'lat' | 'lng
 export default function RollingCoordinate({ lat, lng, active = false, className = '' }: RollingCoordinateProps) {
   return (
     <div className={`font-halvar tabular-nums ${className}`}>
-      <RollingGroup label="lat" value={lat} active={active} delay={0.02} />
-      <RollingGroup label="lng" value={lng} active={active} delay={0.06} />
+      <RollingGroup label="lat" value={lat} active={active} delay={0.01} />
+      <RollingGroup label="lng" value={lng} active={active} delay={0.08} />
     </div>
   );
 }
