@@ -273,11 +273,10 @@ function GateNode({
       whileHover={phase === 'map' ? { scale: isActive ? 1.015 : 1.01 } : undefined}
     >
       <motion.div
-        className="relative w-[min(300px,78vw)] border bg-white/92 px-4 py-4 backdrop-blur-sm"
-        animate={{
-          borderColor: isActive ? 'rgba(237,106,50,.82)' : isNearest ? 'rgba(237,106,50,.72)' : 'rgba(237,106,50,.30)',
-          boxShadow: isActive ? '0 10px 28px rgba(237,106,50,.11)' : isNearest ? '0 9px 26px rgba(237,106,50,.12)' : '0 8px 18px rgba(0,0,0,.018)'
-        }}
+        className={`relative w-[min(300px,78vw)] border bg-white/92 px-4 py-4 backdrop-blur-[1px] [will-change:transform,opacity] ${
+          isActive ? 'border-[#ed6a32]/82' : isNearest ? 'border-[#ed6a32]/72' : 'border-[#ed6a32]/30'
+        }`}
+        animate={{ opacity: isDimmed ? 0.86 : 1, y: isActive ? -1 : 0, scale: isActive ? 1.012 : isNearest ? 1.006 : 1 }}
         transition={{ duration: 0.3 }}
       >
         <motion.div className="absolute left-3 top-3 h-2.5 w-2.5 border-l border-t border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? -2 : 0, y: isActive || isNearest ? -2 : 0 }} />
@@ -335,7 +334,7 @@ function DockTransition({ selected, phase }: { selected: LocationPoint | null; p
     <AnimatePresence>
       {active ? (
         <motion.div
-          className="pointer-events-none absolute inset-0 z-[70] bg-white"
+          className="pointer-events-none absolute inset-0 z-[70] bg-white [will-change:opacity]"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 1] }}
           exit={{ opacity: 0 }}
@@ -482,7 +481,7 @@ function OpenScreen({
         <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: easeOut }}>
           <Link
             href={menuHref}
-            className="mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 bg-[#ed6a32] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition hover:bg-[#df5f2c]"
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 bg-[#ed6a32] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition hover:bg-[#df5f2c] [will-change:transform]"
           >
             открыть каталог меню
           </Link>
