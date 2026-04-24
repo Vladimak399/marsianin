@@ -12,6 +12,7 @@ import { premiumEase } from '@/lib/animations';
 import CategoryNav from './CategoryNav';
 import MenuDetailView from './MenuDetailView';
 import MenuSection from './MenuSection';
+import NodeEntryOverlay from './NodeEntryOverlay';
 
 const DEFAULT_LOCATION: LocationId = 'o12';
 
@@ -21,11 +22,12 @@ type MenuPageProps = {
 };
 
 type CategoryChangeSource = 'intersection-observer' | 'chip-click';
+const INTRO_SEEN_KEY = 'marsianin-node-intro-seen';
 
 export default function MenuPage({ initialLocation, initialCategory }: MenuPageProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { selectedLocation, setSelectedLocation } = useLocation();
+  const { selectedLocation, setSelectedLocation, guestCoordinates } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
   const [switchPulseKey, setSwitchPulseKey] = useState(0);
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
@@ -35,6 +37,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
+  const [entryOverlayMode, setEntryOverlayMode] = useState<'full' | 'short' | null>(null);
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -50,6 +53,13 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const categories = useMemo(() => menuData.map((section) => section.category), []);
   const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
+
+  useEffect(() => {
+    if (!pathname?.startsWith('/menu/') || !currentLocation) return;
+    const seenBefore = window.sessionStorage.getItem(INTRO_SEEN_KEY) === '1';
+    setEntryOverlayMode(seenBefore ? 'short' : 'full');
+    window.sessionStorage.setItem(INTRO_SEEN_KEY, '1');
+  }, [pathname, currentLocation]);
 
   useEffect(() => {
     if (!initialCategory) return;
@@ -124,14 +134,15 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   }, [activeCategory, categoryChangeSource]);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
-    const currentSearch = typeof window === 'undefined' ? '' : window.location.search;
-    const params = new URLSearchParams(currentSearch);
-    params.set('location', nextLocation);
+    const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
     params.set('category', nextCategory);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    router.replace(`/menu/${nextLocation}?${params.toString()}`, { scroll: false });
   };
 
   const handleLocationSwitch = (location: LocationId) => {
+    if (location !== activeLocation) {
+      setEntryOverlayMode('short');
+    }
     setSelectedLocation(location);
     setSwitchPulseKey((prev) => prev + 1);
     updateQuery(location, activeCategory);
@@ -163,6 +174,19 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   return (
     <main className="relative min-h-svh overflow-x-hidden px-3 pb-12 pt-3 sm:px-6 sm:pt-6 lg:px-8">
+      <AnimatePresence>
+        {entryOverlayMode && currentLocation ? (
+          <NodeEntryOverlay
+            mode={entryOverlayMode}
+            nodeCode={currentLocation.nodeCode}
+            address={currentLocation.address}
+            lat={currentLocation.lat}
+            lng={currentLocation.lng}
+            guestCoordinates={guestCoordinates}
+            onDone={() => setEntryOverlayMode(null)}
+          />
+        ) : null}
+      </AnimatePresence>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,130,44,0.18),transparent_32%),radial-gradient(circle_at_88%_22%,rgba(255,155,90,0.13),transparent_30%),linear-gradient(#faf8f5,#f5f4f1)]" />
       <div className="relative mx-auto max-w-[1240px]">
         <section className="relative overflow-visible border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
@@ -196,7 +220,12 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
               ) : null}
               <div>
                 <h1 className="text-[1.45rem] font-semibold tracking-[0.02em] text-neutral-900 sm:text-3xl">меню</h1>
-                <p className="text-[10px] tracking-[0.14em] text-neutral-500">каталог по точкам</p>
+                <p className="text-[10px] tracking-[0.14em] text-neutral-500">активная точка · каталог по точкам</p>
+                {currentLocation ? (
+                  <p className="mt-1 text-[10px] tracking-[0.11em] text-neutral-500">
+                    {currentLocation.address} · {currentLocation.lat.toFixed(4)} N / {currentLocation.lng.toFixed(4)} E
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="flex items-center gap-2">
