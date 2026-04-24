@@ -392,15 +392,25 @@ function OpenScreen({
 
   return (
     <motion.div
-      className="absolute inset-0 z-[80] overflow-hidden bg-white px-7 pb-8 pt-28"
+      className="absolute inset-0 z-[80] min-h-svh overflow-x-hidden overflow-y-auto bg-white px-7 pb-8 pt-28"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <CoordinateSystemLayer mode="open" muted />
+      <div className="pointer-events-none absolute inset-0">
+        <CoordinateSystemLayer mode="open" muted />
+      </div>
 
-      <div className="relative z-10">
+      <button
+        type="button"
+        onClick={onBack}
+        className="sticky right-0 top-6 z-[120] ml-auto block border border-black/[0.065] bg-white/90 px-4 py-2 text-[10px] tracking-[0.1em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]"
+      >
+        карта
+      </button>
+
+      <div className="relative z-10 pb-24">
         <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.44, ease: easeOut }}>
           <GateCode id={selected.code} size="hero" active />
           <motion.div className="mt-7 text-lg tracking-[-0.03em] text-black/66" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.32 }}>
@@ -493,26 +503,18 @@ function OpenScreen({
             оставить отзыв
           </a>
         </motion.div>
+
+        <motion.div
+          className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-black/[0.06] pt-4 text-[9px] tracking-[0.04em] text-black/36"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.32 }}
+        >
+          <span>08:00-22:00</span>
+          <span>wi-fi</span>
+          <span>можно с питомцами</span>
+        </motion.div>
       </div>
-
-      <motion.div
-        className="pointer-events-none absolute bottom-8 left-7 right-7 z-10 flex items-center justify-between border-t border-black/[0.06] pt-4 text-[9px] tracking-[0.04em] text-black/36"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.32 }}
-      >
-        <span>08:00-22:00</span>
-        <span>wi-fi</span>
-        <span>можно с питомцами</span>
-      </motion.div>
-
-      <button
-        type="button"
-        onClick={onBack}
-        className="absolute right-7 top-9 z-[120] border border-black/[0.065] bg-white/86 px-4 py-2 text-[10px] tracking-[0.1em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]"
-      >
-        карта
-      </button>
     </motion.div>
   );
 }
