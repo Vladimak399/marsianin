@@ -262,12 +262,13 @@ export default function MenuPage({
           />
 
           <div className="relative z-10 mt-6 space-y-8 sm:mt-8 sm:space-y-10">
-            {menuData.map((section) => (
+            {menuData.map((section, index) => (
               <MenuSection
                 key={section.category}
                 section={section}
                 selectedLocation={activeLocation}
                 onOpenItem={handleOpenDetails}
+                isFirstSection={index === 0}
               />
             ))}
           </div>

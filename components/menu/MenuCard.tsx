@@ -10,9 +10,10 @@ type MenuCardProps = {
   category: string;
   selectedLocation: LocationId | null;
   onOpen: (item: MenuItem, category: string) => void;
+  priority?: boolean;
 };
 
-export default function MenuCard({ item, category, selectedLocation, onOpen }: MenuCardProps) {
+export default function MenuCard({ item, category, selectedLocation, onOpen, priority = false }: MenuCardProps) {
   const fallbackLocation: LocationId = 'o12';
   const location = selectedLocation ?? fallbackLocation;
   const price = item.priceByLocation[location];
@@ -31,6 +32,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen }: M
           src={item.image}
           alt={item.name}
           fill
+          priority={priority}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-300 sm:group-hover:scale-[1.02]"
         />

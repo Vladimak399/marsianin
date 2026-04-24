@@ -1,8 +1,8 @@
 import MenuPage from '@/components/menu/MenuPage';
 
 type MenuByLocationRoutePageProps = {
-  params: { locationId: string };
-  searchParams: { category?: string; source?: string; guestLat?: string; guestLng?: string };
+  params: Promise<{ locationId: string }>;
+  searchParams: Promise<{ category?: string; source?: string; guestLat?: string; guestLng?: string }>;
 };
 
 const parseCoordinate = (value?: string) => {
@@ -12,15 +12,17 @@ const parseCoordinate = (value?: string) => {
   return parsed;
 };
 
-export default function MenuByLocationRoutePage({ params, searchParams }: MenuByLocationRoutePageProps) {
-  const guestLat = parseCoordinate(searchParams.guestLat);
-  const guestLng = parseCoordinate(searchParams.guestLng);
+export default async function MenuByLocationRoutePage({ params, searchParams }: MenuByLocationRoutePageProps) {
+  const { locationId } = await params;
+  const query = await searchParams;
+  const guestLat = parseCoordinate(query.guestLat);
+  const guestLng = parseCoordinate(query.guestLng);
 
   return (
     <MenuPage
-      initialLocation={params.locationId}
-      initialCategory={searchParams.category}
-      initialEntrySource={searchParams.source}
+      initialLocation={locationId}
+      initialCategory={query.category}
+      initialEntrySource={query.source}
       initialGuestCoordinates={guestLat !== null && guestLng !== null ? { lat: guestLat, lng: guestLng } : null}
     />
   );
