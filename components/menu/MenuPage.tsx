@@ -7,8 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { Coordinates } from '@/lib/geo';
-import { MenuItem, menuData } from '@/data/menu';
+import { MenuItem } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
+import { useMenuCatalog } from '@/lib/useMenuCatalog';
 import CategoryNav from './CategoryNav';
 import MenuDetailView from './MenuDetailView';
 import MenuSection from './MenuSection';
@@ -32,8 +33,9 @@ export default function MenuPage({
 }: MenuPageProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { catalog: menuCatalog } = useMenuCatalog();
   const { selectedLocation, setSelectedLocation, guestCoordinates, setGuestCoordinates, entrySource, setEntrySource } = useLocation();
-  const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
+  const [activeCategory, setActiveCategory] = useState(initialCategory ?? '');
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
@@ -60,9 +62,17 @@ export default function MenuPage({
     if (initialEntrySource === 'qr') setEntrySource('qr');
   }, [initialEntrySource, setEntrySource]);
 
-  const categories = useMemo(() => menuData.map((section) => section.category), []);
+  const categories = useMemo(() => menuCatalog.map((section) => section.category), [menuCatalog]);
   const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
+
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    if (!activeCategory || !categories.includes(activeCategory)) {
+      setActiveCategory(initialCategory && categories.includes(initialCategory) ? initialCategory : categories[0]);
+    }
+  }, [activeCategory, categories, initialCategory]);
 
   useEffect(() => {
     if (!initialCategory) return;
@@ -154,7 +164,7 @@ export default function MenuPage({
   };
 
   const handleOpenDetails = (item: MenuItem, category: string) => {
-    const section = menuData.find((entry) => entry.category === category);
+    const section = menuCatalog.find((entry) => entry.category === category);
     const items = section?.items ?? [];
     const nextIndex = items.findIndex((entry) => entry.id === item.id);
     if (nextIndex < 0) return;
@@ -280,7 +290,7 @@ export default function MenuPage({
             />
 
             <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
-              {menuData.map((section, index) => (
+              {menuCatalog.map((section, index) => (
                 <MenuSection
                   key={section.category}
                   section={section}
