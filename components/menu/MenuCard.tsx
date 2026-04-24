@@ -46,9 +46,8 @@ export default function MenuCard({ item, category, selectedLocation, onOpen }: M
 
         <div className="mt-auto border-t border-grid pt-3">
           <p className="text-[11px] tracking-[0.12em] text-neutral-500">
-            кбжу: {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
+            кбжу · {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
           </p>
-          <p className="mt-2 text-[10px] tracking-[0.14em] text-neutral-500">подробности</p>
         </div>
       </div>
     </motion.button>

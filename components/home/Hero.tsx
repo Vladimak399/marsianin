@@ -11,18 +11,6 @@ import { Coordinates, haversineDistanceKm } from '@/lib/geo';
 
 type GeolocationState = 'idle' | 'loading' | 'ready' | 'denied' | 'unsupported' | 'error';
 
-type PointVisual = {
-  id: LocationId;
-  x: number;
-  y: number;
-};
-
-const pointVisuals: PointVisual[] = [
-  { id: 'o12', x: 18, y: 62 },
-  { id: 'k10', x: 56, y: 30 },
-  { id: 'p7', x: 84, y: 68 }
-];
-
 const locationById = Object.fromEntries(locations.map((location) => [location.id, location])) as Record<LocationId, (typeof locations)[number]>;
 
 export default function Hero() {
@@ -34,9 +22,7 @@ export default function Hero() {
   const [userPosition, setUserPosition] = useState<Coordinates | null>(null);
 
   const nearestPoint = useMemo(() => {
-    if (!userPosition) {
-      return null;
-    }
+    if (!userPosition) return null;
 
     return (
       locations
@@ -87,135 +73,88 @@ export default function Hero() {
 
   return (
     <motion.section
-      className="relative min-h-svh overflow-hidden border border-[#e6e0da] bg-[#f8f5f1]"
+      className="relative min-h-svh overflow-hidden bg-[#f8f5f1]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.24, ease: premiumEase }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_6%,rgba(255,132,59,0.13),transparent_34%),radial-gradient(circle_at_82%_76%,rgba(255,150,75,0.1),transparent_38%),linear-gradient(145deg,rgba(255,244,235,0.56)_0%,rgba(255,248,242,0.24)_56%,rgba(255,252,248,0.08)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_8%,rgba(255,132,59,0.12),transparent_34%),radial-gradient(circle_at_82%_76%,rgba(255,150,75,0.08),transparent_38%)]" />
       <div
         aria-hidden
-        className="absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,rgba(255,106,44,0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,106,44,0.3)_1px,transparent_1px)] [background-size:52px_52px] sm:[background-size:70px_70px] lg:[background-size:88px_88px]"
+        className="absolute inset-0 opacity-25 [background-image:linear-gradient(to_right,rgba(255,106,44,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,106,44,0.24)_1px,transparent_1px)] [background-size:56px_56px] sm:[background-size:72px_72px]"
       />
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1180px] flex-col px-4 pb-6 pt-5 text-left sm:px-6 sm:pt-6 lg:px-12">
+      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-[1100px] flex-col px-4 pb-8 pt-5 text-left sm:px-6 lg:px-10">
         <header className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="Логотип Марсианин" width={40} height={40} priority className="h-9 w-9 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[clamp(1.25rem,5vw,1.9rem)] leading-none tracking-[0.03em] text-[#202020]">марсианин</p>
-            <p className="mt-1 text-[11px] tracking-[0.08em] text-[#797979]">меню кофейни</p>
+          <Image src="/logo.svg" alt="логотип марсианин" width={40} height={40} priority className="h-9 w-9 shrink-0" />
+          <div>
+            <p className="text-[clamp(1.2rem,5vw,1.8rem)] leading-none text-[#222]">марсианин</p>
+            <p className="mt-1 text-xs text-[#6d6a67]">кофейня, где есть жизнь</p>
           </div>
         </header>
 
-        <div className="relative mt-6 grid flex-1 gap-5 lg:mt-8 lg:grid-cols-[minmax(0,560px)_1fr] lg:gap-8">
-          <div className="space-y-4 sm:space-y-5">
-            <h1 className="text-[clamp(1.75rem,8vw,3.2rem)] font-semibold leading-[0.95] tracking-[0.01em] text-[#141414]">
-              Выберите точку
-              <br />
-              и откройте меню
-            </h1>
-            <p className="max-w-[520px] text-[clamp(0.92rem,3.8vw,1.05rem)] leading-relaxed text-[#636363]">
-              Сразу покажем меню выбранной локации с фотографиями и ценами.
-            </p>
+        <div className="mt-7 max-w-[620px]">
+          <h1 className="text-[clamp(1.8rem,8vw,3rem)] font-semibold leading-[0.96] text-[#151515]">выберите точку и откройте меню</h1>
+          <p className="mt-3 text-[clamp(0.95rem,3.9vw,1.04rem)] leading-relaxed text-[#636363]">
+            блюда с фотографиями, описанием и ценами для каждой точки.
+          </p>
+        </div>
 
-            <div className="rounded-sm border border-[#e4d5ca] bg-[#fff8f2]/90 p-3 sm:p-4">
-              <p className="text-[11px] tracking-[0.1em] text-[#8e6b55]">Геолокация: {geoMessage}</p>
-              <p className="mt-1 text-[12px] text-[#5f4b3d]">
-                {nearestPoint
-                  ? `Ближайшая точка — ${nearestPoint.label} (${nearestPoint.distanceKm.toFixed(1)} км)`
-                  : geoState === 'loading'
-                    ? 'Ищем ближайшую точку...'
-                    : 'Ближайшая точка не определена'}
-              </p>
-            </div>
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:mt-8 sm:gap-3">
+          {locations.map((location) => {
+            const isActive = activeLocationId === location.id;
+            const isNearest = nearestPoint?.id === location.id;
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {locations.map((location) => {
-                const isActive = activeLocationId === location.id;
-                const isNearest = nearestPoint?.id === location.id;
-
-                return (
-                  <motion.button
-                    key={location.id}
-                    type="button"
-                    onClick={() => setSelectedLocation(location.id)}
-                    className="rounded-sm border px-2 py-3 text-left sm:px-3 sm:py-4"
-                    animate={{
-                      borderColor: isActive ? '#ff6d2d' : '#dfd5cc',
-                      backgroundColor: isActive ? '#ffefe4' : '#fffaf6',
-                      boxShadow: isActive ? '0 10px 24px rgba(255,109,45,0.18)' : '0 1px 5px rgba(0,0,0,0.04)'
-                    }}
-                    whileHover={{ y: -1 }}
-                    whileTap={{ scale: 0.99 }}
-                    transition={{ duration: 0.18, ease: premiumEase }}
-                  >
-                    <p
-                      className="leading-none tracking-[0.01em]"
-                      style={{
-                        fontSize: isActive ? 'clamp(2rem,9vw,3.1rem)' : 'clamp(1.8rem,8vw,2.75rem)',
-                        color: isActive ? '#ff6d2d' : '#be7750',
-                        fontWeight: isActive ? 700 : 600
-                      }}
-                    >
-                      {location.label}
-                    </p>
-                    <p className="mt-1 text-[10px] tracking-[0.11em] text-[#7c736c]">{location.lat.toFixed(3)}° / {location.lng.toFixed(3)}°</p>
-                    <p className={`mt-1 text-[10px] tracking-[0.11em] ${isNearest ? 'text-[#d45524]' : 'text-[#8b827a]'}`}>
-                      {isNearest ? 'ближайшая' : 'локация'}
-                    </p>
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-[12px] text-[#5f5a54]">
-                Выбрано: <span className="text-[#1e1e1e]">{activeLocation.label}</span> · {activeLocation.address}
-              </p>
-              <button
+            return (
+              <motion.button
+                key={location.id}
                 type="button"
-                onClick={() => router.push(`/menu?location=${activeLocationId}&category=завтраки`)}
-                className="inline-flex min-h-11 items-center justify-center rounded-sm border border-[#ff7a43] bg-[#ffe7d9] px-5 py-2 text-[12px] tracking-[0.12em] text-[#a24419] transition-colors hover:bg-[#ffdcc9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a43]"
+                onClick={() => setSelectedLocation(location.id)}
+                className="rounded-sm border px-2 py-3 text-left sm:px-3 sm:py-4"
+                animate={{
+                  borderColor: isActive ? '#ff6d2d' : '#dfd5cc',
+                  backgroundColor: isActive ? '#fff1e7' : '#fffaf6',
+                  boxShadow: isActive ? '0 10px 24px rgba(255,109,45,0.12)' : '0 1px 4px rgba(0,0,0,0.04)'
+                }}
+                whileTap={{ scale: 0.99 }}
+                transition={{ duration: 0.18, ease: premiumEase }}
               >
-                открыть меню {activeLocation.label}
-              </button>
-            </div>
-          </div>
-
-          <div className="relative hidden min-h-[360px] rounded-sm border border-[#efcdb8] bg-[#fff4ec]/90 p-4 lg:block">
-            {pointVisuals.map((point) => {
-              const isActive = activeLocationId === point.id;
-              const isNearest = nearestPoint?.id === point.id;
-              const location = locationById[point.id];
-
-              return (
-                <motion.button
-                  key={point.id}
-                  type="button"
-                  onClick={() => setSelectedLocation(point.id)}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 text-left"
-                  style={{ left: `${point.x}%`, top: `${point.y}%` }}
-                  animate={{ scale: isActive ? 1.04 : 1, opacity: isActive ? 1 : 0.86 }}
-                  transition={{ duration: 0.2, ease: premiumEase }}
+                <p
+                  className="leading-none"
+                  style={{
+                    fontSize: isActive ? 'clamp(2rem,9vw,3.1rem)' : 'clamp(1.85rem,8vw,2.8rem)',
+                    color: isActive ? '#ff6d2d' : '#ca7e55',
+                    fontWeight: isActive ? 700 : 600
+                  }}
                 >
-                  <p
-                    className="leading-none tracking-[0.01em]"
-                    style={{
-                      fontSize: isActive ? '4.2rem' : '3.5rem',
-                      color: isActive ? '#ff6d2d' : '#c57a52',
-                      fontWeight: isActive ? 700 : 600
-                    }}
-                  >
-                    {location.label}
-                  </p>
-                  <p className="mt-1 text-[11px] tracking-[0.11em] text-[#705f53]">{location.lat.toFixed(4)}° / {location.lng.toFixed(4)}°</p>
-                  <p className={`mt-1 text-[11px] tracking-[0.11em] ${isNearest ? 'text-[#d45524]' : 'text-[#8a7e75]'}`}>
-                    {isNearest ? 'ближайшая точка' : 'точка'}
-                  </p>
-                </motion.button>
-              );
-            })}
+                  {location.label}
+                </p>
+                <p className={`mt-2 text-[11px] ${isNearest ? 'text-[#d45524]' : 'text-[#7d756f]'}`}>{isNearest ? 'ближайшая точка' : 'точка меню'}</p>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 space-y-3 rounded-sm border border-[#e9d6c8] bg-[#fff9f3] p-4">
+          <p className="text-xs text-[#765f50]">геолокация: {geoMessage}</p>
+          <p className="text-sm text-[#3a332f]">выбрано: {activeLocation.label} · {activeLocation.address}</p>
+          <p className="text-xs text-[#6f655e]">координаты точки: {activeLocation.lat.toFixed(4)}° / {activeLocation.lng.toFixed(4)}°</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => router.push(`/menu?location=${activeLocationId}&category=завтраки`)}
+              className="inline-flex min-h-11 items-center justify-center rounded-sm border border-[#ff7a43] bg-[#ffe7d9] px-5 py-2 text-xs text-[#a24419] transition-colors hover:bg-[#ffdcc9]"
+            >
+              открыть меню {activeLocation.label}
+            </button>
+            <a
+              href={`tel:${activeLocation.phoneTel}`}
+              className="inline-flex min-h-11 items-center justify-center rounded-sm border border-[#f0a16f] bg-white px-4 py-2 text-xs text-[#9b532a] transition-colors hover:bg-[#fff2e9]"
+            >
+              позвонить {activeLocation.phone}
+            </a>
           </div>
+          {geoState === 'ready' && nearestPoint ? <p className="text-xs text-[#7f736b]">ближайшая к вам: {nearestPoint.label} ({nearestPoint.distanceKm.toFixed(1)} км)</p> : null}
         </div>
       </div>
     </motion.section>
