@@ -6,6 +6,10 @@ import { MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
+const ADMIN_LOGIN = 'admin';
+const ADMIN_PASSWORD = 'mars2026';
+const ADMIN_SESSION_KEY = 'marsianin:admin:session';
+
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
   name: '',
@@ -26,6 +30,10 @@ const createDraftItem = (): MenuItem => ({
 
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog } = useMenuCatalog();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(catalog[0]?.category ?? '');
   const [draftItem, setDraftItem] = useState<MenuItem>(createDraftItem());
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -39,6 +47,63 @@ export default function AdminPanel() {
     if (!activeCategory) return;
     if (selectedCategory !== activeCategory.category) setSelectedCategory(activeCategory.category);
   }, [activeCategory, selectedCategory]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setIsAuthorized(window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok');
+  }, []);
+
+  const handleLogin = (event: FormEvent) => {
+    event.preventDefault();
+
+    if (login.trim() === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+      window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
+      setIsAuthorized(true);
+      setAuthError('');
+      return;
+    }
+
+    setAuthError('Неверный логин или пароль');
+  };
+
+  const handleLogout = () => {
+    window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    setIsAuthorized(false);
+    setPassword('');
+  };
+
+  if (!isAuthorized) {
+    return (
+      <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
+        <div className="mx-auto w-full max-w-md border border-black/[0.08] bg-white p-5">
+          <h1 className="text-2xl font-semibold">Вход в админ-кабинет</h1>
+          <p className="mt-2 text-sm text-black/60">Для демо-доступа используйте логин и пароль, выданные команде.</p>
+
+          <form onSubmit={handleLogin} className="mt-4 space-y-3">
+            <input
+              value={login}
+              onChange={(event) => setLogin(event.target.value)}
+              className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+              placeholder="Логин"
+              autoComplete="username"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+              placeholder="Пароль"
+              autoComplete="current-password"
+            />
+            {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
+            <button type="submit" className="w-full border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Войти
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   const handleAddCategory = (event: FormEvent) => {
     event.preventDefault();
@@ -124,6 +189,9 @@ export default function AdminPanel() {
             <Link href="/menu" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Открыть меню
             </Link>
+            <button type="button" onClick={handleLogout} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Выйти
+            </button>
             <button type="button" onClick={restoreCatalog} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Сбросить изменения
             </button>
