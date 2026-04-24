@@ -10,9 +10,10 @@ type MenuSectionProps = {
   section: MenuCategory;
   selectedLocation: LocationId | null;
   onOpenItem: (item: MenuItem, category: string) => void;
+  isFirstSection?: boolean;
 };
 
-export default function MenuSection({ section, selectedLocation, onOpenItem }: MenuSectionProps) {
+export default function MenuSection({ section, selectedLocation, onOpenItem, isFirstSection = false }: MenuSectionProps) {
   return (
     <section id={`section-${section.category}`} data-category={section.category} className="scroll-mt-36 border-t border-grid pt-8 first:border-t-0 first:pt-0 sm:scroll-mt-40 sm:pt-10">
       <header className="mb-4 flex items-end justify-between gap-4 sm:mb-6">
@@ -20,9 +21,15 @@ export default function MenuSection({ section, selectedLocation, onOpenItem }: M
         <p className="text-xs text-neutral-500">{section.items.length} поз.</p>
       </header>
       <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {section.items.map((item) => (
+        {section.items.map((item, index) => (
           <motion.div key={item.id} variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-8% 0px -8% 0px' }}>
-            <MenuCard item={item} category={section.category} selectedLocation={selectedLocation} onOpen={onOpenItem} />
+            <MenuCard
+              item={item}
+              category={section.category}
+              selectedLocation={selectedLocation}
+              onOpen={onOpenItem}
+              priority={isFirstSection && index === 0}
+            />
           </motion.div>
         ))}
       </div>
