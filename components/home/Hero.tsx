@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@/components/providers/LocationProvider';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
+import Footer from '@/components/Footer';
 import { LocationId, locations } from '@/data/locations';
 import { menuData } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
@@ -514,7 +515,7 @@ function OpenScreen({
           <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
             яндекс карты
           </a>
-          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
+          <a href={selectedLocation.links.delivery} target="_blank" rel="noreferrer" className={actionLinkClass}>
             доставка в яндекс еде
           </a>
           <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
@@ -524,6 +525,8 @@ function OpenScreen({
             отзывы в яндексе
           </a>
         </motion.div>
+
+        <Footer compact />
       </div>
 
       <motion.div
