@@ -1,11 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@/components/providers/LocationProvider';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
+import RollingCoordinate from '@/components/home/RollingCoordinate';
 import { LocationId, locations } from '@/data/locations';
 import { menuData } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
@@ -82,38 +83,6 @@ function getNearestLocation(coords: Coordinates | null): NearestLocation | null 
   return nearest;
 }
 
-function CoordinateTicker({
-  lat,
-  lng,
-  active,
-  className = ''
-}: {
-  lat: number;
-  lng: number;
-  active: boolean;
-  className?: string;
-}) {
-  const value = `${lat.toFixed(6)} | ${lng.toFixed(6)}`;
-  const reduceMotion = useReducedMotion();
-
-  return (
-    <div className={`font-halvar tabular-nums ${className}`}>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={value}
-          className="inline-block"
-          initial={active && !reduceMotion ? { opacity: 0, y: -4 } : false}
-          animate={{ opacity: 1, y: 0, color: active ? 'rgba(0,0,0,.54)' : 'rgba(0,0,0,.4)' }}
-          exit={active && !reduceMotion ? { opacity: 0, y: 4 } : { opacity: 0 }}
-          transition={{ duration: active && !reduceMotion ? 0.18 : 0.01, ease: easeOut }}
-        >
-          {value}
-        </motion.span>
-      </AnimatePresence>
-    </div>
-  );
-}
-
 function GateCode({ id, size = 'large', active = false }: { id: string; size?: 'small' | 'large' | 'hero'; active?: boolean }) {
   const fontSize = size === 'hero' ? 'text-[112px]' : size === 'small' ? 'text-[14px]' : 'text-[58px]';
   const tracking = size === 'hero' ? 'tracking-[-0.035em]' : size === 'small' ? 'tracking-[-0.01em]' : 'tracking-[-0.025em]';
@@ -185,7 +154,7 @@ function UserLocationPanel({
       <div className="grid grid-cols-[1fr_auto] items-start gap-4">
         <div>
           <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">ваши координаты</div>
-          <CoordinateTicker lat={userCoords.lat} lng={userCoords.lng} active className="mt-1 text-[10px] text-black/40" />
+          <RollingCoordinate lat={userCoords.lat} lng={userCoords.lng} active className="mt-1 text-[10px] text-black/40" />
         </div>
         {nearest ? (
           <motion.div className="text-right" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.48, duration: 0.34 }}>
@@ -277,16 +246,13 @@ function GateNode({
       whileHover={phase === 'map' ? { scale: isActive ? 1.015 : 1.01 } : undefined}
     >
       <motion.div
-        className={`relative w-[min(300px,78vw)] border bg-white/92 px-4 py-4 backdrop-blur-[1px] [will-change:transform,opacity] ${
-          isActive ? 'border-[#ed6a32]/82' : isNearest ? 'border-[#ed6a32]/72' : 'border-[#ed6a32]/30'
+        className={`relative w-[min(292px,76vw)] border bg-white/95 px-4 py-4 [will-change:transform,opacity] ${
+          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/60' : 'border-black/[0.08]'
         }`}
-        animate={{ opacity: isDimmed ? 0.86 : 1, y: isActive ? -1 : 0, scale: isActive ? 1.012 : isNearest ? 1.006 : 1 }}
+        animate={{ opacity: isDimmed ? 0.8 : 1, y: isActive ? -2 : 0, scale: isActive ? 1.01 : isNearest ? 1.004 : 1 }}
         transition={{ duration: 0.3 }}
       >
-        <motion.div className="absolute left-3 top-3 h-2.5 w-2.5 border-l border-t border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? -2 : 0, y: isActive || isNearest ? -2 : 0 }} />
-        <motion.div className="absolute right-3 top-3 h-2.5 w-2.5 border-r border-t border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? 2 : 0, y: isActive || isNearest ? -2 : 0 }} />
-        <motion.div className="absolute bottom-3 left-3 h-2.5 w-2.5 border-b border-l border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? -2 : 0, y: isActive || isNearest ? 2 : 0 }} />
-        <motion.div className="absolute bottom-3 right-3 h-2.5 w-2.5 border-b border-r border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? 2 : 0, y: isActive || isNearest ? 2 : 0 }} />
+        <motion.div className="absolute left-0 top-0 h-px bg-[#ed6a32]/58" initial={false} animate={{ width: isActive ? '100%' : isNearest ? '58%' : '24%' }} transition={{ duration: 0.26 }} />
 
         {isNearest && !selected ? (
           <motion.div
@@ -303,7 +269,7 @@ function GateNode({
           <GateCode id={point.code} active={isActive || isNearest} />
           <div className="pt-1.5">
             <div className="text-[13px] tracking-[-0.02em] text-black/50">{point.title}</div>
-            <CoordinateTicker lat={point.lat} lng={point.lng} active={isActive && (phase === 'lock' || phase === 'docking')} className="mt-2 text-[9px] text-black/34" />
+            <RollingCoordinate lat={point.lat} lng={point.lng} active={isActive && (phase === 'lock' || phase === 'docking')} className="mt-2 text-[9px] text-black/34" />
           </div>
         </div>
       </motion.div>
@@ -326,7 +292,7 @@ function LockCaption({ selected, phase }: { selected: LocationPoint | null; phas
         <div className="text-[9px] tracking-[0.14em] text-[#ed6a32]">фиксация точки</div>
         <div className="mt-1 text-[12px] text-black/42">{selected.title}</div>
       </div>
-      <CoordinateTicker lat={selected.lat} lng={selected.lng} active={phase === 'lock' || phase === 'docking'} className="text-right text-[9px] leading-relaxed" />
+      <RollingCoordinate lat={selected.lat} lng={selected.lng} active={phase === 'lock' || phase === 'docking'} className="text-right text-[9px] leading-relaxed" />
     </motion.div>
   );
 }
@@ -421,7 +387,7 @@ function OpenScreen({
   const menuHref = `/menu/${selected.id}`;
 
   const actionLinkClass =
-    'inline-flex min-h-11 items-center justify-center border border-black/[0.065] bg-white/86 px-3 py-2 text-[10px] tracking-[0.06em] text-black/58 shadow-sm backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
+    'inline-flex min-h-11 items-center justify-center border border-black/[0.065] bg-white/86 px-3 py-2 text-[10px] tracking-[0.06em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
   const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
 
   return (
@@ -440,7 +406,7 @@ function OpenScreen({
           <motion.div className="mt-7 text-lg tracking-[-0.03em] text-black/66" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.32 }}>
             {selected.title}
           </motion.div>
-          <CoordinateTicker lat={selected.lat} lng={selected.lng} active className="mt-2 text-[10px] text-black/34" />
+          <RollingCoordinate lat={selected.lat} lng={selected.lng} active className="mt-2 text-[10px] text-black/34" />
           <div className="mt-4 space-y-1 text-[11px] text-black/56">
             <p>{selectedLocation.address}</p>
             <p>{selectedLocation.workingHours}</p>
@@ -494,7 +460,7 @@ function OpenScreen({
           <Link
             href={menuHref}
             aria-disabled={isBusy}
-            className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition [will-change:transform] ${
+            className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white transition [will-change:transform] ${
               isBusy ? 'pointer-events-none cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:bg-[#df5f2c]'
             }`}
           >
@@ -508,20 +474,23 @@ function OpenScreen({
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.34, ease: easeOut }}
         >
-          <a href={selectedLocation.links.reviews.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            оставить отзыв
-          </a>
-          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            яндекс карты
+          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2`}>
+            построить маршрут
           </a>
           <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            доставка в яндекс еде
+            заказать доставку
+          </a>
+          <a href={`tel:${selectedLocation.phoneTel}`} className={actionLinkClass}>
+            позвонить
+          </a>
+          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            открыть в яндекс картах
           </a>
           <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            2гис
+            открыть в 2гис
           </a>
-          <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            отзывы в яндексе
+          <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2 text-black/46`}>
+            оставить отзыв
           </a>
         </motion.div>
       </div>
@@ -540,7 +509,7 @@ function OpenScreen({
       <button
         type="button"
         onClick={onBack}
-        className="absolute right-7 top-9 z-[120] border border-black/[0.065] bg-white/86 px-4 py-2 text-[10px] tracking-[0.1em] text-black/58 shadow-sm backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]"
+        className="absolute right-7 top-9 z-[120] border border-black/[0.065] bg-white/86 px-4 py-2 text-[10px] tracking-[0.1em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]"
       >
         карта
       </button>
@@ -574,7 +543,7 @@ function DesktopScene({
   ];
 
   return (
-    <div className="relative mx-auto hidden min-h-svh w-full max-w-[1180px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] lg:block">
+    <div className="relative mx-auto hidden min-h-svh w-full max-w-[1180px] overflow-hidden bg-white shadow-[0_16px_56px_rgba(0,0,0,.06)] lg:block">
       <CoordinateSystemLayer mode={phase === 'open' ? 'open' : 'map'} muted={phase === 'open'} />
       <Brand />
 
@@ -586,7 +555,7 @@ function DesktopScene({
             <div className="mt-2 text-[42px] font-black leading-none tracking-[-0.035em] text-black/80">
               {nearest?.code ?? selected?.code ?? 'o12'}
             </div>
-            <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} km` : 'manual select'}</div>
+            <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} km` : 'выберите точку'}</div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2">
             {LOCATIONS.map((point) => (
@@ -669,7 +638,7 @@ function DesktopScene({
               >
                 <GateCode id={point.code} active={isActive || isNearest} />
                 <div className="mt-3 text-[13px] text-black/54">{point.title}</div>
-                <CoordinateTicker lat={point.lat} lng={point.lng} active={isActive} className="mt-2 text-[9px] text-black/34" />
+                <RollingCoordinate lat={point.lat} lng={point.lng} active={isActive} className="mt-2 text-[9px] text-black/34" />
               </motion.button>
             );
           })}
@@ -775,7 +744,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="font-halvar relative min-h-svh overflow-hidden bg-[#f4f1ea] text-black">
+    <section className="font-halvar relative min-h-svh overflow-hidden bg-[#f7f4ee] text-black">
       <style>{`
         .font-halvar {
           font-family: var(--font-halvar-mittel), "Halvar Mittelschrift", "Halvar", "Arial Narrow", "Inter", system-ui, sans-serif;
@@ -783,7 +752,7 @@ export default function Hero() {
         }
       `}</style>
 
-      <div className="relative mx-auto min-h-svh w-full max-w-[430px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:hidden">
+      <div className="relative mx-auto min-h-svh w-full max-w-[430px] overflow-hidden bg-white shadow-[0_16px_52px_rgba(0,0,0,.06)] sm:border-x sm:border-black/[0.04] lg:hidden">
         <CoordinateSystemLayer
           mode={phase === 'open' ? 'open' : phase === 'docking' || phase === 'wash' ? 'transition' : 'map'}
           verticalShift={phase === 'docking' || phase === 'wash' ? cameraY * 0.8 : 0}

@@ -15,9 +15,8 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
   const isMenu = mode === 'menu';
   const isTransition = mode === 'transition';
 
-  const baseOpacity = muted ? 0.055 : isOpen ? 0.09 : isMenu ? 0.07 : 0.085;
-  const axisOpacity = muted ? 0.2 : isOpen ? 0.34 : 0.28;
-  const glowOpacity = muted ? 0.06 : isOpen ? 0.18 : isTransition ? 0.24 : 0.12;
+  const baseOpacity = muted ? 0.05 : isOpen ? 0.075 : isMenu ? 0.062 : 0.07;
+  const axisOpacity = muted ? 0.16 : isOpen ? 0.24 : 0.2;
 
   const shiftY = reduceMotion ? 0 : verticalShift;
 
@@ -29,8 +28,8 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
         transition={{ duration: reduceMotion ? 0.01 : 0.45, ease: premiumEase }}
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(237,106,50,.68) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.68) 1px, transparent 1px)',
-          backgroundSize: '96px 112px'
+            'linear-gradient(to right, rgba(237,106,50,.38) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.38) 1px, transparent 1px)',
+          backgroundSize: '104px 104px'
         }}
       />
 
@@ -58,25 +57,9 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
         transition={{ duration: reduceMotion ? 0.01 : 1.2, repeat: reduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
       />
 
-      <motion.div
-        className="absolute left-[-170px] top-[74px] h-[290px] w-[680px] -rotate-[14deg] blur-3xl"
-        animate={{ opacity: glowOpacity, x: isOpen && !reduceMotion ? 18 : 0, y: shiftY * 0.2 }}
-        transition={{ duration: reduceMotion ? 0.01 : 0.7, ease: premiumEase }}
-        style={{
-          background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.3), rgba(237,106,50,.08), rgba(237,106,50,0))'
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-[-105px] right-[-210px] h-[350px] w-[640px] -rotate-[22deg] blur-3xl"
-        animate={{ opacity: glowOpacity * 0.9, x: isOpen && !reduceMotion ? -14 : 0, y: shiftY * 0.16 }}
-        transition={{ duration: reduceMotion ? 0.01 : 0.75, ease: premiumEase }}
-        style={{ background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.24), rgba(237,106,50,0))' }}
-      />
-
-      <div className="absolute left-4 top-4 font-halvar text-[9px] tracking-[0.14em] text-[#ed6a32]/65">X:72.19 / Y:13.04</div>
-      <div className="absolute right-4 top-4 font-halvar text-[9px] tracking-[0.12em] text-black/35">GRID·A1</div>
-      <div className="absolute bottom-4 right-4 font-halvar text-[9px] tracking-[0.12em] text-black/32">SYS·MARS</div>
+      <div className="absolute left-4 top-4 font-halvar text-[9px] tracking-[0.1em] text-[#ed6a32]/58">координаты точки</div>
+      <div className="absolute right-4 top-4 font-halvar text-[9px] tracking-[0.1em] text-black/30">активная точка</div>
+      <div className="absolute bottom-4 right-4 font-halvar text-[9px] tracking-[0.1em] text-black/28">маршрут меню</div>
 
       <div className="absolute left-[22%] top-[26%]">
         <div className="absolute -left-[11px] -top-[26px] h-4 w-px bg-[#ed6a32]/48" />
