@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
+import Footer from '@/components/Footer';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { Coordinates } from '@/lib/geo';
@@ -34,7 +36,7 @@ export default function MenuPage({
   const router = useRouter();
   const pathname = usePathname();
   const { catalog: menuCatalog } = useMenuCatalog();
-  const { selectedLocation, setSelectedLocation, guestCoordinates, setGuestCoordinates, entrySource, setEntrySource } = useLocation();
+  const { selectedLocation, setSelectedLocation, setGuestCoordinates, entrySource, setEntrySource } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? '');
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -177,18 +179,8 @@ export default function MenuPage({
   return (
     <main className="font-halvar relative min-h-svh overflow-x-clip bg-[#f4f1ea] text-[#0b0b0b]">
       <div className="relative mx-auto min-h-svh w-full max-w-[430px] bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:max-w-[1180px]">
-        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white lg:max-w-[1180px]">
-          <div
-            className="absolute inset-0 opacity-[0.085]"
-            style={{
-              backgroundImage:
-                'linear-gradient(to right, rgba(237,106,50,.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.72) 1px, transparent 1px)',
-              backgroundSize: '96px 112px'
-            }}
-          />
-          <div className="absolute inset-5 border border-black/[0.035]" />
-          <div className="absolute left-[-190px] top-[70px] h-[310px] w-[720px] -rotate-[14deg] bg-[linear-gradient(90deg,rgba(237,106,50,0),rgba(237,106,50,.28),rgba(237,106,50,.08),rgba(237,106,50,0))] opacity-20 blur-3xl" />
-          <div className="absolute bottom-[-105px] right-[-210px] h-[360px] w-[650px] -rotate-[22deg] bg-[linear-gradient(90deg,rgba(237,106,50,0),rgba(237,106,50,.24),rgba(237,106,50,0))] opacity-10 blur-3xl" />
+        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden lg:max-w-[1180px]">
+          <CoordinateSystemLayer calm />
         </div>
 
         <div className="relative z-10 px-5 pb-10 pt-7 sm:px-7 sm:pt-9 lg:px-10">
@@ -196,11 +188,7 @@ export default function MenuPage({
             <div className="mb-4 border-y border-black/[0.055] bg-white/78 py-3 text-xs text-[#403e3e] backdrop-blur-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-[#0b0b0b]">вход через qr: точка {currentLocation?.label ?? activeLocation}</p>
-                  <p>
-                    гостевые координаты:{' '}
-                    {guestCoordinates ? `${guestCoordinates.lat.toFixed(5)}, ${guestCoordinates.lng.toFixed(5)}` : 'не переданы'}
-                  </p>
+                  <p className="font-semibold text-[#0b0b0b]">вы открыли меню точки {currentLocation?.label ?? activeLocation}</p>
                 </div>
                 <button type="button" onClick={() => setEntryOverlayOpen(false)} className="text-xs text-[#403e3e] underline">
                   скрыть
@@ -234,6 +222,12 @@ export default function MenuPage({
                 ) : null}
               </div>
 
+              <div className="mt-5 space-y-1 text-xs leading-relaxed text-[#403e3e]">
+                <p>адрес: {currentLocation?.address ?? 'адрес уточняется'}</p>
+                <p>часы: {currentLocation?.workingHours ?? 'режим уточняется'}</p>
+                <p>телефон: {currentLocation?.phone ?? 'по запросу'}</p>
+              </div>
+
               <div className="mt-7 grid grid-cols-2 gap-2">
                 {currentLocation ? (
                   <a
@@ -250,6 +244,20 @@ export default function MenuPage({
                   сменить точку
                 </Link>
               </div>
+
+              {currentLocation ? (
+                <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-[#403e3e]">
+                  <a href={currentLocation.links.maps.yandex} target="_blank" rel="noreferrer" className="border border-black/[0.06] bg-white/70 px-2 py-2 text-center hover:text-[#ed6a32]">
+                    как добраться
+                  </a>
+                  <a href={currentLocation.links.yandexEda} target="_blank" rel="noreferrer" className="border border-black/[0.06] bg-white/70 px-2 py-2 text-center hover:text-[#ed6a32]">
+                    доставка
+                  </a>
+                  <a href={currentLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className="border border-black/[0.06] bg-white/70 px-2 py-2 text-center hover:text-[#ed6a32]">
+                    оставить отзыв
+                  </a>
+                </div>
+              ) : null}
             </motion.div>
 
             <motion.div
@@ -261,22 +269,17 @@ export default function MenuPage({
               {locations.map((location, index) => {
                 const isActive = activeLocation === location.id;
                 return (
-                  <motion.button
+                  <button
                     key={location.id}
                     type="button"
                     onClick={() => handleLocationSwitch(location.id)}
-                    className="min-h-12 whitespace-nowrap border bg-white/72 px-3 py-2 text-left text-xs backdrop-blur-sm"
-                    animate={{
-                      borderColor: isActive ? 'rgba(237,106,50,.82)' : 'rgba(0,0,0,.065)',
-                      color: isActive ? '#ed6a32' : '#403e3e',
-                      backgroundColor: 'rgba(255,255,255,.72)'
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.16, ease: premiumEase }}
+                    className={`min-h-12 whitespace-nowrap border bg-white/72 px-3 py-2 text-left text-xs backdrop-blur-sm transition ${
+                      isActive ? 'border-[#ed6a32]/80 text-[#ed6a32]' : 'border-black/[0.065] text-[#403e3e] hover:border-[#ed6a32]/45'
+                    }`}
                   >
                     <span className="mars-coordinate-label mr-3 text-black/40">{String(index + 1).padStart(2, '0')}</span>
                     <span className="font-black tracking-[-0.01em]">{location.label}</span>
-                  </motion.button>
+                  </button>
                 );
               })}
             </motion.div>
@@ -316,6 +319,7 @@ export default function MenuPage({
           setActiveIndex(0);
         }}
       />
+      <Footer />
     </main>
   );
 }

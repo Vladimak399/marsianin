@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { menuData } from '@/data/menu';
@@ -128,54 +129,8 @@ function GateCode({ id, size = 'large', active = false }: { id: string; size?: '
   );
 }
 
-function SceneBackground({ mode = 'map' }: { mode?: 'map' | 'open' | 'wash' }) {
-  const open = mode === 'open';
-  const wash = mode === 'wash';
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-white">
-      <motion.div
-        className="absolute inset-0"
-        animate={{ opacity: open ? 0.11 : 0.085 }}
-        transition={{ duration: 0.35 }}
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(237,106,50,.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.72) 1px, transparent 1px)',
-          backgroundSize: '96px 112px'
-        }}
-      />
-
-      <motion.div className="absolute inset-5 border border-black/[0.035]" animate={{ opacity: open ? 0.74 : 1 }} transition={{ duration: 0.35 }} />
-
-      <motion.div
-        className="absolute left-[-190px] top-[70px] h-[310px] w-[720px] -rotate-[14deg] blur-3xl"
-        animate={{ opacity: open ? 0.33 : wash ? 0.38 : 0.18, x: open ? 22 : 0 }}
-        transition={{ duration: 0.7, ease: easeOut }}
-        style={{
-          background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.34), rgba(237,106,50,.08), rgba(237,106,50,0))'
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-[-105px] right-[-210px] h-[360px] w-[650px] -rotate-[22deg] blur-3xl"
-        animate={{ opacity: open ? 0.24 : wash ? 0.3 : 0.08, x: open ? -18 : 0 }}
-        transition={{ duration: 0.8, ease: easeOut }}
-        style={{ background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.28), rgba(237,106,50,0))' }}
-      />
-
-      <motion.div
-        className="absolute left-7 right-7 top-[264px] h-px bg-gradient-to-r from-transparent via-[#ed6a32]/44 to-transparent"
-        animate={{ opacity: open ? 0.68 : 0.28, scaleX: open ? 1 : 0.86 }}
-        transition={{ duration: 0.65, ease: easeOut }}
-      />
-
-      <motion.div
-        className="absolute left-7 right-7 top-[480px] h-px bg-gradient-to-r from-[#ed6a32]/18 via-transparent to-[#ed6a32]/18"
-        animate={{ opacity: open ? 0.45 : 0.18 }}
-        transition={{ duration: 0.65, ease: easeOut }}
-      />
-    </div>
-  );
+function SceneBackground({ mode = 'map', shift = 0 }: { mode?: 'map' | 'open' | 'wash'; shift?: number }) {
+  return <CoordinateSystemLayer selectedShift={shift} calm={mode === 'open' || mode === 'wash'} />;
 }
 
 function Brand() {
@@ -322,12 +277,13 @@ function GateNode({
       whileHover={phase === 'map' ? { scale: isActive ? 1.015 : 1.01 } : undefined}
     >
       <motion.div
-        className="relative w-[min(300px,78vw)] border bg-white/92 px-4 py-4 backdrop-blur-sm"
-        animate={{
-          borderColor: isActive ? 'rgba(237,106,50,.82)' : isNearest ? 'rgba(237,106,50,.72)' : 'rgba(237,106,50,.30)',
-          boxShadow: isActive ? '0 10px 28px rgba(237,106,50,.11)' : isNearest ? '0 9px 26px rgba(237,106,50,.12)' : '0 8px 18px rgba(0,0,0,.018)'
-        }}
-        transition={{ duration: 0.3 }}
+        className={`relative w-[min(300px,78vw)] border bg-white/92 px-4 py-4 ${
+          isActive
+            ? 'border-[#ed6a32]/80 shadow-[0_8px_24px_rgba(237,106,50,.10)]'
+            : isNearest
+              ? 'border-[#ed6a32]/60 shadow-[0_6px_18px_rgba(237,106,50,.08)]'
+              : 'border-[#ed6a32]/30 shadow-[0_4px_14px_rgba(0,0,0,.03)]'
+        }`}
       >
         <motion.div className="absolute left-3 top-3 h-2.5 w-2.5 border-l border-t border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? -2 : 0, y: isActive || isNearest ? -2 : 0 }} />
         <motion.div className="absolute right-3 top-3 h-2.5 w-2.5 border-r border-t border-[#ed6a32]/56" animate={{ x: isActive || isNearest ? 2 : 0, y: isActive || isNearest ? -2 : 0 }} />
@@ -437,9 +393,8 @@ function MenuRow({
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.14 + index * 0.05, duration: 0.36, ease: easeOut }}
       whileTap={{ scale: 0.992 }}
-      layout
     >
-      <motion.div className="absolute bottom-0 left-0 h-px bg-[#f87c56]" initial={{ width: '0%' }} whileHover={{ width: '100%' }} transition={{ duration: 0.28, ease: easeOut }} />
+      <motion.div className="absolute bottom-0 left-0 h-px w-full bg-[#f87c56]" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }} transition={{ duration: 0.22, ease: easeOut }} />
       <div className="mars-coordinate-label text-[10px] text-[#f87c56]">{number}</div>
       <div>
         <div className="text-[13px] font-semibold tracking-[0.01em] text-[#0b0b0b]">{title}</div>
@@ -454,12 +409,14 @@ function OpenScreen({
   selected,
   onBack,
   onSwitch,
-  onOpenCategory
+  onOpenCategory,
+  isBusy = false
 }: {
   selected: LocationPoint;
   onBack: () => void;
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
+  isBusy?: boolean;
 }) {
   const selectedLocation = LOCATION_DETAILS[selected.id];
 
@@ -468,7 +425,7 @@ function OpenScreen({
 
   return (
     <motion.div
-      className="absolute inset-0 z-[80] overflow-hidden bg-white px-7 pb-8 pt-28"
+      className={`absolute inset-0 z-[80] overflow-hidden bg-white px-7 pb-8 pt-28 ${isBusy ? 'pointer-events-none' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -487,6 +444,14 @@ function OpenScreen({
             <p>{selectedLocation.address}</p>
             <p>{selectedLocation.workingHours}</p>
           </div>
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={() => onOpenCategory(null)}
+            className="mt-6 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/55 bg-white px-4 py-3 text-[12px] font-semibold tracking-[0.02em] text-[#ed6a32] transition active:scale-[0.99] disabled:opacity-60"
+          >
+            {isBusy ? 'открываем меню…' : `открыть меню ${selected.code}`}
+          </button>
         </motion.div>
 
         <motion.div
@@ -580,7 +545,8 @@ function DesktopScene({
   onSelect,
   onBack,
   onSwitch,
-  onOpenCategory
+  onOpenCategory,
+  isBusy = false
 }: {
   selected: LocationPoint | null;
   phase: Phase;
@@ -589,7 +555,9 @@ function DesktopScene({
   onBack: () => void;
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
+  isBusy?: boolean;
 }) {
+  const desktopShift = selected ? 50 - selected.visual.y : 0;
   const desktopPoints = [
     { id: 'o12' as LocationId, x: 18, y: 66 },
     { id: 'k10' as LocationId, x: 58, y: 28 },
@@ -598,7 +566,7 @@ function DesktopScene({
 
   return (
     <div className="relative mx-auto hidden min-h-svh w-full max-w-[1180px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] lg:block">
-      <SceneBackground mode={phase === 'open' ? 'open' : 'map'} />
+      <SceneBackground mode={phase === 'open' ? 'open' : 'map'} shift={desktopShift * 0.35} />
       <Brand />
 
       <div className="relative z-10 grid min-h-svh grid-cols-[390px_1fr] gap-10 px-10 pb-10 pt-32">
@@ -694,7 +662,7 @@ function DesktopScene({
 
           <AnimatePresence>
             {phase === 'open' && selected ? (
-              <OpenScreen selected={selected} onBack={onBack} onSwitch={onSwitch} onOpenCategory={onOpenCategory} />
+              <OpenScreen selected={selected} onBack={onBack} onSwitch={onSwitch} onOpenCategory={onOpenCategory} isBusy={isBusy} />
             ) : null}
           </AnimatePresence>
         </div>
@@ -705,11 +673,13 @@ function DesktopScene({
 
 export default function Hero() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const { setSelectedLocation, setGuestCoordinates, setIsTeleporting, setTeleportOrigin } = useLocation();
   const [selected, setSelected] = useState<LocationPoint | null>(null);
   const [phase, setPhase] = useState<Phase>('map');
   const [userCoords, setUserCoords] = useState<Coordinates | null>(null);
   const [geoUnavailable, setGeoUnavailable] = useState(false);
+  const [isOpeningMenu, setIsOpeningMenu] = useState(false);
   const timersRef = useRef<number[]>([]);
 
   const nearest = useMemo(() => getNearestLocation(userCoords), [userCoords]);
@@ -755,29 +725,31 @@ export default function Hero() {
   }, [setGuestCoordinates]);
 
   function select(point: LocationPoint) {
-    if (phase !== 'map') return;
+    if (phase !== 'map' || isOpeningMenu) return;
     clearTimers();
     setSelectedLocation(point.id);
     setIsTeleporting(true);
     setTeleportOrigin({ x: point.visual.x, y: point.visual.y });
     setSelected(point);
     setPhase('lock');
-    addTimer(() => setPhase('docking'), 220);
-    addTimer(() => setPhase('wash'), 660);
+    addTimer(() => setPhase('docking'), reduceMotion ? 120 : 220);
+    addTimer(() => setPhase('wash'), reduceMotion ? 260 : 660);
     addTimer(() => {
       setPhase('open');
       setIsTeleporting(false);
-    }, 900);
+    }, reduceMotion ? 360 : 900);
   }
 
   function back() {
     clearTimers();
+    setIsOpeningMenu(false);
     setIsTeleporting(false);
     setPhase('map');
     addTimer(() => setSelected(null), 120);
   }
 
   function switchPoint(point: LocationPoint) {
+    if (isOpeningMenu) return;
     clearTimers();
     setPhase('map');
     setSelected(null);
@@ -785,10 +757,12 @@ export default function Hero() {
   }
 
   function openCategory(category: string | null) {
-    if (!selected) return;
+    if (!selected || isOpeningMenu) return;
+    setIsOpeningMenu(true);
+    setIsTeleporting(true);
 
     const query = category ? `?category=${encodeURIComponent(category)}` : '';
-    router.push(`/menu/${selected.id}${query}`);
+    addTimer(() => router.push(`/menu/${selected.id}${query}`), reduceMotion ? 70 : 180);
   }
 
   return (
@@ -801,7 +775,7 @@ export default function Hero() {
       `}</style>
 
       <div className="relative mx-auto min-h-svh w-full max-w-[430px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:hidden">
-        <SceneBackground mode={phase === 'open' ? 'open' : 'map'} />
+        <SceneBackground mode={phase === 'open' ? 'open' : 'map'} shift={cameraY * 0.22} />
         <Brand />
         <AnimatePresence>
           <UserLocationPanel userCoords={userCoords} nearest={nearest} phase={phase} geoUnavailable={geoUnavailable} />
@@ -828,7 +802,11 @@ export default function Hero() {
 
         <AnimatePresence>{selected && phase !== 'open' ? <LockCaption selected={selected} phase={phase} /> : null}</AnimatePresence>
         <DockTransition selected={selected} phase={phase} />
-        <AnimatePresence>{phase === 'open' && selected ? <OpenScreen selected={selected} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} /> : null}</AnimatePresence>
+        <AnimatePresence>
+          {phase === 'open' && selected ? (
+            <OpenScreen selected={selected} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} isBusy={isOpeningMenu} />
+          ) : null}
+        </AnimatePresence>
       </div>
       <DesktopScene
         selected={selected}
@@ -838,6 +816,7 @@ export default function Hero() {
         onBack={back}
         onSwitch={switchPoint}
         onOpenCategory={openCategory}
+        isBusy={isOpeningMenu}
       />
     </section>
   );
