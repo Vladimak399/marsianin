@@ -462,6 +462,7 @@ function OpenScreen({
   onOpenCategory: (category: string | null) => void;
 }) {
   const selectedLocation = LOCATION_DETAILS[selected.id];
+  const menuHref = `/menu/${selected.id}`;
 
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.065] bg-white/86 px-3 py-2 text-[10px] tracking-[0.06em] text-black/58 shadow-sm backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
@@ -527,26 +528,35 @@ function OpenScreen({
           ))}
         </motion.div>
 
+        <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: easeOut }}>
+          <Link
+            href={menuHref}
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 bg-[#ed6a32] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-white shadow-sm transition hover:bg-[#df5f2c]"
+          >
+            открыть каталог меню
+          </Link>
+        </motion.div>
+
         <motion.div
           className="mt-4 grid grid-cols-2 gap-2"
           initial={{ y: 14, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.34, ease: easeOut }}
         >
-          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            доставка в яндекс еде
+          <a href={selectedLocation.links.reviews.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            оставить отзыв
           </a>
           <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
             яндекс карты
+          </a>
+          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
+            доставка в яндекс еде
           </a>
           <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
             2гис
           </a>
           <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
-            оставить отзыв · яндекс
-          </a>
-          <a href={selectedLocation.links.reviews.twoGis} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2`}>
-            оставить отзыв · 2гис
+            отзывы в яндексе
           </a>
         </motion.div>
       </div>
