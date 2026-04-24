@@ -10,6 +10,7 @@ import { Coordinates } from '@/lib/geo';
 import { MenuItem } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
+import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import CategoryNav from './CategoryNav';
 import MenuDetailView from './MenuDetailView';
 import MenuSection from './MenuSection';
@@ -177,17 +178,7 @@ export default function MenuPage({
     <main className="font-halvar relative min-h-svh overflow-x-clip bg-[#f4f1ea] text-[#0b0b0b]">
       <div className="relative mx-auto min-h-svh w-full max-w-[430px] bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:max-w-[1180px]">
         <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white lg:max-w-[1180px]">
-          <div
-            className="absolute inset-0 opacity-[0.085]"
-            style={{
-              backgroundImage:
-                'linear-gradient(to right, rgba(237,106,50,.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.72) 1px, transparent 1px)',
-              backgroundSize: '96px 112px'
-            }}
-          />
-          <div className="absolute inset-5 border border-black/[0.035]" />
-          <div className="absolute left-[-190px] top-[70px] h-[310px] w-[720px] -rotate-[14deg] bg-[linear-gradient(90deg,rgba(237,106,50,0),rgba(237,106,50,.28),rgba(237,106,50,.08),rgba(237,106,50,0))] opacity-20 blur-3xl" />
-          <div className="absolute bottom-[-105px] right-[-210px] h-[360px] w-[650px] -rotate-[22deg] bg-[linear-gradient(90deg,rgba(237,106,50,0),rgba(237,106,50,.24),rgba(237,106,50,0))] opacity-10 blur-3xl" />
+          <CoordinateSystemLayer mode="menu" muted />
         </div>
 
         <div className="relative z-10 px-5 pb-10 pt-7 sm:px-7 sm:pt-9 lg:px-10">

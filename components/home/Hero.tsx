@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@/components/providers/LocationProvider';
+import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { LocationId, locations } from '@/data/locations';
 import { menuData } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
@@ -125,56 +126,6 @@ function GateCode({ id, size = 'large', active = false }: { id: string; size?: '
     >
       {id}
     </motion.div>
-  );
-}
-
-function SceneBackground({ mode = 'map' }: { mode?: 'map' | 'open' | 'wash' }) {
-  const open = mode === 'open';
-  const wash = mode === 'wash';
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-white">
-      <motion.div
-        className="absolute inset-0"
-        animate={{ opacity: open ? 0.11 : 0.085 }}
-        transition={{ duration: 0.35 }}
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(237,106,50,.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.72) 1px, transparent 1px)',
-          backgroundSize: '96px 112px'
-        }}
-      />
-
-      <motion.div className="absolute inset-5 border border-black/[0.035]" animate={{ opacity: open ? 0.74 : 1 }} transition={{ duration: 0.35 }} />
-
-      <motion.div
-        className="absolute left-[-190px] top-[70px] h-[310px] w-[720px] -rotate-[14deg] blur-3xl"
-        animate={{ opacity: open ? 0.33 : wash ? 0.38 : 0.18, x: open ? 22 : 0 }}
-        transition={{ duration: 0.7, ease: easeOut }}
-        style={{
-          background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.34), rgba(237,106,50,.08), rgba(237,106,50,0))'
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-[-105px] right-[-210px] h-[360px] w-[650px] -rotate-[22deg] blur-3xl"
-        animate={{ opacity: open ? 0.24 : wash ? 0.3 : 0.08, x: open ? -18 : 0 }}
-        transition={{ duration: 0.8, ease: easeOut }}
-        style={{ background: 'linear-gradient(90deg, rgba(237,106,50,0), rgba(237,106,50,.28), rgba(237,106,50,0))' }}
-      />
-
-      <motion.div
-        className="absolute left-7 right-7 top-[264px] h-px bg-gradient-to-r from-transparent via-[#ed6a32]/44 to-transparent"
-        animate={{ opacity: open ? 0.68 : 0.28, scaleX: open ? 1 : 0.86 }}
-        transition={{ duration: 0.65, ease: easeOut }}
-      />
-
-      <motion.div
-        className="absolute left-7 right-7 top-[480px] h-px bg-gradient-to-r from-[#ed6a32]/18 via-transparent to-[#ed6a32]/18"
-        animate={{ opacity: open ? 0.45 : 0.18 }}
-        transition={{ duration: 0.65, ease: easeOut }}
-      />
-    </div>
   );
 }
 
@@ -390,7 +341,7 @@ function DockTransition({ selected, phase }: { selected: LocationPoint | null; p
           exit={{ opacity: 0 }}
           transition={{ duration: 0.34, times: [0, 0.55, 1], ease: 'easeInOut' }}
         >
-          <SceneBackground mode="wash" />
+          <CoordinateSystemLayer mode="transition" />
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div
               className="relative h-[110px] w-[260px] border border-[#ed6a32]/34"
@@ -475,7 +426,7 @@ function OpenScreen({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <SceneBackground mode="open" />
+      <CoordinateSystemLayer mode="open" muted />
 
       <div className="relative z-10">
         <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.44, ease: easeOut }}>
@@ -608,7 +559,7 @@ function DesktopScene({
 
   return (
     <div className="relative mx-auto hidden min-h-svh w-full max-w-[1180px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] lg:block">
-      <SceneBackground mode={phase === 'open' ? 'open' : 'map'} />
+      <CoordinateSystemLayer mode={phase === 'open' ? 'open' : 'map'} muted={phase === 'open'} />
       <Brand />
 
       <div className="relative z-10 grid min-h-svh grid-cols-[390px_1fr] gap-10 px-10 pb-10 pt-32">
@@ -811,7 +762,11 @@ export default function Hero() {
       `}</style>
 
       <div className="relative mx-auto min-h-svh w-full max-w-[430px] overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,.08)] sm:border-x sm:border-black/[0.04] lg:hidden">
-        <SceneBackground mode={phase === 'open' ? 'open' : 'map'} />
+        <CoordinateSystemLayer
+          mode={phase === 'open' ? 'open' : phase === 'docking' || phase === 'wash' ? 'transition' : 'map'}
+          verticalShift={phase === 'docking' || phase === 'wash' ? cameraY * 0.8 : 0}
+          muted={phase === 'open'}
+        />
         <Brand />
         <AnimatePresence>
           <UserLocationPanel userCoords={userCoords} nearest={nearest} phase={phase} geoUnavailable={geoUnavailable} />
