@@ -1,35 +1,47 @@
-# Марсианин — landing для кофейни
+# Марсианин — сайт и админка меню
 
-Production-ready проект на **Next.js (App Router) + TypeScript + TailwindCSS**.
+Проект на **Next.js 14 + TypeScript + TailwindCSS + Supabase**.
 
-## Стек
+## Что реализовано
 
-- Next.js 14
-- React 18
-- TypeScript
-- TailwindCSS
+- Публичное меню по точкам:
+  - `/menu/o12`
+  - `/menu/k10`
+  - `/menu/p7`
+- Закрытая админка:
+  - `/admin/login`
+  - `/admin`
+  - `/admin/products`
+  - `/admin/products/new`
+  - `/admin/products/[id]`
+  - `/admin/categories`
+  - `/admin/locations`
+- CRUD для меню, категорий и точек.
+- Цены/видимость/наличие отдельно по O12/K10/P7.
+- Загрузка фото в Supabase Storage bucket `menu-images`.
+- После сохранения вызывается revalidate для публичных страниц меню.
 
-## Структура
+## Переменные окружения
+
+Создайте `.env.local`:
 
 ```bash
-/app
-  layout.tsx
-  page.tsx
-/components
-  /ui
-    PrimaryButton.tsx
-  /menu
-    MenuSection.tsx
-    MenuCard.tsx
-    NutritionTable.tsx
-/data
-  menu.ts
-/styles
-  globals.css
-/public
-  favicon.svg
-  /images
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+ADMIN_EMAIL=owner@example.com
+ADMIN_PASSWORD=strong-password
+ADMIN_SESSION_SECRET=change-me-please
 ```
+
+## Supabase SQL
+
+Выполните SQL из файла:
+
+- `supabase/schema.sql`
+
+Также создайте публичный bucket `menu-images` в Supabase Storage.
 
 ## Запуск
 
@@ -39,19 +51,3 @@ npm run dev
 ```
 
 Откройте [http://localhost:3000](http://localhost:3000).
-
-## Дополнительно
-
-- SEO metadata добавлены в `app/layout.tsx`
-- favicon добавлен в `public/favicon.svg`
-- изображения оптимизируются через `next/image` и современные форматы (`avif`, `webp`) в `next.config.mjs`
-
-## Деплой на Vercel
-
-Если после подключения GitHub-репозитория Vercel показывает `404: NOT_FOUND`, проверьте:
-
-- Root Directory указывает на корень проекта (где лежит `package.json`);
-- Framework Preset = **Next.js**;
-- в репозитории есть `vercel.json` с `framework: "nextjs"`.
-
-В этом проекте `vercel.json` уже добавлен, чтобы Vercel не определял пресет как `Other`.
