@@ -40,7 +40,6 @@ export default function MenuPage({
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
   const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
-  const [isEntryOverlayOpen, setEntryOverlayOpen] = useState(true);
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
@@ -192,23 +191,6 @@ export default function MenuPage({
         </div>
 
         <div className="relative z-10 px-5 pb-10 pt-7 sm:px-7 sm:pt-9 lg:px-10">
-          {entrySource === 'qr' && isEntryOverlayOpen ? (
-            <div className="mb-4 border-y border-black/[0.055] bg-white/78 py-3 text-xs text-[#403e3e] backdrop-blur-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[#0b0b0b]">вход через qr: точка {currentLocation?.label ?? activeLocation}</p>
-                  <p>
-                    гостевые координаты:{' '}
-                    {guestCoordinates ? `${guestCoordinates.lat.toFixed(5)}, ${guestCoordinates.lng.toFixed(5)}` : 'не переданы'}
-                  </p>
-                </div>
-                <button type="button" onClick={() => setEntryOverlayOpen(false)} className="text-xs text-[#403e3e] underline">
-                  скрыть
-                </button>
-              </div>
-            </div>
-          ) : null}
-
           <section className="relative overflow-visible">
             <motion.div
               className="relative z-10 border-b border-black/[0.055] pb-5"
@@ -258,7 +240,7 @@ export default function MenuPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.04, ease: premiumEase }}
             >
-              {locations.map((location, index) => {
+              {locations.map((location) => {
                 const isActive = activeLocation === location.id;
                 return (
                   <motion.button
@@ -274,7 +256,6 @@ export default function MenuPage({
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.16, ease: premiumEase }}
                   >
-                    <span className="mars-coordinate-label mr-3 text-black/40">{String(index + 1).padStart(2, '0')}</span>
                     <span className="font-black tracking-[-0.01em]">{location.label}</span>
                   </motion.button>
                 );
