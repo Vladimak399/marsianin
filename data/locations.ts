@@ -10,6 +10,7 @@ export const locations = [
     phoneTel: '+79937313696',
     links: {
       yandexEda: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
+      delivery: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
       maps: {
         yandex:
           'https://yandex.ru/maps/?text=%D0%9A%D0%B0%D0%BB%D0%B8%D0%BD%D0%B8%D0%BD%D0%B3%D1%80%D0%B0%D0%B4%2C%20%D0%9E%D0%BA%D1%82%D1%8F%D0%B1%D1%80%D1%8C%D1%81%D0%BA%D0%B0%D1%8F%2012%2C%20%D0%9C%D0%B0%D1%80%D1%81%D0%B8%D0%B0%D0%BD%D0%B8%D0%BD',
@@ -33,6 +34,7 @@ export const locations = [
     phoneTel: '+79953263196',
     links: {
       yandexEda: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
+      delivery: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
       maps: {
         yandex:
           'https://yandex.ru/maps/?text=%D0%9A%D0%B0%D0%BB%D0%B8%D0%BD%D0%B8%D0%BD%D0%B3%D1%80%D0%B0%D0%B4%2C%20%D0%9A%D0%BE%D1%81%D1%82%D1%80%D0%BE%D0%BC%D1%81%D0%BA%D0%B0%D1%8F%2010%2C%20%D0%9C%D0%B0%D1%80%D1%81%D0%B8%D0%B0%D0%BD%D0%B8%D0%BD',
@@ -56,6 +58,7 @@ export const locations = [
     phoneTel: '+79953036964',
     links: {
       yandexEda: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
+      delivery: 'https://eda.yandex.ru/kaliningrad/r/marsianin_kofejna',
       maps: {
         yandex: 'https://yandex.ru/maps/org/132873121692',
         twoGis: 'https://2gis.ru/kaliningrad/firm/70000001056623162'
