@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
@@ -29,7 +29,6 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
   const pathname = usePathname();
   const { selectedLocation, setSelectedLocation, guestCoordinates } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
-  const [switchPulseKey, setSwitchPulseKey] = useState(0);
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
@@ -44,10 +43,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
     const normalized = initialLocation.toLowerCase();
     const isKnownLocation = locations.some((location) => location.id === normalized);
-
-    if (isKnownLocation) {
-      setSelectedLocation(normalized as LocationId);
-    }
+    if (isKnownLocation) setSelectedLocation(normalized as LocationId);
   }, [initialLocation, setSelectedLocation]);
 
   const categories = useMemo(() => menuData.map((section) => section.category), []);
@@ -63,19 +59,15 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
 
   useEffect(() => {
     if (!initialCategory) return;
-    if (categories.includes(initialCategory.toLowerCase())) {
-      setActiveCategory(initialCategory.toLowerCase());
-    }
+    const normalized = initialCategory.toLowerCase();
+    if (categories.includes(normalized)) setActiveCategory(normalized);
   }, [categories, initialCategory]);
 
   useEffect(() => {
     const navElement = categoryNavRef.current;
     if (!navElement) return;
 
-    const updateNavHeight = () => {
-      setCategoryNavHeight(Math.round(navElement.getBoundingClientRect().height));
-    };
-
+    const updateNavHeight = () => setCategoryNavHeight(Math.round(navElement.getBoundingClientRect().height));
     updateNavHeight();
 
     const resizeObserver = new ResizeObserver(updateNavHeight);
@@ -95,16 +87,14 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
-        if (visible[0]) {
-          const next = visible[0].target.getAttribute('data-category');
-          if (next) {
-            setCategoryChangeSource('intersection-observer');
-            setActiveCategory(next);
-          }
+        const next = visible[0]?.target.getAttribute('data-category');
+        if (next) {
+          setCategoryChangeSource('intersection-observer');
+          setActiveCategory(next);
         }
       },
       {
-        rootMargin: `-${categoryNavHeight + 28}px 0px -55% 0px`,
+        rootMargin: `-${categoryNavHeight + 18}px 0px -55% 0px`,
         threshold: [0.15, 0.35, 0.6]
       }
     );
@@ -126,11 +116,9 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     const targetLeft = activeChip.offsetLeft + activeChip.offsetWidth / 2 - container.clientWidth / 2;
     const maxLeft = Math.max(container.scrollWidth - container.clientWidth, 0);
     const left = Math.min(Math.max(targetLeft, 0), maxLeft);
-
     container.scrollTo({ left, behavior });
-    if (categoryChangeSource === 'chip-click') {
-      setCategoryChangeSource('intersection-observer');
-    }
+
+    if (categoryChangeSource === 'chip-click') setCategoryChangeSource('intersection-observer');
   }, [activeCategory, categoryChangeSource]);
 
   const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
@@ -144,18 +132,19 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
       setEntryOverlayMode('short');
     }
     setSelectedLocation(location);
-    setSwitchPulseKey((prev) => prev + 1);
     updateQuery(location, activeCategory);
   };
 
   const handleCategorySelect = (category: string) => {
     const section = document.getElementById(`section-${category}`);
     setCategoryChangeSource('chip-click');
+
     if (section) {
       const sectionTop = section.getBoundingClientRect().top + window.scrollY;
-      const offsetTop = sectionTop - categoryNavHeight - 24;
+      const offsetTop = sectionTop - categoryNavHeight - 18;
       window.scrollTo({ top: Math.max(offsetTop, 0), behavior: 'smooth' });
     }
+
     setActiveCategory(category);
     updateQuery(activeLocation, category);
   };
@@ -164,7 +153,6 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     const section = menuData.find((entry) => entry.category === category);
     const items = section?.items ?? [];
     const nextIndex = items.findIndex((entry) => entry.id === item.id);
-
     if (nextIndex < 0) return;
 
     setViewerItems(items);
@@ -190,18 +178,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,130,44,0.18),transparent_32%),radial-gradient(circle_at_88%_22%,rgba(255,155,90,0.13),transparent_30%),linear-gradient(#faf8f5,#f5f4f1)]" />
       <div className="relative mx-auto max-w-[1240px]">
         <section className="relative overflow-visible border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
-          <GridOverlay className="z-0 opacity-70" />
-
-          <AnimatePresence>
-            <motion.div
-              key={switchPulseKey}
-              className="pointer-events-none absolute inset-0 z-[1] bg-neutral-900"
-              initial={{ opacity: 0.07 }}
-              animate={{ opacity: 0 }}
-              exit={{ opacity: 0.07 }}
-              transition={{ duration: 0.12, ease: premiumEase }}
-            />
-          </AnimatePresence>
+          <GridOverlay className="z-0 opacity-60" />
 
           <motion.div
             className="relative z-10 flex flex-col gap-4 border-b border-grid pb-4 sm:flex-row sm:items-center sm:justify-between sm:pb-5"
@@ -211,12 +188,9 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
           >
             <div className="flex items-center gap-3 sm:gap-4">
               {currentLocation ? (
-                <motion.div
-                  layoutId={`location-${currentLocation.id}`}
-                  className="border border-accent bg-neutral-900 px-3 py-1.5 text-[1.55rem] font-semibold tracking-[0.04em] text-white sm:px-4 sm:py-2 sm:text-2xl"
-                >
+                <div className="border border-[#f0b08a] bg-[#fff4eb] px-3 py-1.5 text-[1.55rem] font-semibold text-[#db6123] sm:px-4 sm:py-2 sm:text-2xl">
                   {currentLocation.label}
-                </motion.div>
+                </div>
               ) : null}
               <div>
                 <h1 className="text-[1.45rem] font-semibold tracking-[0.02em] text-neutral-900 sm:text-3xl">меню</h1>
@@ -232,12 +206,12 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
               {currentLocation ? (
                 <a
                   href={`tel:${currentLocation.phoneTel}`}
-                  className="inline-flex min-h-10 items-center justify-center border border-[#f0a16f] bg-[#ffe3cf] px-3 py-2 font-sans text-[11px] tracking-[0.12em] text-[#a55226] transition-colors hover:bg-[#ffd6b8]"
+                  className="inline-flex min-h-10 items-center justify-center border border-[#f0a16f] bg-[#ffe3cf] px-3 py-2 text-xs text-[#a55226] transition-colors hover:bg-[#ffd6b8]"
                 >
                   позвонить
                 </a>
               ) : null}
-              <Link href="/" className="inline-flex min-h-10 items-center text-[11px] tracking-[0.14em] text-neutral-500 hover:text-accent">
+              <Link href="/" className="inline-flex min-h-10 items-center text-xs text-neutral-500 hover:text-accent">
                 сменить точку
               </Link>
             </div>
@@ -255,10 +229,8 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
                 <motion.button
                   key={location.id}
                   type="button"
-                  layout
-                  layoutId={`location-${location.id}-switch`}
                   onClick={() => handleLocationSwitch(location.id)}
-                  className="min-h-10 whitespace-nowrap border px-4 py-2 text-xs tracking-[0.12em]"
+                  className="min-h-10 whitespace-nowrap border px-4 py-2 text-xs"
                   animate={{
                     borderColor: isActive ? '#ff6a00' : '#d4d4d4',
                     color: isActive ? '#171717' : '#737373',

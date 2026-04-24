@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
@@ -28,6 +29,18 @@ export default function MenuDetailView({
   onClose,
   onChangeIndex
 }: MenuDetailViewProps) {
+
+  useEffect(() => {
+    if (!item) return;
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [item]);
+
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
 
