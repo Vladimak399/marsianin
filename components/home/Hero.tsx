@@ -247,21 +247,23 @@ function GateNode({
     >
       <motion.div
         className={`relative w-[min(292px,76vw)] border bg-white/95 px-4 py-4 [will-change:transform,opacity] ${
-          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/60' : 'border-black/[0.08]'
+          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/72' : 'border-black/[0.08]'
         }`}
         animate={{ opacity: isDimmed ? 0.8 : 1, y: isActive ? -2 : 0, scale: isActive ? 1.01 : isNearest ? 1.004 : 1 }}
         transition={{ duration: 0.3 }}
       >
-        <motion.div className="absolute left-0 top-0 h-px bg-[#ed6a32]/58" initial={false} animate={{ width: isActive ? '100%' : isNearest ? '58%' : '24%' }} transition={{ duration: 0.26 }} />
+        <motion.div className="absolute left-0 top-0 h-px bg-[#ed6a32]/58" initial={false} animate={{ width: isActive ? '100%' : isNearest ? '68%' : '24%' }} transition={{ duration: 0.26 }} />
+
+        {isNearest && !selected ? <motion.div className="absolute left-0 top-3 h-[calc(100%-24px)] w-px bg-[#ed6a32]/55" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.24 }} /> : null}
 
         {isNearest && !selected ? (
           <motion.div
-            className="absolute right-4 top-4 text-[8px] tracking-[0.08em] text-[#ed6a32]"
+            className="absolute right-4 top-3.5 border border-[#ed6a32]/36 bg-[#fff5f1] px-2 py-0.5 text-[9px] tracking-[0.06em] text-[#bc4c1f]"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0.55, 1, 0.55] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ opacity: [0.78, 1, 0.78] }}
+            transition={{ duration: 2.3, repeat: Infinity, ease: 'easeInOut' }}
           >
-            ближайшая
+            ближайшая точка
           </motion.div>
         ) : null}
 
