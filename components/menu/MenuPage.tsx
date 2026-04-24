@@ -14,6 +14,7 @@ import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import CategoryNav from './CategoryNav';
 import MenuDetailView from './MenuDetailView';
 import MenuSection from './MenuSection';
+import Footer from '@/components/Footer';
 
 const DEFAULT_LOCATION: LocationId = 'o12';
 
@@ -269,6 +270,8 @@ export default function MenuPage({
                 />
               ))}
             </div>
+
+            <Footer />
           </section>
         </div>
       </div>
