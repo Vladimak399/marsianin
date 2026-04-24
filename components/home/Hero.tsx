@@ -173,13 +173,14 @@ function UserLocationPanel({
 
 function Axis({ selected, phase, nearestId }: { selected: LocationPoint | null; phase: Phase; nearestId: string | null }) {
   const hidden = phase === 'open';
+  const axisScale = selected ? Math.max(0, (selected.visual.y - 31) / 46) : nearestId ? 43 / 46 : 1;
 
   return (
     <motion.div className="pointer-events-none absolute inset-0 z-10" animate={{ opacity: hidden ? 0 : 1 }} transition={{ duration: 0.3 }}>
       <div className="absolute left-7 top-[31%] h-[46%] w-px bg-black/[0.055]" />
       <motion.div
-        className="absolute left-7 top-[31%] w-px bg-[#ed6a32]/32"
-        animate={{ height: selected ? `${Math.max(0, selected.visual.y - 31)}%` : nearestId ? '43%' : '46%' }}
+        className="absolute left-7 top-[31%] h-[46%] w-px origin-top bg-[#ed6a32]/32"
+        animate={{ scaleY: axisScale }}
         transition={{ duration: 0.56, ease: easeOut }}
       />
       {LOCATIONS.map((point) => (
@@ -187,8 +188,8 @@ function Axis({ selected, phase, nearestId }: { selected: LocationPoint | null; 
           key={point.id}
           className="absolute left-[25px] h-1.5 w-1.5 border border-[#ed6a32]/45 bg-white"
           style={{ top: `${point.visual.y}%` }}
-          animate={{ opacity: selected && selected.id !== point.id ? 0.16 : nearestId === point.id ? 1 : 0.54, scale: nearestId === point.id && !selected ? [1, 1.45, 1] : 1 }}
-          transition={{ opacity: { duration: 0.28 }, scale: { duration: 1.4, repeat: nearestId === point.id && !selected ? Infinity : 0, ease: 'easeInOut' } }}
+          animate={{ opacity: selected && selected.id !== point.id ? 0.16 : nearestId === point.id ? 1 : 0.54, scale: nearestId === point.id && !selected ? 1.2 : 1 }}
+          transition={{ duration: 0.28 }}
         />
       ))}
     </motion.div>
@@ -244,7 +245,6 @@ function GateNode({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: hidden ? 0 : isDimmed ? 0.14 : 1, y: 0, scale: isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
       transition={{ duration: 0.44, delay: phase === 'map' ? index * 0.065 : 0, ease: easeOut }}
-      whileHover={phase === 'map' ? { scale: isActive ? 1.015 : 1.01 } : undefined}
     >
       <motion.div
         className={`relative w-[min(292px,76vw)] border bg-white/95 px-4 py-4 [will-change:transform,opacity] ${
@@ -253,19 +253,20 @@ function GateNode({
         animate={{ opacity: isDimmed ? 0.8 : 1, y: isActive ? -2 : 0, scale: isActive ? 1.01 : isNearest ? 1.004 : 1 }}
         transition={{ duration: 0.3 }}
       >
-        <motion.div className="absolute left-0 top-0 h-px bg-[#ed6a32]/58" initial={false} animate={{ width: isActive ? '100%' : isNearest ? '68%' : '24%' }} transition={{ duration: 0.26 }} />
+        <div
+          className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${
+            isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'
+          }`}
+        />
 
         {isNearest && !selected ? <motion.div className="absolute left-0 top-3 h-[calc(100%-24px)] w-px bg-[#ed6a32]/55" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.24 }} /> : null}
 
         {isNearest && !selected ? (
-          <motion.div
+          <div
             className="absolute right-4 top-3.5 border border-[#ed6a32]/36 bg-[#fff5f1] px-2 py-0.5 text-[9px] tracking-[0.06em] text-[#bc4c1f]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0.78, 1, 0.78] }}
-            transition={{ duration: 2.3, repeat: Infinity, ease: 'easeInOut' }}
           >
             ближайшая точка
-          </motion.div>
+          </div>
         ) : null}
 
         <div className="grid grid-cols-[106px_1fr] items-start gap-4">
@@ -360,9 +361,8 @@ function MenuRow({
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.14 + index * 0.05, duration: 0.36, ease: easeOut }}
       whileTap={{ scale: 0.992 }}
-      layout
     >
-      <motion.div className="absolute bottom-0 left-0 h-px bg-[#f87c56]" initial={{ width: '0%' }} whileHover={{ width: '100%' }} transition={{ duration: 0.28, ease: easeOut }} />
+      <div className="absolute bottom-0 left-0 h-px w-full bg-[#f87c56]/32" />
       <div className="mars-coordinate-label text-[10px] text-[#f87c56]">{number}</div>
       <div>
         <div className="text-[13px] font-semibold tracking-[0.01em] text-[#0b0b0b]">{title}</div>
