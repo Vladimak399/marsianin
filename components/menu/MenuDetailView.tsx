@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
+import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import NutritionTable from './NutritionTable';
 
 type MenuDetailViewProps = {
@@ -86,15 +87,7 @@ export default function MenuDetailView({
             onDragEnd={handleDragEnd}
           >
             <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white">
-              <div
-                className="absolute inset-0 opacity-[0.11]"
-                style={{
-                  backgroundImage:
-                    'linear-gradient(to right, rgba(237,106,50,.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(237,106,50,.72) 1px, transparent 1px)',
-                  backgroundSize: '96px 112px'
-                }}
-              />
-              <div className="absolute inset-5 border border-black/[0.035]" />
+              <CoordinateSystemLayer mode="menu" muted />
             </div>
 
             <div className="sticky top-0 z-20 border-b border-black/[0.055] bg-white/86 px-7 py-4 backdrop-blur-sm">
