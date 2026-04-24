@@ -142,7 +142,7 @@ export default function Hero() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => router.push(`/menu?location=${activeLocationId}&category=завтраки`)}
+              onClick={() => router.push(`/menu/${activeLocationId}?category=завтраки`)}
               className="inline-flex min-h-11 items-center justify-center rounded-sm border border-[#ff7a43] bg-[#ffe7d9] px-5 py-2 text-xs text-[#a24419] transition-colors hover:bg-[#ffdcc9]"
             >
               открыть меню {activeLocation.label}

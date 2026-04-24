@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
+import { Coordinates } from '@/lib/geo';
 import { MenuItem, menuData } from '@/data/menu';
 import GridOverlay from '@/components/ui/GridOverlay';
 import { premiumEase } from '@/lib/animations';
@@ -18,19 +19,34 @@ const DEFAULT_LOCATION: LocationId = 'o12';
 type MenuPageProps = {
   initialLocation?: string;
   initialCategory?: string;
+  initialEntrySource?: string;
+  initialGuestCoordinates?: Coordinates | null;
 };
 
 type CategoryChangeSource = 'intersection-observer' | 'chip-click';
 
-export default function MenuPage({ initialLocation, initialCategory }: MenuPageProps) {
+export default function MenuPage({
+  initialLocation,
+  initialCategory,
+  initialEntrySource,
+  initialGuestCoordinates
+}: MenuPageProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { selectedLocation, setSelectedLocation } = useLocation();
+  const {
+    selectedLocation,
+    setSelectedLocation,
+    guestCoordinates,
+    setGuestCoordinates,
+    entrySource,
+    setEntrySource
+  } = useLocation();
   const [activeCategory, setActiveCategory] = useState(initialCategory ?? menuData[0].category);
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
   const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
+  const [isEntryOverlayOpen, setEntryOverlayOpen] = useState(true);
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
@@ -42,6 +58,15 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     const isKnownLocation = locations.some((location) => location.id === normalized);
     if (isKnownLocation) setSelectedLocation(normalized as LocationId);
   }, [initialLocation, setSelectedLocation]);
+
+  useEffect(() => {
+    if (!initialGuestCoordinates) return;
+    setGuestCoordinates(initialGuestCoordinates);
+  }, [initialGuestCoordinates, setGuestCoordinates]);
+
+  useEffect(() => {
+    if (initialEntrySource === 'qr') setEntrySource('qr');
+  }, [initialEntrySource, setEntrySource]);
 
   const categories = useMemo(() => menuData.map((section) => section.category), []);
   const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
@@ -111,16 +136,15 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     if (categoryChangeSource === 'chip-click') setCategoryChangeSource('intersection-observer');
   }, [activeCategory, categoryChangeSource]);
 
-  const updateQuery = (nextLocation: LocationId, nextCategory: string) => {
+  const updateQuery = (nextCategory: string) => {
     const params = new URLSearchParams(window.location.search);
-    params.set('location', nextLocation);
     params.set('category', nextCategory);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleLocationSwitch = (location: LocationId) => {
     setSelectedLocation(location);
-    updateQuery(location, activeCategory);
+    router.replace(`/menu/${location}?category=${activeCategory}`, { scroll: false });
   };
 
   const handleCategorySelect = (category: string) => {
@@ -134,7 +158,7 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     }
 
     setActiveCategory(category);
-    updateQuery(activeLocation, category);
+    updateQuery(category);
   };
 
   const handleOpenDetails = (item: MenuItem, category: string) => {
@@ -152,6 +176,20 @@ export default function MenuPage({ initialLocation, initialCategory }: MenuPageP
     <main className="relative min-h-svh overflow-x-hidden px-3 pb-12 pt-3 sm:px-6 sm:pt-6 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,130,44,0.14),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(255,155,90,0.09),transparent_28%),linear-gradient(#faf8f5,#f5f4f1)]" />
       <div className="relative mx-auto max-w-[1240px]">
+        {entrySource === 'qr' && isEntryOverlayOpen ? (
+          <div className="mb-3 border border-[#f0b08a] bg-[#fff4eb] p-3 text-xs text-[#91401a] sm:mb-4 sm:text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold">Вход через QR: точка {currentLocation?.label ?? activeLocation}</p>
+                <p>гостевые координаты: {guestCoordinates ? `${guestCoordinates.lat.toFixed(5)}, ${guestCoordinates.lng.toFixed(5)}` : 'не переданы'}</p>
+              </div>
+              <button type="button" onClick={() => setEntryOverlayOpen(false)} className="text-xs text-[#91401a] underline">
+                скрыть
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <section className="relative overflow-visible border border-grid bg-white/90 px-4 py-5 sm:px-8 sm:py-8">
           <GridOverlay className="z-0 opacity-60" />
 

@@ -1,9 +1,6 @@
-import MenuPage from '@/components/menu/MenuPage';
+import { redirect } from 'next/navigation';
+import { locations } from '@/data/locations';
 
-type MenuRoutePageProps = {
-  searchParams: { location?: string; category?: string };
-};
-
-export default function MenuRoutePage({ searchParams }: MenuRoutePageProps) {
-  return <MenuPage initialLocation={searchParams.location} initialCategory={searchParams.category} />;
+export default function MenuRoutePage() {
+  redirect(`/menu/${locations[0].id}`);
 }
