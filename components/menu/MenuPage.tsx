@@ -208,8 +208,10 @@ export default function MenuPage({
             >
               <div className="grid grid-cols-[1fr_auto] items-start gap-4">
                 <div className="min-w-0">
-                  <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
-                  <div className="mt-1.5 text-[11px] tracking-[0.04em] text-black/46">кофейня, где есть жизнь</div>
+                  <Link href="/" className="inline-block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]">
+                    <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
+                    <div className="mt-1.5 text-[11px] tracking-[0.04em] text-black/46">кофейня, где есть жизнь</div>
+                  </Link>
                   <h1 className="mt-10 text-[1.45rem] font-semibold leading-none text-[#0b0b0b]">карта меню</h1>
                   <p className="mt-3 max-w-[310px] text-xs leading-relaxed text-[#403e3e]">
                     актуальные цены, состав и кбжу без лишней навигационной суеты
