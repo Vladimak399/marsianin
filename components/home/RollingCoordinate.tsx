@@ -10,20 +10,20 @@ type RollingCoordinateProps = {
   className?: string;
 };
 
-function formatCoordinate(label: 'lat' | 'lng', value: number) {
-  return `${label}: ${value.toFixed(6)}`;
+function formatCoordinate(value: number) {
+  return value.toFixed(6);
 }
 
 function buildSteps(value: number, label: 'lat' | 'lng') {
   const signedDelta = label === 'lat' ? 0.0234 : -0.0178;
   const start = value + signedDelta;
   const near = value + signedDelta * 0.22;
-  return [formatCoordinate(label, start), formatCoordinate(label, near), formatCoordinate(label, value)];
+  return [formatCoordinate(start), formatCoordinate(near), formatCoordinate(value)];
 }
 
 function RollingGroup({ label, value, active, delay = 0 }: { label: 'lat' | 'lng'; value: number; active: boolean; delay?: number }) {
   const reduceMotion = useReducedMotion();
-  const finalValue = formatCoordinate(label, value);
+  const finalValue = formatCoordinate(value);
 
   if (!active || reduceMotion) {
     return <div className="leading-[1.35]">{finalValue}</div>;
