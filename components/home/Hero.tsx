@@ -1,6 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@/components/providers/LocationProvider';
@@ -80,67 +81,6 @@ function getNearestLocation(coords: Coordinates | null): NearestLocation | null 
   return nearest;
 }
 
-function randomDigit(exclude: string) {
-  let digit = String(Math.floor(Math.random() * 10));
-  if (digit === exclude) digit = String((Number(digit) + 4) % 10);
-  return digit;
-}
-
-function RollingCharacter({ char, index, active }: { char: string; index: number; active: boolean }) {
-  const isDigit = /\d/.test(char);
-  const [display, setDisplay] = useState(char);
-  const [settled, setSettled] = useState(!active);
-
-  useEffect(() => {
-    if (!active || !isDigit) {
-      setDisplay(char);
-      setSettled(true);
-      return;
-    }
-
-    setSettled(false);
-    let ticks = 0;
-    const maxTicks = 5 + (index % 4) + Math.floor(index / 7);
-    const interval = window.setInterval(() => {
-      ticks += 1;
-      if (ticks >= maxTicks) {
-        setDisplay(char);
-        setSettled(true);
-        window.clearInterval(interval);
-        return;
-      }
-      setDisplay(randomDigit(char));
-    }, 30 + index * 2);
-
-    return () => window.clearInterval(interval);
-  }, [active, char, index, isDigit]);
-
-  if (!isDigit) {
-    return <span className="inline-flex h-[1.35em] items-center px-px text-black/28">{char}</span>;
-  }
-
-  return (
-    <motion.span
-      className="relative inline-flex h-[1.35em] min-w-[0.63em] items-center justify-center overflow-hidden px-px"
-      animate={{ color: settled ? 'rgba(0,0,0,.48)' : ORANGE }}
-      transition={{ duration: 0.16 }}
-    >
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={`${display}-${index}-${settled}`}
-          initial={{ y: active ? '-110%' : 0, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: '110%', opacity: 0 }}
-          transition={{ duration: settled ? 0.16 : 0.08, ease: settled ? easeOut : 'linear' }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          {display}
-        </motion.span>
-      </AnimatePresence>
-    </motion.span>
-  );
-}
-
 function CoordinateTicker({
   lat,
   lng,
@@ -152,13 +92,23 @@ function CoordinateTicker({
   active: boolean;
   className?: string;
 }) {
-  const value = `${lat.toFixed(6)} / ${lng.toFixed(6)}`;
+  const value = `${lat.toFixed(6)} | ${lng.toFixed(6)}`;
+  const reduceMotion = useReducedMotion();
 
   return (
     <div className={`font-halvar tabular-nums ${className}`}>
-      {value.split('').map((char, index) => (
-        <RollingCharacter key={`${index}-${char}`} char={char} index={index} active={active} />
-      ))}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={value}
+          className="inline-block"
+          initial={active && !reduceMotion ? { opacity: 0, y: -4 } : false}
+          animate={{ opacity: 1, y: 0, color: active ? 'rgba(0,0,0,.54)' : 'rgba(0,0,0,.4)' }}
+          exit={active && !reduceMotion ? { opacity: 0, y: 4 } : { opacity: 0 }}
+          transition={{ duration: active && !reduceMotion ? 0.18 : 0.01, ease: easeOut }}
+        >
+          {value}
+        </motion.span>
+      </AnimatePresence>
     </div>
   );
 }
@@ -231,13 +181,15 @@ function SceneBackground({ mode = 'map' }: { mode?: 'map' | 'open' | 'wash' }) {
 function Brand() {
   return (
     <motion.div
-      className="pointer-events-none absolute left-7 right-28 top-9 z-[95] text-left"
+      className="absolute left-7 right-28 top-9 z-[95] text-left"
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, ease: easeOut }}
     >
-      <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
-      <div className="mt-1.5 text-[11px] tracking-[0.04em] text-black/46">кофейня, где есть жизнь</div>
+      <Link href="/" className="inline-block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]">
+        <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
+        <div className="mt-1.5 text-[11px] tracking-[0.04em] text-black/46">кофейня, где есть жизнь</div>
+      </Link>
     </motion.div>
   );
 }
@@ -551,7 +503,7 @@ function OpenScreen({
                 </span>
                 {point.id === selected.id ? <span className="absolute bottom-0 left-1/2 h-px w-9 -translate-x-1/2 bg-[#ed6a32]" /> : null}
               </button>
-              {index < LOCATIONS.length - 1 ? <div className="font-normal text-black/14">/</div> : null}
+              {index < LOCATIONS.length - 1 ? <div className="font-normal text-black/18">|</div> : null}
             </span>
           ))}
         </motion.div>
