@@ -24,6 +24,8 @@ export default function LocationMap({
   return (
     <motion.div
       className="absolute inset-0 z-20 px-4 pb-8 pt-44"
+      role="navigation"
+      aria-label="карта точек"
       animate={{
         y: phase === 'docking' || phase === 'wash' ? `${cameraY}%` : '0%',
         scale: phase === 'docking' || phase === 'wash' ? 1.02 : 1,
