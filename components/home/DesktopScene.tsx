@@ -32,9 +32,9 @@ export default function DesktopScene({
   onOpenCategory: (category: string | null) => void;
 }) {
   const desktopPoints = [
-    { id: 'o12' as LocationId, x: 18, y: 66 },
-    { id: 'k10' as LocationId, x: 58, y: 28 },
-    { id: 'p7' as LocationId, x: 82, y: 70 }
+    { id: 'o12' as LocationId, x: 24, y: 70 },
+    { id: 'k10' as LocationId, x: 67, y: 35 },
+    { id: 'p7' as LocationId, x: 87, y: 74 }
   ];
 
   const isOpen = phase === 'open' && selected;
@@ -46,13 +46,13 @@ export default function DesktopScene({
       ) : (
         <>
           <CoordinateSystemLayer mode={phase === 'docking' || phase === 'wash' ? 'transition' : 'map'} />
-          <div className="pointer-events-none absolute -left-16 top-12 z-[2] h-80 w-80 rounded-full bg-[#ed6a32]/12 blur-3xl" />
+          <div className="pointer-events-none absolute -left-16 top-12 z-[2] h-80 w-80 rounded-full bg-[#ed6a32]/10 blur-3xl" />
           <BrandHeader />
 
-          <div className="relative z-10 grid min-h-[100dvh] grid-cols-[390px_1fr] gap-10 px-10 pb-10 pt-32">
-            <div className="self-start border border-black/[0.07] bg-[#fffdf8] p-6">
+          <div className="relative z-10 grid min-h-[100dvh] grid-cols-[330px_1fr] gap-10 px-10 pb-10 pt-32">
+            <aside className="self-start border border-black/[0.055] bg-[#fffdf8]/72 p-6 backdrop-blur-sm">
               <div className="text-[11px] tracking-[0.14em] text-[#ed6a32]">карта точек</div>
-              <div className="mt-2 text-[13px] text-black/54">выберите точку на схеме для перехода в open state</div>
+              <div className="mt-2 max-w-[245px] text-[13px] leading-relaxed text-black/58">выберите точку, чтобы открыть меню и маршрут</div>
 
               <div className="mt-6 border-t border-black/[0.06] pt-4">
                 <div className="text-[10px] tracking-[0.12em] text-black/42">координаты гостя</div>
@@ -65,27 +65,32 @@ export default function DesktopScene({
 
               <div className="mt-5 border-t border-black/[0.06] pt-4">
                 <div className="text-[10px] tracking-[0.12em] text-black/42">ближайшая точка</div>
-                <div className="mt-2 text-[42px] font-black leading-none tracking-[-0.035em] text-black/80">{nearest?.code ?? selected?.code ?? 'о12'}</div>
+                <div className="mt-2 text-[48px] font-black leading-none tracking-[-0.04em] text-[#ed6a32]">{nearest?.code ?? selected?.code ?? 'о12'}</div>
                 <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} км` : 'выберите точку'}</div>
               </div>
 
               <div className="mt-5 grid grid-cols-3 gap-2">
-                {LOCATIONS.map((point) => (
-                  <button
-                    key={`desktop-switch-${point.id}`}
-                    type="button"
-                    onClick={() => onSelect(point)}
-                    disabled={isBusy}
-                    className={`border border-black/[0.065] bg-[#fffdf8] px-3 py-3 text-left transition ${isBusy ? 'cursor-progress opacity-70' : 'hover:border-[#ed6a32]/45'}`}
-                  >
-                    <GateCode id={point.code} size="small" />
-                    <div className="mt-1 text-[10px] text-black/42">{point.title}</div>
-                  </button>
-                ))}
+                {LOCATIONS.map((point) => {
+                  const isNearest = nearest?.id === point.id;
+                  return (
+                    <button
+                      key={`desktop-switch-${point.id}`}
+                      type="button"
+                      onClick={() => onSelect(point)}
+                      disabled={isBusy}
+                      className={`border bg-[#fffdf8] px-3 py-3 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
+                        isNearest ? 'border-[#ed6a32]/70 shadow-[0_10px_24px_rgba(237,106,50,0.12)]' : 'border-black/[0.065] hover:border-[#ed6a32]/45'
+                      } ${isBusy ? 'cursor-progress opacity-70' : 'hover:-translate-y-0.5'}`}
+                    >
+                      <GateCode id={point.code} size="small" active={isNearest} />
+                      <div className="mt-1 text-[10px] text-black/42">{point.title}</div>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            </aside>
 
-            <div className="relative overflow-hidden border border-[#ed6a32]/22 bg-[#fffdf8]">
+            <div className="relative overflow-hidden border border-[#ed6a32]/20 bg-[#fffdf8]/82">
               <motion.svg
                 aria-hidden
                 className="pointer-events-none absolute inset-0 h-full w-full"
@@ -96,23 +101,23 @@ export default function DesktopScene({
                 transition={{ duration: 0.32, ease: premiumEase }}
               >
                 <motion.path
-                  d="M 16 68 C 30 38, 45 20, 59 29 S 79 52, 83 70"
+                  d="M 22 70 C 35 35, 55 22, 68 36 S 82 55, 88 74"
                   fill="none"
                   stroke="#ed6a32"
-                  strokeOpacity="0.38"
-                  strokeWidth="0.7"
+                  strokeOpacity="0.34"
+                  strokeWidth="0.72"
                   strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 0.9, ease: premiumEase }}
                 />
                 <motion.path
-                  d="M 18 24 C 36 46, 52 64, 86 84"
+                  d="M 24 27 C 42 48, 58 64, 91 84"
                   fill="none"
                   stroke="#ed6a32"
                   strokeDasharray="1.4 2.3"
-                  strokeOpacity="0.22"
-                  strokeWidth="0.35"
+                  strokeOpacity="0.18"
+                  strokeWidth="0.32"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 1.1, delay: 0.08, ease: premiumEase }}
@@ -125,6 +130,7 @@ export default function DesktopScene({
 
                 const isActive = selected?.id === point.id;
                 const isNearest = nearest?.id === point.id;
+                const isHighlighted = isActive || isNearest;
 
                 return (
                   <motion.button
@@ -132,21 +138,26 @@ export default function DesktopScene({
                     type="button"
                     onClick={() => onSelect(point)}
                     disabled={isBusy}
-                    className={`absolute z-20 w-[230px] -translate-x-1/2 -translate-y-1/2 border bg-[#fffdf8] p-4 text-left transition-opacity ${isBusy ? 'cursor-progress opacity-80' : ''}`}
+                    className={`absolute z-20 w-[238px] -translate-x-1/2 -translate-y-1/2 border bg-[#fffdf8]/90 p-4 text-left backdrop-blur-sm transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
+                      isBusy ? 'cursor-progress opacity-80' : 'hover:shadow-[0_16px_34px_rgba(237,106,50,0.12)]'
+                    }`}
                     style={{ left: `${visual.x}%`, top: `${visual.y}%` }}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{
                       opacity: selected && !isActive ? 0.34 : 1,
                       y: 0,
-                      scale: isActive ? 1.04 : 1,
-                      borderColor: isActive || isNearest ? 'rgba(237,106,50,.82)' : 'rgba(0,0,0,.065)'
+                      scale: isHighlighted ? 1.035 : 1,
+                      borderColor: isHighlighted ? 'rgba(237,106,50,.9)' : 'rgba(0,0,0,.065)',
+                      boxShadow: isHighlighted ? '0 18px 42px rgba(237,106,50,0.13)' : '0 0 0 rgba(0,0,0,0)'
                     }}
                     transition={{ duration: 0.34, delay: index * 0.05, ease: premiumEase }}
                     whileHover={phase === 'map' ? { y: -3 } : undefined}
                   >
-                    <GateCode id={point.code} active={isActive || isNearest} />
-                    <div className="mt-3 text-[13px] text-black/54">{point.title}</div>
-                    <RollingCoordinate lat={point.lat} lng={point.lng} active={isActive || isNearest} className={`mt-2 text-[9px] ${isNearest ? 'text-black/55' : 'text-black/34'}`} />
+                    <div className="pointer-events-none absolute -left-3 top-1/2 h-px w-6 -translate-y-1/2 bg-[#ed6a32]/45" />
+                    <div className="pointer-events-none absolute left-1/2 -top-3 h-6 w-px -translate-x-1/2 bg-[#ed6a32]/28" />
+                    <GateCode id={point.code} active={isHighlighted} />
+                    <div className="mt-3 text-[13px] text-black/62">{point.title}</div>
+                    <RollingCoordinate lat={point.lat} lng={point.lng} active={isHighlighted} className={`mt-2 text-[9px] ${isHighlighted ? 'text-black/56' : 'text-black/34'}`} />
                   </motion.button>
                 );
               })}
