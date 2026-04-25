@@ -94,22 +94,22 @@ export default function LocationOpenPanel({
         </motion.div>
 
         <motion.div className="mt-4 grid grid-cols-2 gap-2" initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.34, ease: premiumEase }}>
-          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2`}>
+          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={`${actionLinkClass} col-span-2`}>
             построить маршрут
           </a>
-          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noreferrer" className={actionLinkClass}>
+          <a href={selectedLocation.links.yandexEda} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
             доставка
           </a>
           <a href={`tel:${selectedLocation.phoneTel}`} className={actionLinkClass}>
             звонок
           </a>
-          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noreferrer" className={actionLinkClass}>
+          <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
             яндекс карты
           </a>
-          <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noreferrer" className={actionLinkClass}>
+          <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
             2гис
           </a>
-          <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noreferrer" className={`${actionLinkClass} col-span-2 text-black/46`}>
+          <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noopener noreferrer" className={`${actionLinkClass} col-span-2 text-black/46`}>
             отзывы
           </a>
         </motion.div>

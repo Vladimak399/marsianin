@@ -20,6 +20,7 @@ type MenuDetailViewProps = {
 };
 
 const SWIPE_THRESHOLD = 60;
+const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 export default function MenuDetailView({
   item,
@@ -36,13 +37,22 @@ export default function MenuDetailView({
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = previous;
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [item]);
+  }, [item, onClose]);
 
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
+  const price = item?.priceByLocation[selectedLocation];
+  const hasPrice = typeof price === 'number';
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
@@ -76,6 +86,9 @@ export default function MenuDetailView({
         >
           <motion.article
             className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[rgba(255,255,255,0.95)] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:rounded-2xl sm:border sm:border-[rgba(24,21,18,0.1)] sm:shadow-[0_20px_60px_rgba(24,21,18,0.16)]"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`позиция меню: ${item.name}`}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 14 }}
@@ -96,7 +109,7 @@ export default function MenuDetailView({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] ${detailButtonFocusClass}`}
                 >
                   закрыть
                 </button>
@@ -112,7 +125,11 @@ export default function MenuDetailView({
                 <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                 <div className="mt-2 flex items-start justify-between gap-4">
                   <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
-                  <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{item.priceByLocation[selectedLocation]} ₽</p>
+                  {hasPrice ? (
+                    <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{price} ₽</p>
+                  ) : (
+                    <p className="shrink-0 text-right text-sm font-medium leading-tight text-[#a29a93]">нет в этой точке</p>
+                  )}
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
               </div>
@@ -122,7 +139,7 @@ export default function MenuDetailView({
                   type="button"
                   onClick={handlePrev}
                   disabled={!hasPrev}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   назад
                 </button>
@@ -133,7 +150,7 @@ export default function MenuDetailView({
                   type="button"
                   onClick={handleNext}
                   disabled={!hasNext}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   вперед
                 </button>

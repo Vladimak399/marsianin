@@ -113,6 +113,8 @@ export default function Hero() {
   function openCategory(category: string | null) {
     if (!selected) return;
 
+    clearTimers();
+
     const query = category ? `?category=${encodeURIComponent(category)}` : '';
     const href = `/menu/${selected.id}${query}`;
 
@@ -120,8 +122,8 @@ export default function Hero() {
     setTeleportOrigin({ x: selected.visual.x, y: selected.visual.y });
     setIsTeleporting(true);
 
-    window.setTimeout(() => router.push(href), 180);
-    window.setTimeout(() => setIsTeleporting(false), 760);
+    addTimer(() => router.push(href), 180);
+    addTimer(() => setIsTeleporting(false), 760);
   }
 
   return (

@@ -4,7 +4,7 @@ import Providers from '@/components/providers/Providers';
 import { halvarMittel } from '@/lib/fonts';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://marsianin.cafe'),
+  metadataBase: new URL('https://marsianin.online'),
   title: 'марсианин — кофейня и кухня на каждый день',
   description:
     'кофейня «марсианин»: завтраки, блюда из яиц, творог, пасты и напитки. прозрачное меню с ценами и кбжу.',
