@@ -28,36 +28,32 @@ jobs:
               number: issue.number
             };
 
-      - name: Call DeepSeek API
-        id: ai
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://api.deepseek.com/v1/chat/completions'
-          method: 'POST'
-          customHeaders: |
-            {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer ${{ secrets.DEEPSEEK_API_KEY }}"
-            }
-          data: |
-            {
-              "model": "deepseek-chat",
-              "messages": [
-                {
-                  "role": "system",
-                  "content": "Ты ассистент, который генерирует исправления кода в репозитории marsianin (Next.js 14, TypeScript, TailwindCSS). Ответь СТРОГО в формате:\nFILE: <путь>\nCONTENT: <весь код файла>\n---\nFILE: <путь>\nCONTENT: <весь код файла>\n(разделяй файлы маркером ---). Не добавляй пояснений, только код."
-                },
-                {
-                  "role": "user",
-                  "content": "Задача: ${{ fromJson(steps.issue.outputs.result).title }}. Подробности: ${{ fromJson(steps.issue.outputs.result).body }}."
-                }
-              ],
-              "max_tokens": 4000
-            }
+      - name: Prepare request body
+        id: body
+        run: |
+          TITLE="${{ fromJson(steps.issue.outputs.result).title }}"
+          BODY="${{ fromJson(steps.issue.outputs.result).body }}"
+          # Формируем JSON с помощью jq для гарантированной валидности
+          jq -n --arg title "$TITLE" --arg body "$BODY" '{
+            model: "deepseek-chat",
+            messages: [
+              {role: "system", content: "Ты ассистент, который генерирует исправления кода в репозитории marsianin (Next.js 14, TypeScript, TailwindCSS). Ответь СТРОГО в формате:\nFILE: <путь>\nCONTENT: <весь код файла>\n---\nFILE: <путь>\nCONTENT: <весь код файла>\n(разделяй файлы маркером ---). Не добавляй пояснений, только код."},
+              {role: "user", content: ("Задача: " + $title + ". Подробности: " + $body + ".")}
+            ],
+            max_tokens: 4000
+          }' > request.json
 
-      - name: Save AI response to file
-        run: echo '${{ steps.ai.outputs.response }}' > response.json
-      
+      - name: Call DeepSeek API with curl
+        id: ai
+        run: |
+          RESPONSE=$(curl -s -X POST "https://api.deepseek.com/v1/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DEEPSEEK_API_KEY }}" \
+            -d @request.json)
+          echo "$RESPONSE" > response.json
+          # Выведем часть ответа для лога
+          echo "Response: $(cat response.json | jq -c '.choices[0].message.content // .error')"
+
       - name: Parse response and apply changes
         id: apply
         uses: actions/github-script@v7
@@ -65,10 +61,15 @@ jobs:
           script: |
             const fs = require('fs');
             const response = JSON.parse(fs.readFileSync('response.json', 'utf8'));
+            if (response.error) {
+              core.setFailed('API Error: ' + JSON.stringify(response.error));
+              return;
+            }
             const content = response.choices[0].message.content;
+            console.log('AI response content:', content);
             
-            // Разбиваем на блоки файлов
             const blocks = content.split('---');
+            const path = require('path');
             
             for (const block of blocks) {
               const fileMatch = block.match(/FILE:\s*(.+)/);
@@ -76,11 +77,9 @@ jobs:
               if (fileMatch && contentMatch) {
                 const filePath = fileMatch[1].trim();
                 const fileContent = contentMatch[1].trim();
-                // Убедимся, что папка существует (создастся автоматически при записи)
-                const path = require('path');
                 fs.mkdirSync(path.dirname(filePath), { recursive: true });
                 fs.writeFileSync(filePath, fileContent);
-                console.log(`Файл ${filePath} обновлён`);
+                console.log(`Updated file: ${filePath}`);
               }
             }
 
