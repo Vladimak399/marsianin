@@ -6,12 +6,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { useLocation } from '@/components/providers/LocationProvider';
 import BrandHeader from './BrandHeader';
-import { CoordinateBackground, ProximityLine } from './CoordinateBackground';
+import { CoordinateBackground } from './CoordinateBackground';
 import DesktopScene from './DesktopScene';
-import { LockCaption, UserLocationPanel } from './LocationNode';
+import { LockCaption } from './LocationNode';
 import LocationMap from './LocationMap';
 import LocationOpenPanel from './LocationOpenPanel';
 import TransitionOverlay from './TransitionOverlay';
+import { UserCoordinateTrace, UserTraceLayer } from './UserCoordinateTrace';
 import { Coordinates, getNearestLocation, LocationPoint, Phase } from './types';
 
 const DEMO_USER_COORDS = { lat: 54.71264, lng: 20.51214 };
@@ -133,10 +134,16 @@ export default function Hero() {
         <div className="pointer-events-none absolute -right-20 top-24 z-[3] h-64 w-64 rounded-full bg-[#ed6a32]/12 blur-3xl" />
         <BrandHeader />
         <AnimatePresence>
-          <UserLocationPanel userCoords={userCoords} nearest={nearest} phase={phase} geoUnavailable={geoUnavailable} />
+          <UserCoordinateTrace
+            userCoords={userCoords}
+            nearest={nearest}
+            phase={phase}
+            selected={selected}
+            geoUnavailable={geoUnavailable}
+          />
         </AnimatePresence>
         <CoordinateBackground selected={selected} phase={phase} nearestId={nearest?.id ?? null} />
-        <ProximityLine nearest={nearest} phase={phase} />
+        <UserTraceLayer userCoords={userCoords} nearest={nearest} selected={selected} phase={phase} />
         <LocationMap phase={phase} cameraY={cameraY} selected={selected} isBusy={isBusy} nearest={nearest} onSelect={select} />
         <LockCaption selected={selected} phase={phase} />
         <TransitionOverlay selected={selected} phase={phase} />

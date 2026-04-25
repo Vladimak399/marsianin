@@ -4,64 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import RollingCoordinate from '@/components/home/RollingCoordinate';
 import { premiumEase } from '@/lib/animations';
 import GateCode from './GateCode';
-import { Coordinates, LocationPoint, NearestLocation, Phase } from './types';
-
-export function UserLocationPanel({
-  userCoords,
-  nearest,
-  phase,
-  geoUnavailable
-}: {
-  userCoords: Coordinates | null;
-  nearest: NearestLocation | null;
-  phase: Phase;
-  geoUnavailable: boolean;
-}) {
-  if (phase === 'open') return null;
-
-  if (!userCoords) {
-    if (!geoUnavailable) return null;
-
-    return (
-      <motion.div
-        className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-white/78 py-3 text-[10px] text-black/40 backdrop-blur-sm"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.34, ease: premiumEase }}
-      >
-        геолокация недоступна
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-white/78 py-3 backdrop-blur-sm"
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ delay: 0.18, duration: 0.36, ease: premiumEase }}
-    >
-      <div className="grid grid-cols-[1fr_auto] items-start gap-4">
-        <div>
-          <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">ваши координаты</div>
-          <RollingCoordinate lat={userCoords.lat} lng={userCoords.lng} active className="mt-1 text-[10px] text-black/40" />
-        </div>
-        {nearest ? (
-          <motion.div className="text-right" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.48, duration: 0.34 }}>
-            <div className="text-[9px] tracking-[0.1em] text-black/34">ближайшая точка</div>
-            <div className="mt-1.5 flex flex-col items-end">
-              <div className="mb-0.5 text-[8px] tracking-[0.08em] text-black/32">код точки</div>
-              <GateCode id={nearest.code} size="small" />
-            </div>
-            <div className="mt-1 text-[9px] text-black/32">{nearest.distance.toFixed(2)} км</div>
-          </motion.div>
-        ) : null}
-      </div>
-    </motion.div>
-  );
-}
+import { LocationPoint, Phase } from './types';
 
 export function LocationNode({
   point,
@@ -84,8 +27,11 @@ export function LocationNode({
   const isDimmed = selected && !isActive;
   const isNearest = nearestId === point.id;
   const hidden = phase === 'open';
-  const shouldRollCoordinates = isActive || (isNearest && !selected && phase === 'map');
-  const rollKey = `coord-${point.id}-${isActive ? 1 : 0}-${isNearest && !selected && phase === 'map' ? 'nearest-map' : 'static'}`;
+  const shouldRollCoordinates =
+    isActive ||
+    (isNearest && !selected && phase === 'map') ||
+    (isActive && (phase === 'lock' || phase === 'docking'));
+  const rollKey = `coord-${point.id}-${phase}-${isActive ? 'active' : 'idle'}-${isNearest ? 'nearest' : 'normal'}`;
 
   return (
     <motion.button
@@ -125,7 +71,15 @@ export function LocationNode({
           <GateCode id={point.code} active={isActive || isNearest} />
           <div className="pt-1.5">
             <div className="text-[13px] tracking-[-0.02em] text-black/50">{point.title}</div>
-            <RollingCoordinate key={rollKey} lat={point.lat} lng={point.lng} active={shouldRollCoordinates} className="mt-2 text-[9px] text-black/34" />
+            <RollingCoordinate
+              key={rollKey}
+              lat={point.lat}
+              lng={point.lng}
+              active={shouldRollCoordinates}
+              variant="compact"
+              animationKey={rollKey}
+              className="mt-2 text-[9px] text-black/34"
+            />
           </div>
         </div>
       </motion.div>
@@ -149,7 +103,14 @@ export function LockCaption({ selected, phase }: { selected: LocationPoint | nul
           <div className="text-[9px] tracking-[0.14em] text-[#ed6a32]">фиксация точки</div>
           <div className="mt-1 text-[12px] text-black/42">{selected.title}</div>
         </div>
-        <RollingCoordinate lat={selected.lat} lng={selected.lng} active={phase === 'lock' || phase === 'docking'} className="text-right text-[9px] leading-relaxed" />
+        <RollingCoordinate
+          lat={selected.lat}
+          lng={selected.lng}
+          active={phase === 'lock' || phase === 'docking'}
+          variant="labeled"
+          animationKey={`${selected.id}-${phase}`}
+          className="text-right text-[9px] leading-relaxed"
+        />
       </motion.div>
     </AnimatePresence>
   );
