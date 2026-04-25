@@ -11,6 +11,12 @@ type UseMenuCatalogOptions = {
 export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   const [catalog, setCatalog] = useState<MenuCategory[]>(() => loadMenuCatalog());
 
+  const applyCatalog = useCallback((nextCatalog: MenuCategory[]) => {
+    const normalized = sanitizeMenuCatalog(nextCatalog);
+    setCatalog(normalized);
+    saveMenuCatalog(normalized);
+  }, []);
+
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== MENU_STORAGE_KEY) return;
@@ -27,19 +33,16 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
       const response = await fetch(endpoint, { method: 'GET', credentials: 'include' });
       if (!response.ok) return;
       const payload = (await response.json()) as { catalog: MenuCategory[] };
-      const normalized = sanitizeMenuCatalog(payload.catalog);
-      setCatalog(normalized);
-      saveMenuCatalog(normalized);
+      applyCatalog(payload.catalog);
     };
 
     void syncFromServer();
-  }, [options.admin]);
+  }, [applyCatalog, options.admin]);
 
   const updateCatalog = useCallback(
     async (nextCatalog: MenuCategory[]) => {
       const normalized = sanitizeMenuCatalog(nextCatalog);
-      setCatalog(normalized);
-      saveMenuCatalog(normalized);
+      applyCatalog(normalized);
 
       if (!options.admin) return;
 
@@ -52,7 +55,7 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
         body: JSON.stringify({ catalog: normalized })
       });
     },
-    [options.admin]
+    [applyCatalog, options.admin]
   );
 
   const restoreCatalog = useCallback(async () => {
@@ -72,5 +75,5 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
     });
   }, [options.admin]);
 
-  return { catalog, updateCatalog, restoreCatalog };
+  return { catalog, updateCatalog, restoreCatalog, applyCatalog };
 };
