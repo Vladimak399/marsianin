@@ -23,7 +23,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
     <motion.button
       type="button"
       onClick={() => onOpen(item, category)}
-      className="group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_8px_20px_rgba(24,21,18,0.06)] sm:flex sm:flex-col"
+      className="group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_4px_12px_rgba(24,21,18,0.045)] sm:flex sm:flex-col"
       whileTap={{ scale: 0.992 }}
       transition={{ duration: 0.14, ease: premiumEase }}
     >
@@ -34,7 +34,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
           alt={item.name}
           fill
           priority={priority}
-          sizes="(max-width: 640px) 112px, (max-width: 1024px) 430px, 33vw"
+          sizes="(max-width: 640px) 112px, (max-width: 768px) 45vw, (max-width: 1024px) 38vw, (max-width: 1280px) 30vw, 360px"
           className="object-cover opacity-92 transition-transform duration-300 sm:group-hover:scale-[1.03]"
         />
       </div>

@@ -20,7 +20,7 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
           {section.items.length} поз.
         </p>
       </header>
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         {section.items.map((item, index) => (
           <MenuCard
             key={item.id}

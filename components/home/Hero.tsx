@@ -129,7 +129,7 @@ export default function Hero() {
         }
       `}</style>
 
-      <div className="relative mx-auto min-h-[100dvh] w-full max-w-[430px] overflow-hidden bg-[#fffdf8] shadow-[0_16px_52px_rgba(0,0,0,.06)] sm:border-x sm:border-black/[0.04] lg:hidden">
+      <div className="relative mx-auto min-h-[100dvh] w-full max-w-[430px] overflow-hidden bg-[#fffdf8] shadow-[0_12px_36px_rgba(0,0,0,.045)] sm:border-x sm:border-black/[0.04] md:max-w-[640px] lg:hidden">
         <CoordinateSystemLayer
           mode={phase === 'open' ? 'open' : phase === 'docking' || phase === 'wash' ? 'transition' : 'map'}
           verticalShift={phase === 'docking' || phase === 'wash' ? cameraY * 0.8 : 0}

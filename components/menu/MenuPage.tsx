@@ -177,15 +177,15 @@ export default function MenuPage({
 
   return (
     <main className="font-halvar relative min-h-[100dvh] overflow-x-clip bg-transparent text-[#181512]">
-      <div className="relative mx-auto min-h-[100dvh] w-full max-w-[430px] bg-[#fffdf8] shadow-[0_24px_70px_rgba(24,21,18,0.1)] sm:border-x sm:border-[rgba(24,21,18,0.08)] lg:max-w-[1180px]">
-        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white lg:max-w-[1180px]">
+      <div className="relative mx-auto min-h-[100dvh] w-full max-w-[430px] bg-[#fffdf8] shadow-[0_14px_38px_rgba(24,21,18,0.07)] sm:border-x sm:border-[rgba(24,21,18,0.08)] md:max-w-[640px] lg:max-w-[1180px]">
+        <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 overflow-hidden bg-white md:max-w-[640px] lg:max-w-[1180px]">
           <CoordinateSystemLayer mode="menu" muted />
         </div>
 
-        <div className="relative z-10 px-5 pb-12 pt-7 sm:px-7 sm:pt-9 lg:px-10">
+        <div className="relative z-10 px-5 pb-12 pt-7 sm:px-7 sm:pt-9 md:px-8 lg:px-10">
           <section className="relative overflow-visible">
             <motion.div
-              className="relative z-10 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] px-4 pb-5 pt-4 shadow-[0_10px_24px_rgba(24,21,18,0.06)] sm:px-5"
+              className="relative z-10 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] px-4 pb-5 pt-4 shadow-[0_6px_16px_rgba(24,21,18,0.045)] sm:px-5"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: premiumEase }}
@@ -227,7 +227,7 @@ export default function MenuPage({
             </motion.div>
 
             <motion.div
-              className="relative z-10 mt-5 grid grid-cols-3 gap-2 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] p-3 shadow-[0_8px_20px_rgba(24,21,18,0.05)]"
+              className="relative z-10 mt-5 grid grid-cols-3 gap-2 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] p-3 shadow-[0_4px_12px_rgba(24,21,18,0.04)]"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.04, ease: premiumEase }}
