@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { useLocation } from '@/components/providers/LocationProvider';
@@ -18,7 +17,6 @@ import { Coordinates, getNearestLocation, LocationPoint, Phase } from './types';
 const DEMO_USER_COORDS = { lat: 54.71264, lng: 20.51214 };
 
 export default function Hero() {
-  const router = useRouter();
   const { setSelectedLocation, setGuestCoordinates, setIsTeleporting, setTeleportOrigin } = useLocation();
   const [selected, setSelected] = useState<LocationPoint | null>(null);
   const [phase, setPhase] = useState<Phase>('map');
@@ -122,8 +120,9 @@ export default function Hero() {
     setTeleportOrigin({ x: selected.visual.x, y: selected.visual.y });
     setIsTeleporting(true);
 
-    addTimer(() => router.push(href), 180);
-    window.setTimeout(() => setIsTeleporting(false), 760);
+    window.setTimeout(() => {
+      window.location.assign(href);
+    }, 180);
   }
 
   return (
