@@ -43,6 +43,8 @@ export default function MenuDetailView({
 
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
+  const price = item?.priceByLocation[selectedLocation];
+  const hasPrice = typeof price === 'number';
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
@@ -112,7 +114,11 @@ export default function MenuDetailView({
                 <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                 <div className="mt-2 flex items-start justify-between gap-4">
                   <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
-                  <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{item.priceByLocation[selectedLocation]} ₽</p>
+                  {hasPrice ? (
+                    <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{price} ₽</p>
+                  ) : (
+                    <p className="shrink-0 text-right text-sm font-medium leading-tight text-[#a29a93]">нет в этой точке</p>
+                  )}
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
               </div>
