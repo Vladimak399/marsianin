@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { premiumEase } from '@/lib/animations';
 import GateCode from './GateCode';
@@ -22,10 +22,14 @@ export default function DesktopOpenPanel({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const selectedLocation = LOCATION_DETAILS[selected.id];
   const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
+  const enterInitial = reduceMotion ? false : { y: 14, opacity: 0 };
+  const enterAnimate = { y: 0, opacity: 1 };
+  const enterTransition = { delay: reduceMotion ? 0 : 0.05, duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase };
 
   return (
     <div className="relative min-h-[100dvh] bg-[#fffdf8]">
@@ -47,7 +51,7 @@ export default function DesktopOpenPanel({
 
       <div className="relative z-20 px-10 pb-10 pt-16">
         <div className="grid gap-9 lg:grid-cols-[0.85fr_1.15fr]">
-          <motion.div initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.36, ease: premiumEase }}>
+          <motion.div initial={reduceMotion ? false : { y: 12, opacity: 0 }} animate={enterAnimate} transition={{ duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase }}>
             <GateCode id={selected.code} size="hero" active />
             <div className="mt-6 text-[22px] tracking-[-0.03em] text-black/70">{selected.title}</div>
             <div className="mt-3 space-y-1 border-y border-black/[0.06] py-4 text-[12px] text-black/54">
@@ -63,9 +67,9 @@ export default function DesktopOpenPanel({
 
           <motion.div
             className="border border-black/[0.08] bg-[#fffdf8]/88 p-6 backdrop-blur-sm"
-            initial={{ y: 14, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.05, duration: 0.36, ease: premiumEase }}
+            initial={enterInitial}
+            animate={enterAnimate}
+            transition={enterTransition}
           >
             <MenuPreview onOpenCategory={onOpenCategory} />
 
