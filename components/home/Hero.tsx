@@ -82,18 +82,14 @@ export default function Hero() {
     const currentPhase = phaseRef.current;
     const canSelect = currentPhase === 'map' || currentPhase === 'open';
     if (!canSelect) return;
+
     clearTimers();
     setSelectedLocation(point.id);
-    setIsTeleporting(true);
-    setTeleportOrigin({ x: point.visual.x, y: point.visual.y });
     setSelected(point);
     setPhase('lock');
     addTimer(() => setPhase('docking'), 220);
     addTimer(() => setPhase('wash'), 660);
-    addTimer(() => {
-      setPhase('open');
-      setIsTeleporting(false);
-    }, 900);
+    addTimer(() => setPhase('open'), 900);
   }
 
   function select(point: LocationPoint) {
@@ -116,8 +112,16 @@ export default function Hero() {
 
   function openCategory(category: string | null) {
     if (!selected) return;
+
     const query = category ? `?category=${encodeURIComponent(category)}` : '';
-    router.push(`/menu/${selected.id}${query}`);
+    const href = `/menu/${selected.id}${query}`;
+
+    setSelectedLocation(selected.id);
+    setTeleportOrigin({ x: selected.visual.x, y: selected.visual.y });
+    setIsTeleporting(true);
+
+    window.setTimeout(() => router.push(href), 180);
+    window.setTimeout(() => setIsTeleporting(false), 760);
   }
 
   return (
@@ -136,7 +140,7 @@ export default function Hero() {
           muted={phase === 'open'}
         />
         <div className="pointer-events-none absolute -right-20 top-24 z-[3] h-64 w-64 rounded-full bg-[#ed6a32]/12 blur-3xl" />
-        <BrandHeader />
+        {phase !== 'open' ? <BrandHeader /> : null}
         <AnimatePresence>
           <UserCoordinateTrace
             userCoords={userCoords}
