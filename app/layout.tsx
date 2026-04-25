@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className={halvarMittel.variable}>
-      <body className="min-h-screen bg-white font-sans"><Providers>{children}</Providers></body>
+      <body className="min-h-[100dvh] bg-[#f7f4ee] font-sans"><Providers>{children}</Providers></body>
     </html>
   );
 }
