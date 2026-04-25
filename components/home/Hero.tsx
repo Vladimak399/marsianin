@@ -152,7 +152,16 @@ export default function Hero() {
         <LockCaption selected={selected} phase={phase} />
         <TransitionOverlay selected={selected} phase={phase} />
         <AnimatePresence>
-          {phase === 'open' && selected ? <LocationOpenPanel selected={selected} isBusy={isBusy} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} /> : null}
+          {phase === 'open' && selected ? (
+            <LocationOpenPanel
+              selected={selected}
+              userCoords={userCoords}
+              isBusy={isBusy}
+              onBack={back}
+              onSwitch={switchPoint}
+              onOpenCategory={openCategory}
+            />
+          ) : null}
         </AnimatePresence>
       </div>
 
