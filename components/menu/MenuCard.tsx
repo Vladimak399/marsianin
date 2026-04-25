@@ -18,12 +18,15 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
   const fallbackLocation: LocationId = 'o12';
   const location = selectedLocation ?? fallbackLocation;
   const price = item.priceByLocation[location];
+  const hasPrice = typeof price === 'number';
 
   return (
     <motion.button
       type="button"
       onClick={() => onOpen(item, category)}
-      className="group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_8px_20px_rgba(24,21,18,0.06)] sm:flex sm:flex-col"
+      className={`group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_8px_20px_rgba(24,21,18,0.06)] transition-opacity sm:flex sm:flex-col ${
+        hasPrice ? '' : 'opacity-70'
+      }`}
       whileTap={{ scale: 0.992 }}
       transition={{ duration: 0.14, ease: premiumEase }}
     >
@@ -42,7 +45,11 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-4">
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <h3 className="min-w-0 text-[0.98rem] font-semibold leading-snug tracking-[-0.02em] text-[#181512] sm:text-[1rem]">{item.name}</h3>
-          <p className="shrink-0 text-[1.05rem] font-semibold text-[#ed6a32]">{price} ₽</p>
+          {hasPrice ? (
+            <p className="shrink-0 text-[1.05rem] font-semibold text-[#ed6a32]">{price} ₽</p>
+          ) : (
+            <p className="shrink-0 text-[0.92rem] font-medium text-[#a29a93]">нет в этой точке</p>
+          )}
         </div>
 
         <p className="line-clamp-2 text-[12px] leading-relaxed text-[#504942] sm:line-clamp-none sm:text-sm">{item.description}</p>
