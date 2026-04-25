@@ -1,4 +1,6 @@
+import { notFound } from 'next/navigation';
 import MenuPage from '@/components/menu/MenuPage';
+import { locations } from '@/data/locations';
 
 type MenuByLocationRoutePageProps = {
   params: Promise<{ locationId: string }>;
@@ -14,13 +16,18 @@ const parseCoordinate = (value?: string) => {
 
 export default async function MenuByLocationRoutePage({ params, searchParams }: MenuByLocationRoutePageProps) {
   const { locationId } = await params;
+  const normalizedLocationId = locationId.toLowerCase();
+  const locationExists = locations.some((location) => location.id === normalizedLocationId);
+
+  if (!locationExists) notFound();
+
   const query = await searchParams;
   const guestLat = parseCoordinate(query.guestLat);
   const guestLng = parseCoordinate(query.guestLng);
 
   return (
     <MenuPage
-      initialLocation={locationId}
+      initialLocation={normalizedLocationId}
       initialCategory={query.category}
       initialEntrySource={query.source}
       initialGuestCoordinates={guestLat !== null && guestLng !== null ? { lat: guestLat, lng: guestLng } : null}
