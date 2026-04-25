@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { LocationPoint, NearestLocation, Phase, LOCATIONS } from './types';
 import { LocationNode } from './LocationNode';
 
@@ -21,18 +21,23 @@ export default function LocationMap({
   nearest: NearestLocation | null;
   onSelect: (point: LocationPoint) => void;
 }) {
+  const reduceMotion = useReducedMotion();
+  const isTransitioning = phase === 'docking' || phase === 'wash';
+  const isOpen = phase === 'open';
+
   return (
     <motion.div
       className="absolute inset-0 z-20 px-4 pb-8 pt-44"
       role="navigation"
       aria-label="карта точек"
+      aria-hidden={isOpen}
       animate={{
-        y: phase === 'docking' || phase === 'wash' ? `${cameraY}%` : '0%',
-        scale: phase === 'docking' || phase === 'wash' ? 1.02 : 1,
-        opacity: phase === 'open' ? 0 : 1,
+        y: !reduceMotion && isTransitioning ? `${cameraY}%` : '0%',
+        scale: !reduceMotion && isTransitioning ? 1.02 : 1,
+        opacity: isOpen ? 0 : 1,
         pointerEvents: phase === 'map' ? 'auto' : 'none'
       }}
-      transition={{ duration: 0.54, ease: gateEase }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.54, ease: gateEase }}
     >
       <div className="space-y-4 pt-2 lg:hidden">
         {LOCATIONS.map((point, index) => (
