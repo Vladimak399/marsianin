@@ -47,13 +47,10 @@ export function UserCoordinateTrace({
     <motion.div
       className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-[#fffdf8]/90 py-3 backdrop-blur-sm max-md:top-[92px]"
       initial={{ opacity: 0, y: -8 }}
-      animate={
-        phase === 'open'
-          ? { opacity: 0.62, y: -2, scale: 0.985 }
-          : { opacity: 1, y: 0, scale: 1 }
-      }
+      animate={phase === 'open' ? { opacity: 0, y: -10, scale: 0.985 } : { opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ delay: 0.12, duration: 0.34, ease: premiumEase }}
+      transition={{ delay: phase === 'open' ? 0 : 0.12, duration: 0.28, ease: premiumEase }}
+      aria-hidden={phase === 'open'}
     >
       {!userCoords ? (
         <div className="text-[10px] text-black/45">
