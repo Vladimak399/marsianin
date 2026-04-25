@@ -64,7 +64,7 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
 
       <div
         aria-hidden
-        className={`fixed inset-0 pointer-events-none overflow-hidden transition-opacity transition-transform ${transitionClasses} ${
+        className={`fixed inset-0 pointer-events-none overflow-hidden transition-[opacity,transform] ${transitionClasses} ${
           isTeleporting ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-[1.01]'
         }`}
         style={{ zIndex: LAYER_Z_INDEX.overlay }}
