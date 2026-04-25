@@ -3,6 +3,12 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation } from '@/components/providers/LocationProvider';
 
+const LAYER_Z_INDEX = {
+  page: 0,
+  retained: 110,
+  overlay: 120
+} as const;
+
 const OVERLAY_GRID_STYLE = {
   backgroundImage:
     'linear-gradient(rgba(138, 118, 94, 0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(138, 118, 94, 0.14) 1px, transparent 1px)',
@@ -42,19 +48,26 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="relative min-h-[100dvh]">
-        {children}
-        {isTeleporting ? (
-          <div aria-hidden className="pointer-events-none absolute inset-0 z-[110] overflow-hidden">
-            {retainedChildren}
-          </div>
-        ) : null}
+      <div className="relative min-h-[100dvh]" style={{ zIndex: LAYER_Z_INDEX.page }}>
+        {!isTeleporting ? children : null}
       </div>
+
+      {isTeleporting ? (
+        <div
+          aria-hidden
+          className="fixed inset-0 pointer-events-none overflow-hidden"
+          style={{ zIndex: LAYER_Z_INDEX.retained }}
+        >
+          {retainedChildren}
+        </div>
+      ) : null}
+
       <div
         aria-hidden
-        className={`fixed inset-0 pointer-events-none z-[120] overflow-hidden transition-opacity transition-transform ${transitionClasses} ${
+        className={`fixed inset-0 pointer-events-none overflow-hidden transition-opacity transition-transform ${transitionClasses} ${
           isTeleporting ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-[1.01]'
         }`}
+        style={{ zIndex: LAYER_Z_INDEX.overlay }}
       >
         <div className="absolute inset-0 bg-[#fbf7ef]/98" />
         <div className="absolute inset-0" style={OVERLAY_GRID_STYLE} />
