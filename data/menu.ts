@@ -181,5 +181,34 @@ export const menuData: MenuCategory[] = [
         nutrition: { calories: 150, protein: 6, fat: 7, carbs: 15 }
       }
     ]
+  },
+  {
+    category: 'десерты',
+    items: [
+      {
+        id: 'desserts-1',
+        name: 'чизкейк ванильный',
+        description: 'сливочный чизкейк, ваниль, песочная основа',
+        priceByLocation: price(520, 490, 460),
+        image: getMockMenuImage('cottage'),
+        nutrition: { calories: 430, protein: 8, fat: 24, carbs: 45 }
+      },
+      {
+        id: 'desserts-2',
+        name: 'брауни шоколадный',
+        description: 'тёмный шоколад, какао, миндальная мука',
+        priceByLocation: price(480, 450, 430),
+        image: getMockMenuImage('breakfast'),
+        nutrition: { calories: 390, protein: 6, fat: 21, carbs: 43 }
+      },
+      {
+        id: 'desserts-3',
+        name: 'эклер фисташковый',
+        description: 'заварное тесто, фисташковый крем, глазурь',
+        priceByLocation: price(560, 530, 500),
+        image: getMockMenuImage('pasta'),
+        nutrition: { calories: 360, protein: 7, fat: 19, carbs: 39 }
+      }
+    ]
   }
 ];
