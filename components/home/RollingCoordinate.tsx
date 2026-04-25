@@ -62,12 +62,16 @@ function RollingGroup({
   const rows = buildSteps(value, axis);
 
   return (
-    <div className="h-[1.35em] overflow-hidden leading-[1.35]">
+    <div className="relative h-[1.35em] overflow-hidden leading-[1.35]">
+      <div className="opacity-100">
+        {label ? <span className="mr-1.5 text-black/45">{label}</span> : null}
+        <span>{finalValue}</span>
+      </div>
       <motion.div
         key={`${axis}-${finalValue}-${animationKey ?? 'auto'}`}
-        className="[will-change:transform,opacity]"
+        className="absolute inset-0 [will-change:transform,opacity]"
         initial={{ y: '-56%', opacity: 0.34 }}
-        animate={{ y: ['-56%', '-136%', '-133.33%'], opacity: [0.34, 0.9, 1] }}
+        animate={{ y: ['-56%', '-136%', '-133.33%'], opacity: [0.34, 0.9, 0] }}
         transition={{
           y: {
             duration: 1.12,

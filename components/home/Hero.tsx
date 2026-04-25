@@ -78,9 +78,9 @@ export default function Hero() {
     return clearTimers;
   }, [applyCoordinates]);
 
-  function runPointSelection(point: LocationPoint, options?: { allowFromOpen?: boolean }) {
+  function runPointSelection(point: LocationPoint) {
     const currentPhase = phaseRef.current;
-    const canSelect = currentPhase === 'map' || (options?.allowFromOpen && currentPhase === 'open');
+    const canSelect = currentPhase === 'map' || currentPhase === 'open';
     if (!canSelect) return;
     clearTimers();
     setSelectedLocation(point.id);
@@ -111,7 +111,7 @@ export default function Hero() {
     clearTimers();
     setPhase('map');
     setSelected(null);
-    addTimer(() => runPointSelection(point, { allowFromOpen: true }), 90);
+    addTimer(() => runPointSelection(point), 90);
   }
 
   function openCategory(category: string | null) {
