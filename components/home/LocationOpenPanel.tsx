@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import RollingCoordinate from './RollingCoordinate';
 import GateCode from './GateCode';
@@ -25,15 +24,14 @@ export default function LocationOpenPanel({
   onOpenCategory: (category: string | null) => void;
 }) {
   const selectedLocation = LOCATION_DETAILS[selected.id];
-  const menuHref = `/menu/${selected.id}`;
 
   const actionLinkClass =
-    'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
+    'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
   const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
 
   return (
     <motion.div
-      className="absolute inset-0 z-[80] min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#fffdf8] px-7 pb-8 pt-28"
+      className="absolute inset-0 z-[80] min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#fffdf8] px-7 pb-8 pt-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -44,15 +42,21 @@ export default function LocationOpenPanel({
         <div className="absolute bottom-20 left-8 h-60 w-60 rounded-full bg-[#ed6a32]/10 blur-3xl" />
       </div>
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="sticky right-0 top-6 z-[120] ml-auto block border border-black/[0.065] bg-[#fffdf8]/95 px-4 py-2 text-[10px] tracking-[0.08em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]"
-      >
-        карта
-      </button>
+      <div className="sticky top-0 z-[120] -mx-7 flex items-center justify-between border-b border-black/[0.06] bg-[#fffdf8]/92 px-7 py-3 backdrop-blur-sm">
+        <div>
+          <div className="text-[17px] font-medium tracking-[0.1em] text-black/78">марсианин</div>
+          <div className="mt-1 text-[9px] tracking-[0.04em] text-black/42">активная точка</div>
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="border border-black/[0.065] bg-[#fffdf8]/95 px-4 py-2 text-[10px] tracking-[0.08em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]"
+        >
+          карта
+        </button>
+      </div>
 
-      <div className="relative z-10 pb-24">
+      <div className="relative z-10 pb-24 pt-8">
         <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.44, ease: premiumEase }}>
           <GateCode id={selected.code} size="hero" active />
           <motion.div className="mt-7 text-lg tracking-[-0.03em] text-black/66" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.32 }}>
@@ -77,15 +81,16 @@ export default function LocationOpenPanel({
         <MenuPreview onOpenCategory={onOpenCategory} />
 
         <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: premiumEase }}>
-          <Link
-            href={menuHref}
-            aria-disabled={isBusy}
-            className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.04em] text-white transition ${
-              isBusy ? 'pointer-events-none cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:bg-[#df5f2c]'
+          <button
+            type="button"
+            onClick={() => onOpenCategory(null)}
+            disabled={isBusy}
+            className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.04em] text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
+              isBusy ? 'cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99]'
             }`}
           >
             {mainCtaText}
-          </Link>
+          </button>
         </motion.div>
 
         <motion.div className="mt-4 grid grid-cols-2 gap-2" initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.34, ease: premiumEase }}>
@@ -113,7 +118,6 @@ export default function LocationOpenPanel({
           <p>марсианин</p>
           <p className="mt-1">точки: {LOCATIONS.map((point) => point.code).join(' · ')}</p>
           <p className="mt-1">режим: {selectedLocation.workingHours}</p>
-          <p className="mt-1">инн/огрн: данные уточняются</p>
           <p className="mt-1">информация на сайте не является публичной офертой</p>
         </motion.footer>
       </div>
