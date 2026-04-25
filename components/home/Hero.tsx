@@ -17,7 +17,7 @@ import { Coordinates, getNearestLocation, LocationPoint, Phase } from './types';
 const DEMO_USER_COORDS = { lat: 54.71264, lng: 20.51214 };
 
 export default function Hero() {
-  const { setSelectedLocation, setGuestCoordinates, setIsTeleporting, setTeleportOrigin } = useLocation();
+  const { setSelectedLocation, setGuestCoordinates, setIsTeleporting } = useLocation();
   const [selected, setSelected] = useState<LocationPoint | null>(null);
   const [phase, setPhase] = useState<Phase>('map');
   const [userCoords, setUserCoords] = useState<Coordinates | null>(null);
@@ -117,12 +117,7 @@ export default function Hero() {
     const href = `/menu/${selected.id}${query}`;
 
     setSelectedLocation(selected.id);
-    setTeleportOrigin({ x: selected.visual.x, y: selected.visual.y });
-    setIsTeleporting(true);
-
-    window.setTimeout(() => {
-      window.location.assign(href);
-    }, 180);
+    window.location.assign(href);
   }
 
   return (
