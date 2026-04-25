@@ -123,7 +123,7 @@ export default function Hero() {
     setIsTeleporting(true);
 
     addTimer(() => router.push(href), 180);
-    addTimer(() => setIsTeleporting(false), 760);
+    window.setTimeout(() => setIsTeleporting(false), 760);
   }
 
   return (
