@@ -43,11 +43,11 @@ export default function DesktopScene({
 
       <div className="relative z-10 grid min-h-[100dvh] grid-cols-[390px_1fr] gap-10 px-10 pb-10 pt-32">
         <div className="self-end pb-8">
-          <div className="text-[82px] font-black leading-[0.82] tracking-[-0.04em] text-[#ed6a32]">map</div>
+          <div className="text-[82px] font-black leading-[0.82] tracking-[-0.04em] text-[#ed6a32]">карта</div>
           <div className="mt-8 border-y border-black/[0.055] py-4">
-            <div className="text-[10px] tracking-[0.14em] text-[#ed6a32]">nearest</div>
+            <div className="text-[10px] tracking-[0.14em] text-[#ed6a32]">ближайшая точка</div>
             <div className="mt-2 text-[42px] font-black leading-none tracking-[-0.035em] text-black/80">{nearest?.code ?? selected?.code ?? 'о12'}</div>
-            <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} km` : 'выберите точку'}</div>
+            <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} км` : 'выберите точку'}</div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2">
             {LOCATIONS.map((point) => (

@@ -55,7 +55,7 @@ export function UserLocationPanel({
               <div className="mb-0.5 text-[8px] tracking-[0.08em] text-black/32">код точки</div>
               <GateCode id={nearest.code} size="small" />
             </div>
-            <div className="mt-1 text-[9px] text-black/32">{nearest.distance.toFixed(2)} km</div>
+            <div className="mt-1 text-[9px] text-black/32">{nearest.distance.toFixed(2)} км</div>
           </motion.div>
         ) : null}
       </div>

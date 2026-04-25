@@ -24,6 +24,7 @@ export default function Hero() {
   const [userCoords, setUserCoords] = useState<Coordinates | null>(null);
   const [geoUnavailable, setGeoUnavailable] = useState(false);
   const timersRef = useRef<number[]>([]);
+  const phaseRef = useRef<Phase>('map');
 
   const nearest = useMemo(() => getNearestLocation(userCoords), [userCoords]);
   const cameraY = useMemo(() => (selected ? 50 - selected.visual.y : 0), [selected]);
@@ -38,6 +39,10 @@ export default function Hero() {
     const timer = window.setTimeout(callback, delay);
     timersRef.current.push(timer);
   }
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     const applyDemoFallback = () => {
@@ -68,8 +73,10 @@ export default function Hero() {
     return clearTimers;
   }, [setGuestCoordinates]);
 
-  function select(point: LocationPoint) {
-    if (phase !== 'map') return;
+  function runPointSelection(point: LocationPoint, options?: { allowFromOpen?: boolean }) {
+    const currentPhase = phaseRef.current;
+    const canSelect = currentPhase === 'map' || (options?.allowFromOpen && currentPhase === 'open');
+    if (!canSelect) return;
     clearTimers();
     setSelectedLocation(point.id);
     setIsTeleporting(true);
@@ -84,6 +91,10 @@ export default function Hero() {
     }, 900);
   }
 
+  function select(point: LocationPoint) {
+    runPointSelection(point);
+  }
+
   function back() {
     clearTimers();
     setIsTeleporting(false);
@@ -95,7 +106,7 @@ export default function Hero() {
     clearTimers();
     setPhase('map');
     setSelected(null);
-    addTimer(() => select(point), 90);
+    addTimer(() => runPointSelection(point, { allowFromOpen: true }), 90);
   }
 
   function openCategory(category: string | null) {
