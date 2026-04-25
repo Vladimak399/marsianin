@@ -140,15 +140,14 @@ export default function DesktopScene({
                     disabled={isBusy}
                     className={`absolute z-20 w-[238px] -translate-x-1/2 -translate-y-1/2 border bg-[#fffdf8]/90 p-4 text-left backdrop-blur-sm transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
                       isBusy ? 'cursor-progress opacity-80' : 'hover:shadow-[0_16px_34px_rgba(237,106,50,0.12)]'
-                    }`}
+                    } ${isHighlighted ? 'shadow-[0_18px_42px_rgba(237,106,50,0.13)]' : ''}`}
                     style={{ left: `${visual.x}%`, top: `${visual.y}%` }}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{
                       opacity: selected && !isActive ? 0.34 : 1,
                       y: 0,
                       scale: isHighlighted ? 1.035 : 1,
-                      borderColor: isHighlighted ? 'rgba(237,106,50,.9)' : 'rgba(0,0,0,.065)',
-                      boxShadow: isHighlighted ? '0 18px 42px rgba(237,106,50,0.13)' : '0 0 0 rgba(0,0,0,0)'
+                      borderColor: isHighlighted ? 'rgba(237,106,50,.9)' : 'rgba(0,0,0,.065)'
                     }}
                     transition={{ duration: 0.34, delay: index * 0.05, ease: premiumEase }}
                     whileHover={phase === 'map' ? { y: -3 } : undefined}
