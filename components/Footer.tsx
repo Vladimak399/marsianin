@@ -2,17 +2,17 @@ import { locations } from '@/data/locations';
 
 const legalItems = [
   'политика обработки персональных данных',
-  'публичная оферта',
-  'реквизиты будут добавлены'
+  'информация на сайте не является публичной офертой',
+  'ип/ооо, инн, огрн: реквизиты будут добавлены'
 ] as const;
 
 export default function Footer() {
   return (
-    <footer className="mt-12 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[rgba(255,255,255,0.72)] p-5 text-[#2e2c2a] shadow-[0_12px_32px_rgba(24,21,18,0.08)] backdrop-blur-sm sm:mt-14 sm:p-7">
+    <footer className="mt-12 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] p-5 text-[#2e2c2a] shadow-[0_10px_26px_rgba(24,21,18,0.06)] sm:mt-14 sm:p-7">
       <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10">
         <section>
           <p className="text-[21px] font-medium tracking-[0.1em] text-black/82">марсианин</p>
-          <p className="mt-2 text-xs tracking-[0.08em] text-black/46 uppercase">кофейня, где есть жизнь</p>
+          <p className="mt-2 text-xs tracking-[0.04em] text-black/46">кофейня, где есть жизнь</p>
         </section>
 
         <section className="grid gap-6 sm:grid-cols-3 sm:gap-5">
@@ -20,7 +20,7 @@ export default function Footer() {
             const deliveryLink = location.links.delivery ?? location.links.yandexEda;
 
             return (
-              <article key={location.id} className="space-y-3 rounded-xl border border-[rgba(24,21,18,0.08)] bg-white/70 p-4 sm:p-3">
+              <article key={location.id} className="space-y-3 rounded-xl border border-[rgba(24,21,18,0.08)] bg-white p-4 sm:p-3">
                 <p className="text-[27px] font-black leading-none tracking-[-0.02em] text-[#ed6a32]">{location.label}</p>
 
                 <div className="space-y-1.5 text-xs leading-relaxed text-black/62">

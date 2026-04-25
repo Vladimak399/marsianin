@@ -42,7 +42,7 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="relative min-h-svh">
+      <div className="relative min-h-[100dvh]">
         {children}
         {isTeleporting ? (
           <div aria-hidden className="pointer-events-none absolute inset-0 z-[110] overflow-hidden">
