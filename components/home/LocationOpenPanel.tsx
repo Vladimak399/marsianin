@@ -31,7 +31,7 @@ export default function LocationOpenPanel({
 
   return (
     <motion.div
-      className="absolute inset-0 z-[80] min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#faf7f1] px-7 pb-8 pt-28"
+      className="absolute inset-0 z-[80] min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#fffdf8] px-7 pb-8 pt-28"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
