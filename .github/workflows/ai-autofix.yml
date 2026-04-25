@@ -1,0 +1,98 @@
+name: AI AutoFix
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  fix:
+    if: github.event.label.name == 'ai-fix'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get issue details
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            return {
+              title: issue.title,
+              body: issue.body,
+              number: issue.number
+            };
+
+      - name: Call DeepSeek API
+        id: ai
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://api.deepseek.com/v1/chat/completions'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/json", "Authorization": "Bearer ${{ secrets.DEEPSEEK_API_KEY }}"}'
+          data: |
+            {
+              "model": "deepseek-chat",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "Ты ассистент, который генерирует исправления кода в репозитории marsianin (Next.js 14, TypeScript, TailwindCSS). Ответь СТРОГО в формате:\nFILE: <путь>\nCONTENT: <весь код файла>\n---\nFILE: <путь>\nCONTENT: <весь код файла>\n(разделяй файлы маркером ---). Не добавляй пояснений, только код."
+                },
+                {
+                  "role": "user",
+                  "content": "Задача: ${{ fromJson(steps.issue.outputs.result).title }}. Подробности: ${{ fromJson(steps.issue.outputs.result).body }}."
+                }
+              ],
+              "max_tokens": 4000
+            }
+
+      - name: Save AI response to file
+        run: echo '${{ steps.ai.outputs.response }}' > response.json
+      
+      - name: Parse response and apply changes
+        id: apply
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const response = JSON.parse(fs.readFileSync('response.json', 'utf8'));
+            const content = response.choices[0].message.content;
+            
+            // Разбиваем на блоки файлов
+            const blocks = content.split('---');
+            const changes = [];
+            
+            for (const block of blocks) {
+              const fileMatch = block.match(/FILE:\s*(.+)/);
+              const contentMatch = block.match(/CONTENT:\s*([\s\S]*)/);
+              if (fileMatch && contentMatch) {
+                const filePath = fileMatch[1].trim();
+                const fileContent = contentMatch[1].trim();
+                // Убедимся, что папка существует (создастся автоматически при записи)
+                fs.mkdirSync(require('path').dirname(filePath), { recursive: true });
+                fs.writeFileSync(filePath, fileContent);
+                changes.push(filePath);
+              }
+            }
+            
+            // Сохраним список изменённых файлов для последующего шага
+            core.setOutput('changed_files', changes.join(', '));
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: '🤖 AI fix: ${{ fromJson(steps.issue.outputs.result).title }}'
+          branch: ai/issue-${{ github.run_id }}
+          title: '🤖 AI Fix: ${{ fromJson(steps.issue.outputs.result).title }}'
+          body: |
+            Автоматический PR, созданный по [задаче #${{ fromJson(steps.issue.outputs.result).number }}](https://github.com/${{ github.repository }}/issues/${{ fromJson(steps.issue.outputs.result).number }}).
+            
+            Задача: ${{ fromJson(steps.issue.outputs.result).title }}
+            
+            Изменены файлы: ${{ steps.apply.outputs.changed_files }}
+          labels: 'ai-generated'
