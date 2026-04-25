@@ -2,7 +2,7 @@
 
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { useLocation } from '@/components/providers/LocationProvider';
 import BrandHeader from './BrandHeader';
@@ -24,6 +24,15 @@ export default function Hero() {
   const [phase, setPhase] = useState<Phase>('map');
   const [userCoords, setUserCoords] = useState<Coordinates | null>(null);
   const [geoUnavailable, setGeoUnavailable] = useState(false);
+
+  const applyCoordinates = useCallback(
+    (nextCoords: Coordinates, unavailable = false) => {
+      setUserCoords(nextCoords);
+      setGuestCoordinates(nextCoords);
+      setGeoUnavailable(unavailable);
+    },
+    [setGuestCoordinates]
+  );
   const timersRef = useRef<number[]>([]);
   const phaseRef = useRef<Phase>('map');
 
@@ -47,12 +56,9 @@ export default function Hero() {
 
   useEffect(() => {
     const applyDemoFallback = () => {
-      if (process.env.NODE_ENV !== 'production') {
-        setUserCoords(DEMO_USER_COORDS);
-        setGuestCoordinates(DEMO_USER_COORDS);
-      } else {
-        setGeoUnavailable(true);
-      }
+      // В production геолокация часто блокируется (HTTP, отказ пользователя, политика браузера),
+      // поэтому всегда показываем рабочие координаты и оставляем интерфейс живым.
+      applyCoordinates(DEMO_USER_COORDS, true);
     };
 
     if (!('geolocation' in navigator)) {
@@ -63,16 +69,14 @@ export default function Hero() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const nextCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
-        setUserCoords(nextCoords);
-        setGuestCoordinates(nextCoords);
-        setGeoUnavailable(false);
+        applyCoordinates(nextCoords, false);
       },
       () => applyDemoFallback(),
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
     );
 
     return clearTimers;
-  }, [setGuestCoordinates]);
+  }, [applyCoordinates]);
 
   function runPointSelection(point: LocationPoint, options?: { allowFromOpen?: boolean }) {
     const currentPhase = phaseRef.current;
