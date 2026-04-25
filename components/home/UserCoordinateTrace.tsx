@@ -47,13 +47,10 @@ export function UserCoordinateTrace({
     <motion.div
       className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-[#fffdf8]/90 py-3 backdrop-blur-sm max-md:top-[92px]"
       initial={{ opacity: 0, y: -8 }}
-      animate={
-        phase === 'open'
-          ? { opacity: 0.62, y: -2, scale: 0.985 }
-          : { opacity: 1, y: 0, scale: 1 }
-      }
+      animate={phase === 'open' ? { opacity: 0, y: -10, scale: 0.985 } : { opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ delay: 0.12, duration: 0.34, ease: premiumEase }}
+      transition={{ delay: phase === 'open' ? 0 : 0.12, duration: 0.28, ease: premiumEase }}
+      aria-hidden={phase === 'open'}
     >
       {!userCoords ? (
         <div className="text-[10px] text-black/45">
@@ -111,13 +108,16 @@ export function UserTraceLayer({
   const userVisual = getUserVisualPoint(userCoords);
   const target = nearest.visual;
   const activeTarget = selected ? selected.id === nearest.id : false;
+  const traceOpacity = phase === 'open' ? 0 : activeTarget ? 0.45 : 0.32;
+  const markerOpacity = phase === 'open' ? 0 : 1;
 
   return (
     <motion.div
       className="pointer-events-none absolute inset-0 z-[15]"
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: phase === 'open' ? 0 : 1 }}
       transition={{ duration: 0.26, ease: premiumEase }}
+      aria-hidden={phase === 'open'}
     >
       <svg aria-hidden className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         <motion.path
@@ -128,12 +128,8 @@ export function UserTraceLayer({
           strokeOpacity={activeTarget ? 0.45 : 0.32}
           strokeLinecap="round"
           initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
-          animate={
-            reduceMotion
-              ? { pathLength: 1, opacity: phase === 'open' ? 0.2 : activeTarget ? 0.45 : 0.32 }
-              : { pathLength: 1, opacity: phase === 'open' ? 0.2 : activeTarget ? 0.45 : 0.32 }
-          }
-          transition={{ duration: 0.6, ease: premiumEase }}
+          animate={{ pathLength: 1, opacity: traceOpacity }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.6, ease: premiumEase }}
         />
       </svg>
 
@@ -141,8 +137,8 @@ export function UserTraceLayer({
         className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 border border-[#ed6a32]/70 bg-white"
         style={{ left: `${userVisual.x}%`, top: `${userVisual.y}%` }}
         initial={reduceMotion ? false : { scale: 0.8, opacity: 0 }}
-        animate={phase === 'open' ? { scale: 0.9, opacity: 0.56 } : { scale: 1, opacity: 1 }}
-        transition={{ duration: 0.32, ease: premiumEase }}
+        animate={{ scale: phase === 'open' ? 0.9 : 1, opacity: markerOpacity }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: premiumEase }}
       />
     </motion.div>
   );

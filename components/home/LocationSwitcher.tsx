@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import GateCode from './GateCode';
 import { LOCATIONS, LocationPoint } from './types';
 import { premiumEase } from '@/lib/animations';
@@ -14,14 +14,16 @@ export default function LocationSwitcher({
   isBusy: boolean;
   onSwitch: (point: LocationPoint) => void;
 }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.div
       className="mt-8 grid h-12 grid-cols-5 items-center border border-black/[0.065] bg-white/72 text-center text-[13px] font-black"
       role="group"
       aria-label="выбор точки"
-      initial={{ y: 12, opacity: 0 }}
+      initial={reduceMotion ? false : { y: 12, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.1, duration: 0.36, ease: premiumEase }}
+      transition={{ delay: reduceMotion ? 0 : 0.1, duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase }}
     >
       {LOCATIONS.map((point, index) => {
         const isSelected = point.id === selected.id;
@@ -41,7 +43,7 @@ export default function LocationSwitcher({
               </span>
               {isSelected ? <span className="absolute bottom-0 left-1/2 h-px w-9 -translate-x-1/2 bg-[#ed6a32]" /> : null}
             </button>
-            {index < LOCATIONS.length - 1 ? <div className="font-normal text-black/18">|</div> : null}
+            {index < LOCATIONS.length - 1 ? <div className="font-normal text-black/18" aria-hidden>|</div> : null}
           </span>
         );
       })}

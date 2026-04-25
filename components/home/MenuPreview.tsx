@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { menuData } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 
@@ -18,6 +18,7 @@ function getPreviewCount(category: string | null) {
 }
 
 export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (category: string | null) => void }) {
+  const reduceMotion = useReducedMotion();
   const previewItems = MENU_PREVIEW.map((item) => ({
     ...item,
     previewCount: getPreviewCount(item.category)
@@ -28,9 +29,9 @@ export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (categ
       className="mt-5 overflow-hidden border border-[#ed6a32]/44 bg-[#fffdf8]"
       role="group"
       aria-label="быстрый переход к разделам меню"
-      initial={{ y: 14, opacity: 0 }}
+      initial={reduceMotion ? false : { y: 14, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.16, duration: 0.38, ease: premiumEase }}
+      transition={{ delay: reduceMotion ? 0 : 0.16, duration: reduceMotion ? 0.01 : 0.38, ease: premiumEase }}
     >
       {previewItems.map((item, index) => (
         <motion.button
@@ -39,10 +40,10 @@ export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (categ
           key={item.number}
           aria-label={`открыть раздел ${item.title}`}
           className="group relative grid w-full grid-cols-[58px_1fr_44px] items-center border-b border-[#ed6a32]/34 px-4 py-5 text-left last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#ed6a32]"
-          initial={{ y: 10, opacity: 0 }}
+          initial={reduceMotion ? false : { y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.14 + index * 0.05, duration: 0.36, ease: premiumEase }}
-          whileTap={{ scale: 0.992 }}
+          transition={{ delay: reduceMotion ? 0 : 0.14 + index * 0.05, duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase }}
+          whileTap={reduceMotion ? undefined : { scale: 0.992 }}
         >
           <div className="mars-coordinate-label text-[10px] text-[#f87c56]" aria-hidden>
             {item.number}

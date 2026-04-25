@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import RollingCoordinate from './RollingCoordinate';
 import GateCode from './GateCode';
 import { Coordinates, LOCATION_DETAILS, LocationPoint, LOCATIONS } from './types';
@@ -23,11 +23,15 @@ export default function LocationOpenPanel({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const selectedLocation = LOCATION_DETAILS[selected.id];
 
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
   const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
+  const enterInitial = reduceMotion ? false : { y: 14, opacity: 0 };
+  const enterAnimate = { y: 0, opacity: 1 };
+  const enterTransition = { delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0.01 : 0.34, ease: premiumEase };
 
   return (
     <motion.div
@@ -35,7 +39,7 @@ export default function LocationOpenPanel({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.3 }}
     >
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-[#ed6a32]/14 blur-3xl" />
@@ -57,9 +61,9 @@ export default function LocationOpenPanel({
       </div>
 
       <div className="relative z-10 pb-24 pt-8">
-        <motion.div initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.44, ease: premiumEase }}>
+        <motion.div initial={reduceMotion ? false : { y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: reduceMotion ? 0.01 : 0.44, ease: premiumEase }}>
           <GateCode id={selected.code} size="hero" active />
-          <motion.div className="mt-7 text-lg tracking-[-0.03em] text-black/66" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.32 }}>
+          <motion.div className="mt-7 text-lg tracking-[-0.03em] text-black/66" initial={reduceMotion ? false : { opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: reduceMotion ? 0 : 0.08, duration: reduceMotion ? 0.01 : 0.32 }}>
             {selected.title}
           </motion.div>
           <RollingCoordinate lat={selected.lat} lng={selected.lng} active className="mt-2 text-[10px] text-black/34" />
@@ -80,7 +84,7 @@ export default function LocationOpenPanel({
         <LocationSwitcher selected={selected} isBusy={isBusy} onSwitch={onSwitch} />
         <MenuPreview onOpenCategory={onOpenCategory} />
 
-        <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: premiumEase }}>
+        <motion.div initial={enterInitial} animate={enterAnimate} transition={enterTransition}>
           <button
             type="button"
             onClick={() => onOpenCategory(null)}
@@ -93,7 +97,7 @@ export default function LocationOpenPanel({
           </button>
         </motion.div>
 
-        <motion.div className="mt-4 grid grid-cols-2 gap-2" initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.34, ease: premiumEase }}>
+        <motion.div className="mt-4 grid grid-cols-2 gap-2" initial={enterInitial} animate={enterAnimate} transition={{ ...enterTransition, delay: reduceMotion ? 0 : 0.2 }}>
           <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={`${actionLinkClass} col-span-2`}>
             построить маршрут
           </a>
@@ -114,7 +118,7 @@ export default function LocationOpenPanel({
           </a>
         </motion.div>
 
-        <motion.footer className="mt-8 border-t border-black/[0.08] pt-4 text-[10px] tracking-[0.02em] text-black/42" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.32 }}>
+        <motion.footer className="mt-8 border-t border-black/[0.08] pt-4 text-[10px] tracking-[0.02em] text-black/42" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: reduceMotion ? 0 : 0.3, duration: reduceMotion ? 0.01 : 0.32 }}>
           <p>марсианин</p>
           <p className="mt-1">точки: {LOCATIONS.map((point) => point.code).join(' · ')}</p>
           <p className="mt-1">режим: {selectedLocation.workingHours}</p>
