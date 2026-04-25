@@ -27,7 +27,7 @@ const createDraftItem = (): MenuItem => ({
 });
 
 export default function AdminPanel() {
-  const { catalog, updateCatalog, restoreCatalog } = useMenuCatalog({ admin: true });
+  const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -36,6 +36,7 @@ export default function AdminPanel() {
   const [draftItem, setDraftItem] = useState<MenuItem>(createDraftItem());
   const [newCategoryName, setNewCategoryName] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const draftImageInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,6 +54,18 @@ export default function AdminPanel() {
     if (typeof window === 'undefined') return;
     setIsAuthorized(window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok');
   }, []);
+
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const handler = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges, isAuthorized]);
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
@@ -83,8 +96,19 @@ export default function AdminPanel() {
     setPassword('');
   };
 
-  const persistCatalog = async (nextCatalog: typeof catalog) => {
-    await updateCatalog(nextCatalog);
+  const markDirty = () => {
+    setHasUnsavedChanges(true);
+    setSaveMessage('Есть несохраненные изменения');
+  };
+
+  const applyCatalogLocally = (nextCatalog: typeof catalog) => {
+    applyCatalog(nextCatalog);
+    markDirty();
+  };
+
+  const handleSaveChanges = async () => {
+    await updateCatalog(catalog);
+    setHasUnsavedChanges(false);
     setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
   };
 
@@ -118,7 +142,7 @@ export default function AdminPanel() {
       };
     });
 
-    await persistCatalog(nextCatalog);
+    applyCatalogLocally(nextCatalog);
   };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>, itemId?: string) => {
@@ -126,6 +150,20 @@ export default function AdminPanel() {
     event.target.value = '';
     if (!file) return;
     await handleUploadImage(file, itemId);
+  };
+
+  const updateItem = (itemId: string, updater: (item: MenuItem) => MenuItem) => {
+    if (!activeCategory) return;
+
+    const nextCatalog = catalog.map((entry) => {
+      if (entry.category !== activeCategory.category) return entry;
+      return {
+        ...entry,
+        items: entry.items.map((item) => (item.id === itemId ? updater(item) : item))
+      };
+    });
+
+    applyCatalogLocally(nextCatalog);
   };
 
   if (!isAuthorized) {
@@ -161,27 +199,28 @@ export default function AdminPanel() {
     );
   }
 
-  const handleAddCategory = async (event: FormEvent) => {
+  const handleAddCategory = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = newCategoryName.trim().toLowerCase();
     if (!trimmed) return;
     if (catalog.some((entry) => entry.category === trimmed)) return;
 
     const nextCatalog = [...catalog, { category: trimmed, items: [] }];
-    await persistCatalog(nextCatalog);
+    applyCatalogLocally(nextCatalog);
     setSelectedCategory(trimmed);
     setNewCategoryName('');
   };
 
-  const handleRemoveCategory = async (category: string) => {
+  const handleRemoveCategory = (category: string) => {
     if (!confirm(`Удалить категорию «${category}»?`)) return;
 
     const nextCatalog = catalog.filter((entry) => entry.category !== category);
-    await persistCatalog(nextCatalog.length > 0 ? nextCatalog : catalog);
+    const normalizedCatalog = nextCatalog.length > 0 ? nextCatalog : catalog;
+    applyCatalogLocally(normalizedCatalog);
     if (selectedCategory === category && nextCatalog[0]) setSelectedCategory(nextCatalog[0].category);
   };
 
-  const handleAddItem = async (event: FormEvent) => {
+  const handleAddItem = (event: FormEvent) => {
     event.preventDefault();
     if (!activeCategory) return;
 
@@ -199,11 +238,11 @@ export default function AdminPanel() {
       };
     });
 
-    await persistCatalog(nextCatalog);
+    applyCatalogLocally(nextCatalog);
     setDraftItem(createDraftItem());
   };
 
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = (itemId: string) => {
     if (!activeCategory) return;
 
     const nextCatalog = catalog.map((entry) => {
@@ -214,21 +253,7 @@ export default function AdminPanel() {
       };
     });
 
-    await persistCatalog(nextCatalog);
-  };
-
-  const handleUpdateItemField = async (itemId: string, field: keyof MenuItem, value: string) => {
-    if (!activeCategory) return;
-
-    const nextCatalog = catalog.map((entry) => {
-      if (entry.category !== activeCategory.category) return entry;
-      return {
-        ...entry,
-        items: entry.items.map((item) => (item.id === itemId ? { ...item, [field]: value } : item))
-      };
-    });
-
-    await persistCatalog(nextCatalog);
+    applyCatalogLocally(nextCatalog);
   };
 
   return (
@@ -237,17 +262,33 @@ export default function AdminPanel() {
         <header className="flex flex-wrap items-center justify-between gap-3 border border-black/[0.08] bg-white p-4">
           <div>
             <h1 className="text-2xl font-semibold">Админ-кабинет меню</h1>
-            <p className="text-sm text-black/60">Изменения сохраняются на сервере и доступны после повторного входа.</p>
+            <p className="text-sm text-black/60">Изменения сохраняются на сервере после нажатия «Сохранить».</p>
             {saveMessage ? <p className="text-xs text-[#ed6a32]">{saveMessage}</p> : null}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void handleSaveChanges()}
+              disabled={!hasUnsavedChanges}
+              className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Сохранить
+            </button>
             <Link href="/menu" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Открыть меню
             </Link>
             <button type="button" onClick={handleLogout} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Выйти
             </button>
-            <button type="button" onClick={() => void restoreCatalog()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+            <button
+              type="button"
+              onClick={() => {
+                void restoreCatalog();
+                setHasUnsavedChanges(false);
+                setSaveMessage('Каталог сброшен до исходного состояния');
+              }}
+              className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]"
+            >
               Сбросить изменения
             </button>
           </div>
@@ -268,13 +309,13 @@ export default function AdminPanel() {
                   >
                     {entry.category}
                   </button>
-                  <button type="button" onClick={() => void handleRemoveCategory(entry.category)} className="border border-black/[0.1] px-2 text-sm">
+                  <button type="button" onClick={() => handleRemoveCategory(entry.category)} className="border border-black/[0.1] px-2 text-sm">
                     ×
                   </button>
                 </div>
               ))}
             </div>
-            <form onSubmit={(event) => void handleAddCategory(event)} className="space-y-2">
+            <form onSubmit={handleAddCategory} className="space-y-2">
               <input
                 value={newCategoryName}
                 onChange={(event) => setNewCategoryName(event.target.value)}
@@ -296,7 +337,7 @@ export default function AdminPanel() {
                   <div className="grid gap-2 md:grid-cols-2">
                     <input
                       value={item.name}
-                      onChange={(event) => void handleUpdateItemField(item.id, 'name', event.target.value)}
+                      onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, name: event.target.value }))}
                       className="border border-black/[0.1] px-3 py-2 text-sm"
                       placeholder="Название"
                     />
@@ -310,7 +351,7 @@ export default function AdminPanel() {
                   </div>
                   <textarea
                     value={item.description}
-                    onChange={(event) => void handleUpdateItemField(item.id, 'description', event.target.value)}
+                    onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, description: event.target.value }))}
                     className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm"
                     placeholder="Описание"
                   />
@@ -324,19 +365,13 @@ export default function AdminPanel() {
                           value={item.priceByLocation[location.id]}
                           onChange={(event) => {
                             const value = Number(event.target.value);
-                            const nextCatalog = catalog.map((entry) => {
-                              if (entry.category !== activeCategory?.category) return entry;
-                              return {
-                                ...entry,
-                                items: entry.items.map((entryItem) =>
-                                  entryItem.id === item.id
-                                    ? { ...entryItem, priceByLocation: { ...entryItem.priceByLocation, [location.id]: Number.isFinite(value) ? value : 0 } }
-                                    : entryItem
-                                )
-                              };
-                            });
-
-                            void persistCatalog(nextCatalog);
+                            updateItem(item.id, (entryItem) => ({
+                              ...entryItem,
+                              priceByLocation: {
+                                ...entryItem.priceByLocation,
+                                [location.id]: Number.isFinite(value) ? value : 0
+                              }
+                            }));
                           }}
                           className="w-full border border-black/[0.1] px-2 py-1"
                         />
@@ -352,17 +387,10 @@ export default function AdminPanel() {
                         value={item.nutrition.calories}
                         onChange={(event) => {
                           const value = Number(event.target.value);
-                          const nextCatalog = catalog.map((entry) =>
-                            entry.category !== activeCategory?.category
-                              ? entry
-                              : {
-                                  ...entry,
-                                  items: entry.items.map((entryItem) =>
-                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, calories: Number.isFinite(value) ? value : 0 } } : entryItem
-                                  )
-                                }
-                          );
-                          void persistCatalog(nextCatalog);
+                          updateItem(item.id, (entryItem) => ({
+                            ...entryItem,
+                            nutrition: { ...entryItem.nutrition, calories: Number.isFinite(value) ? value : 0 }
+                          }));
                         }}
                         className="mt-1 w-full border border-black/[0.1] px-2 py-1"
                       />
@@ -374,17 +402,10 @@ export default function AdminPanel() {
                         value={item.nutrition.protein}
                         onChange={(event) => {
                           const value = Number(event.target.value);
-                          const nextCatalog = catalog.map((entry) =>
-                            entry.category !== activeCategory?.category
-                              ? entry
-                              : {
-                                  ...entry,
-                                  items: entry.items.map((entryItem) =>
-                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, protein: Number.isFinite(value) ? value : 0 } } : entryItem
-                                  )
-                                }
-                          );
-                          void persistCatalog(nextCatalog);
+                          updateItem(item.id, (entryItem) => ({
+                            ...entryItem,
+                            nutrition: { ...entryItem.nutrition, protein: Number.isFinite(value) ? value : 0 }
+                          }));
                         }}
                         className="mt-1 w-full border border-black/[0.1] px-2 py-1"
                       />
@@ -396,17 +417,10 @@ export default function AdminPanel() {
                         value={item.nutrition.fat}
                         onChange={(event) => {
                           const value = Number(event.target.value);
-                          const nextCatalog = catalog.map((entry) =>
-                            entry.category !== activeCategory?.category
-                              ? entry
-                              : {
-                                  ...entry,
-                                  items: entry.items.map((entryItem) =>
-                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, fat: Number.isFinite(value) ? value : 0 } } : entryItem
-                                  )
-                                }
-                          );
-                          void persistCatalog(nextCatalog);
+                          updateItem(item.id, (entryItem) => ({
+                            ...entryItem,
+                            nutrition: { ...entryItem.nutrition, fat: Number.isFinite(value) ? value : 0 }
+                          }));
                         }}
                         className="mt-1 w-full border border-black/[0.1] px-2 py-1"
                       />
@@ -418,31 +432,24 @@ export default function AdminPanel() {
                         value={item.nutrition.carbs}
                         onChange={(event) => {
                           const value = Number(event.target.value);
-                          const nextCatalog = catalog.map((entry) =>
-                            entry.category !== activeCategory?.category
-                              ? entry
-                              : {
-                                  ...entry,
-                                  items: entry.items.map((entryItem) =>
-                                    entryItem.id === item.id ? { ...entryItem, nutrition: { ...entryItem.nutrition, carbs: Number.isFinite(value) ? value : 0 } } : entryItem
-                                  )
-                                }
-                          );
-                          void persistCatalog(nextCatalog);
+                          updateItem(item.id, (entryItem) => ({
+                            ...entryItem,
+                            nutrition: { ...entryItem.nutrition, carbs: Number.isFinite(value) ? value : 0 }
+                          }));
                         }}
                         className="mt-1 w-full border border-black/[0.1] px-2 py-1"
                       />
                     </label>
                   </div>
 
-                  <button type="button" onClick={() => void handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
+                  <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
                     Удалить позицию
                   </button>
                 </article>
               ))}
             </div>
 
-            <form onSubmit={(event) => void handleAddItem(event)} className="space-y-3 border border-dashed border-black/[0.2] p-3">
+            <form onSubmit={handleAddItem} className="space-y-3 border border-dashed border-black/[0.2] p-3">
               <h3 className="font-medium">Добавить новую позицию</h3>
               <div className="grid gap-2 md:grid-cols-2">
                 <input
