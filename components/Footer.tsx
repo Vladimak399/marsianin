@@ -1,10 +1,6 @@
 import { locations } from '@/data/locations';
 
-const legalItems = [
-  'политика обработки персональных данных',
-  'информация на сайте не является публичной офертой',
-  'ип/ооо, инн, огрн: реквизиты будут добавлены'
-] as const;
+const legalItems = ['политика обработки персональных данных', 'информация на сайте не является публичной офертой'] as const;
 
 export default function Footer() {
   return (
