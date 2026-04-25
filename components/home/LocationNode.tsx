@@ -13,7 +13,9 @@ export function LocationNode({
   isBusy,
   onSelect,
   index,
-  nearestId
+  nearestId,
+  nearestDistance,
+  mode = 'desktop'
 }: {
   point: LocationPoint;
   selected: LocationPoint | null;
@@ -22,16 +24,51 @@ export function LocationNode({
   onSelect: (point: LocationPoint) => void;
   index: number;
   nearestId: string | null;
+  nearestDistance?: number | null;
+  mode?: 'desktop' | 'mobile';
 }) {
   const isActive = selected?.id === point.id;
   const isDimmed = selected && !isActive;
   const isNearest = nearestId === point.id;
   const hidden = phase === 'open';
-  const shouldRollCoordinates =
-    isActive ||
-    (isNearest && !selected && phase === 'map') ||
-    (isActive && (phase === 'lock' || phase === 'docking'));
+  const shouldRollCoordinates = phase === 'map' || isActive || (isNearest && !selected);
   const rollKey = `coord-${point.id}-${phase}-${isActive ? 'active' : 'idle'}-${isNearest ? 'nearest' : 'normal'}`;
+
+  if (mode === 'mobile') {
+    return (
+      <motion.button
+        type="button"
+        className={`w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${
+          isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
+        } ${isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/62' : 'border-black/[0.08]'}`}
+        onClick={() => onSelect(point)}
+        disabled={isBusy}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: hidden ? 0 : isDimmed ? 0.42 : 1, y: 0 }}
+        transition={{ duration: 0.38, delay: phase === 'map' ? index * 0.07 : 0, ease: premiumEase }}
+      >
+        <div className="grid grid-cols-[150px_1fr] gap-3 max-[380px]:grid-cols-[136px_1fr]">
+          <div className="shrink-0">
+            <GateCode id={point.code} active={isActive || isNearest} />
+          </div>
+          <div className="min-w-0 pt-1">
+            <div className="text-[13px] tracking-[-0.02em] text-black/56">{point.title}</div>
+            <RollingCoordinate
+              key={rollKey}
+              lat={point.lat}
+              lng={point.lng}
+              active={shouldRollCoordinates}
+              variant="compact"
+              animationKey={rollKey}
+              delayOffset={index * 0.06}
+              className={`mt-2 text-[10px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
+            />
+            {isNearest && !selected ? <div className="mt-2 text-[10px] text-[#bc4c1f]">ближайшая точка · {(nearestDistance ?? 0).toFixed(2)} км</div> : null}
+          </div>
+        </div>
+      </motion.button>
+    );
+  }
 
   return (
     <motion.button
@@ -47,25 +84,13 @@ export function LocationNode({
       transition={{ duration: 0.44, delay: phase === 'map' ? index * 0.065 : 0, ease: premiumEase }}
     >
       <motion.div
-        className={`relative w-[min(292px,76vw)] border bg-[#fffdf8]/95 px-4 py-4 ${
+        className={`relative w-[min(292px,76vw)] border bg-[#fffdf8] px-4 py-4 ${
           isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/72' : 'border-black/[0.08]'
         }`}
         animate={{ opacity: isDimmed ? 0.8 : 1, y: isActive ? -2 : 0, scale: isActive ? 1.01 : isNearest ? 1.004 : 1 }}
         transition={{ duration: 0.3 }}
       >
-        <div
-          className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${
-            isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'
-          }`}
-        />
-
-        {isNearest && !selected ? <motion.div className="absolute left-0 top-3 h-[calc(100%-24px)] w-px bg-[#ed6a32]/55" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.24 }} /> : null}
-
-        {isNearest && !selected ? (
-          <div className="absolute right-4 top-3.5 border border-[#ed6a32]/36 bg-[#fff5f1] px-2 py-0.5 text-[9px] tracking-[0.04em] text-[#bc4c1f]">
-            ближайшая точка
-          </div>
-        ) : null}
+        <div className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'}`} />
 
         <div className="grid grid-cols-[106px_1fr] items-start gap-4">
           <GateCode id={point.code} active={isActive || isNearest} />
@@ -78,7 +103,8 @@ export function LocationNode({
               active={shouldRollCoordinates}
               variant="compact"
               animationKey={rollKey}
-              className="mt-2 text-[9px] text-black/34"
+              delayOffset={index * 0.05}
+              className={`mt-2 text-[9px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
             />
           </div>
         </div>
@@ -93,7 +119,7 @@ export function LockCaption({ selected, phase }: { selected: LocationPoint | nul
   return (
     <AnimatePresence>
       <motion.div
-        className="pointer-events-none absolute left-7 right-7 top-[113px] z-40 grid grid-cols-[1fr_auto] items-center gap-4 border-y border-black/[0.045] bg-white/80 py-3 backdrop-blur-sm"
+        className="pointer-events-none absolute left-7 right-7 top-[113px] z-40 grid grid-cols-[1fr_auto] items-center gap-4 border-y border-black/[0.045] bg-[#fffdf8]/90 py-3 backdrop-blur-sm"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}

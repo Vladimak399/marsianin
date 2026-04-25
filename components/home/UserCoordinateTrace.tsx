@@ -45,29 +45,27 @@ export function UserCoordinateTrace({
 }) {
   if (phase === 'open') return null;
 
-  const statusText = geoUnavailable
-    ? 'геолокация недоступна, выберите точку вручную'
-    : 'определяем координаты';
-
   return (
     <motion.div
-      className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-white/80 py-3 backdrop-blur-sm max-md:top-[92px]"
+      className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-[#fffdf8]/90 py-3 backdrop-blur-sm max-md:top-[92px]"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ delay: 0.12, duration: 0.34, ease: premiumEase }}
     >
       {!userCoords ? (
-        <div className="text-[10px] text-black/45">{statusText}</div>
+        <div className="text-[10px] text-black/45">
+          {geoUnavailable ? 'геолокация недоступна, выберите точку вручную' : 'определяем координаты'}
+        </div>
       ) : (
         <div className="grid grid-cols-[1fr_auto] items-start gap-4">
           <div>
-            <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">координаты гостя</div>
+            <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">ваши координаты</div>
             <RollingCoordinate
               lat={userCoords.lat}
               lng={userCoords.lng}
               active
-              variant="compact"
+              variant="labeled"
               animationKey={`${userCoords.lat}-${userCoords.lng}`}
               className="mt-1 text-[10px] text-black/45"
             />

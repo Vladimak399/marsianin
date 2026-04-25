@@ -12,6 +12,7 @@ type RollingCoordinateProps = {
   className?: string;
   variant?: CoordinateVariant;
   animationKey?: string | number;
+  delayOffset?: number;
 };
 
 function formatCoordinate(value: number) {
@@ -65,20 +66,20 @@ function RollingGroup({
       <motion.div
         key={`${axis}-${finalValue}-${animationKey ?? 'auto'}`}
         className="[will-change:transform,opacity]"
-        initial={{ y: '-58%', opacity: 0.5 }}
-        animate={{ y: ['-58%', '-138%', '-133.33%'], opacity: [0.5, 0.86, 1, 0.94, 1] }}
+        initial={{ y: '-56%', opacity: 0.34 }}
+        animate={{ y: ['-56%', '-136%', '-133.33%'], opacity: [0.34, 0.9, 1] }}
         transition={{
           y: {
-            duration: 0.82,
+            duration: 1.12,
             delay,
             ease: premiumEase,
-            times: [0, 0.72, 1]
+            times: [0, 0.74, 1]
           },
           opacity: {
-            duration: 0.82,
+            duration: 1.08,
             delay,
             ease: premiumEase,
-            times: [0, 0.55, 0.86, 0.93, 1]
+            times: [0, 0.62, 1]
           }
         }}
       >
@@ -99,12 +100,20 @@ export default function RollingCoordinate({
   active = false,
   className = '',
   variant = 'plain',
-  animationKey
+  animationKey,
+  delayOffset = 0
 }: RollingCoordinateProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div className={`font-halvar tabular-nums ${className}`}>
-      <RollingGroup axis="lat" value={lat} active={active} delay={0.01} variant={variant} animationKey={animationKey} />
-      <RollingGroup axis="lng" value={lng} active={active} delay={0.08} variant={variant} animationKey={animationKey} />
-    </div>
+    <motion.div
+      className={`font-halvar tabular-nums ${className}`}
+      initial={reduceMotion || !active ? false : { opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.36, delay: delayOffset, ease: premiumEase }}
+    >
+      <RollingGroup axis="lat" value={lat} active={active} delay={0.01 + delayOffset} variant={variant} animationKey={animationKey} />
+      <RollingGroup axis="lng" value={lng} active={active} delay={0.1 + delayOffset} variant={variant} animationKey={animationKey} />
+    </motion.div>
   );
 }

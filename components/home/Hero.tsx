@@ -156,6 +156,7 @@ export default function Hero() {
         selected={selected}
         phase={phase}
         nearest={nearest}
+        userCoords={userCoords}
         isBusy={isBusy}
         onSelect={select}
         onBack={back}
