@@ -114,10 +114,19 @@ export default function Hero() {
     addTimer(() => runPointSelection(point, { allowFromOpen: true }), 90);
   }
 
-  function openCategory(category: string | null) {
+  function openMenuWithTransition(category: string | null = null) {
     if (!selected) return;
-    const query = category ? `?category=${encodeURIComponent(category)}` : '';
-    router.push(`/menu/${selected.id}${query}`);
+
+    clearTimers();
+    setIsTeleporting(true);
+    setSelectedLocation(selected.id);
+    setTeleportOrigin({ x: selected.visual.x, y: selected.visual.y });
+
+    addTimer(() => {
+      const query = category ? `?category=${encodeURIComponent(category)}` : '';
+      router.push(`/menu/${selected.id}${query}`);
+      addTimer(() => setIsTeleporting(false), 120);
+    }, 180);
   }
 
   return (
@@ -152,7 +161,15 @@ export default function Hero() {
         <LockCaption selected={selected} phase={phase} />
         <TransitionOverlay selected={selected} phase={phase} />
         <AnimatePresence>
-          {phase === 'open' && selected ? <LocationOpenPanel selected={selected} isBusy={isBusy} onBack={back} onSwitch={switchPoint} onOpenCategory={openCategory} /> : null}
+          {phase === 'open' && selected ? (
+            <LocationOpenPanel
+              selected={selected}
+              isBusy={isBusy}
+              onBack={back}
+              onSwitch={switchPoint}
+              onOpenCategory={openMenuWithTransition}
+            />
+          ) : null}
         </AnimatePresence>
       </div>
 
@@ -165,7 +182,7 @@ export default function Hero() {
         onSelect={select}
         onBack={back}
         onSwitch={switchPoint}
-        onOpenCategory={openCategory}
+        onOpenCategory={openMenuWithTransition}
       />
     </section>
   );

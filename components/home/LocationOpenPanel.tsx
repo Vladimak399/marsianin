@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import RollingCoordinate from './RollingCoordinate';
 import GateCode from './GateCode';
@@ -23,8 +22,6 @@ export default function LocationOpenPanel({
   onOpenCategory: (category: string | null) => void;
 }) {
   const selectedLocation = LOCATION_DETAILS[selected.id];
-  const menuHref = `/menu/${selected.id}`;
-
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98]';
   const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
@@ -67,15 +64,16 @@ export default function LocationOpenPanel({
         <MenuPreview onOpenCategory={onOpenCategory} />
 
         <motion.div initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.18, duration: 0.34, ease: premiumEase }}>
-          <Link
-            href={menuHref}
-            aria-disabled={isBusy}
+          <button
+            type="button"
+            onClick={() => onOpenCategory(null)}
+            disabled={isBusy}
             className={`mt-3 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.04em] text-white transition ${
-              isBusy ? 'pointer-events-none cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:bg-[#df5f2c]'
+              isBusy ? 'cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:bg-[#df5f2c]'
             }`}
           >
             {mainCtaText}
-          </Link>
+          </button>
         </motion.div>
 
         <motion.div className="mt-4 grid grid-cols-2 gap-2" initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.34, ease: premiumEase }}>
