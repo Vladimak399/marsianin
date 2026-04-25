@@ -67,7 +67,7 @@ export default function MenuDetailView({
     <AnimatePresence>
       {item ? (
         <motion.div
-          className="fixed inset-0 z-50 bg-[#0b0b0b]/30 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 bg-[#0b0b0b]/34 backdrop-blur-[3px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -75,7 +75,7 @@ export default function MenuDetailView({
           onClick={onClose}
         >
           <motion.article
-            className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-white text-[#0b0b0b] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:border sm:border-black/[0.065]"
+            className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[rgba(255,255,255,0.95)] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:rounded-2xl sm:border sm:border-[rgba(24,21,18,0.1)] sm:shadow-[0_20px_60px_rgba(24,21,18,0.16)]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 14 }}
@@ -90,13 +90,13 @@ export default function MenuDetailView({
               <CoordinateSystemLayer mode="menu" muted />
             </div>
 
-            <div className="sticky top-0 z-20 border-b border-black/[0.055] bg-white/86 px-7 py-4 backdrop-blur-sm">
+            <div className="sticky top-0 z-20 border-b border-[rgba(24,21,18,0.08)] bg-[rgba(255,255,255,0.86)] px-7 py-4 backdrop-blur-sm">
               <div className="flex items-center justify-between gap-3">
                 <p className="mars-coordinate-label font-sans text-[10px] text-[#ed6a32] lowercase">{category}</p>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="min-h-10 border border-black/[0.065] bg-white/78 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#403e3e] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
+                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
                 >
                   закрыть
                 </button>
@@ -104,36 +104,36 @@ export default function MenuDetailView({
             </div>
 
             <div className="relative z-10 px-7 pb-8 pt-5">
-              <div className="relative aspect-[16/10] overflow-hidden border border-black/[0.065] bg-white/70">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-white/80 shadow-[0_10px_30px_rgba(24,21,18,0.08)]">
                 <Image src={item.image} alt={item.name} fill className="object-cover opacity-90" sizes="(max-width: 430px) 100vw, 430px" />
               </div>
 
-              <div className="mt-5 border-y border-black/[0.055] bg-white/72 py-4 backdrop-blur-sm">
+              <div className="mt-5 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[rgba(255,255,255,0.8)] px-4 py-4 backdrop-blur-sm">
                 <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                 <div className="mt-2 flex items-start justify-between gap-4">
-                  <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#0b0b0b] lowercase">{item.name}</h2>
+                  <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
                   <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{item.priceByLocation[selectedLocation]} ₽</p>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-[#403e3e] lowercase">{item.description}</p>
+                <p className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
               </div>
 
-              <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.055] pb-4">
+              <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-[rgba(24,21,18,0.08)] pb-4">
                 <button
                   type="button"
                   onClick={handlePrev}
                   disabled={!hasPrev}
-                  className="min-h-10 border border-black/[0.065] bg-white/78 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#403e3e] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   назад
                 </button>
-                <p className="mars-coordinate-label font-sans text-[11px] text-[#403e3e] lowercase">
+                <p className="mars-coordinate-label font-sans text-[11px] text-[#504942] lowercase">
                   {activeIndex + 1} из {items.length}
                 </p>
                 <button
                   type="button"
                   onClick={handleNext}
                   disabled={!hasNext}
-                  className="min-h-10 border border-black/[0.065] bg-white/78 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#403e3e] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   вперед
                 </button>
