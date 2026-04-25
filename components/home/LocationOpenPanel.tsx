@@ -3,19 +3,21 @@
 import { motion } from 'framer-motion';
 import RollingCoordinate from './RollingCoordinate';
 import GateCode from './GateCode';
-import { LOCATION_DETAILS, LocationPoint, LOCATIONS } from './types';
+import { Coordinates, LOCATION_DETAILS, LocationPoint, LOCATIONS } from './types';
 import { premiumEase } from '@/lib/animations';
 import LocationSwitcher from './LocationSwitcher';
 import MenuPreview from './MenuPreview';
 
 export default function LocationOpenPanel({
   selected,
+  userCoords,
   isBusy,
   onBack,
   onSwitch,
   onOpenCategory
 }: {
   selected: LocationPoint;
+  userCoords: Coordinates | null;
   isBusy: boolean;
   onBack: () => void;
   onSwitch: (point: LocationPoint) => void;
@@ -57,6 +59,14 @@ export default function LocationOpenPanel({
           <div className="mt-4 space-y-1 text-[11px] text-black/56">
             <p>{selectedLocation.address}</p>
             <p>{selectedLocation.workingHours}</p>
+          </div>
+          <div className="mt-4 border-y border-black/[0.06] py-2.5">
+            <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">ваши координаты</div>
+            {userCoords ? (
+              <RollingCoordinate lat={userCoords.lat} lng={userCoords.lng} active variant="labeled" className="mt-1 text-[10px] text-black/45" />
+            ) : (
+              <div className="mt-1 text-[10px] text-black/38">определяем координаты…</div>
+            )}
           </div>
         </motion.div>
 
@@ -100,7 +110,7 @@ export default function LocationOpenPanel({
         <motion.footer className="mt-8 border-t border-black/[0.08] pt-4 text-[10px] tracking-[0.02em] text-black/42" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.32 }}>
           <p>марсианин</p>
           <p className="mt-1">точки: {LOCATIONS.map((point) => point.code).join(' · ')}</p>
-          <p className="mt-1">режим: ежедневно 08:00-22:00</p>
+          <p className="mt-1">режим: {selectedLocation.workingHours}</p>
           <p className="mt-1">инн/огрн: данные уточняются</p>
           <p className="mt-1">информация на сайте не является публичной офертой</p>
         </motion.footer>
