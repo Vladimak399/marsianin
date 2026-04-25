@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 
 const LAYER_Z_INDEX = {
@@ -16,9 +17,11 @@ const OVERLAY_GRID_STYLE = {
 } as const;
 
 export default function TransitionLayer({ children }: { children: ReactNode }) {
-  const { isTeleporting } = useLocation();
+  const pathname = usePathname();
+  const { isTeleporting, setIsTeleporting } = useLocation();
   const [useReducedMotion, setUseReducedMotion] = useState(false);
   const [retainedChildren, setRetainedChildren] = useState<ReactNode>(children);
+  const previousPathnameRef = useRef(pathname);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -42,6 +45,30 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
     }
   }, [children, isTeleporting]);
 
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+
+    previousPathnameRef.current = pathname;
+
+    if (!isTeleporting) return;
+
+    const releaseTimer = window.setTimeout(() => {
+      setIsTeleporting(false);
+    }, useReducedMotion ? 40 : 160);
+
+    return () => window.clearTimeout(releaseTimer);
+  }, [isTeleporting, pathname, setIsTeleporting, useReducedMotion]);
+
+  useEffect(() => {
+    if (!isTeleporting) return;
+
+    const fallbackTimer = window.setTimeout(() => {
+      setIsTeleporting(false);
+    }, useReducedMotion ? 120 : 1200);
+
+    return () => window.clearTimeout(fallbackTimer);
+  }, [isTeleporting, setIsTeleporting, useReducedMotion]);
+
   const transitionClasses = useReducedMotion
     ? 'duration-75 ease-linear'
     : 'duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]';
@@ -64,7 +91,7 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
 
       <div
         aria-hidden
-        className={`fixed inset-0 pointer-events-none overflow-hidden transition-opacity transition-transform ${transitionClasses} ${
+        className={`fixed inset-0 pointer-events-none overflow-hidden transition-[opacity,transform] ${transitionClasses} ${
           isTeleporting ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-[1.01]'
         }`}
         style={{ zIndex: LAYER_Z_INDEX.overlay }}
