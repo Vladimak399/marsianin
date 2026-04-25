@@ -36,10 +36,17 @@ export default function MenuDetailView({
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = previous;
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [item]);
+  }, [item, onClose]);
 
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
@@ -78,6 +85,9 @@ export default function MenuDetailView({
         >
           <motion.article
             className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[rgba(255,255,255,0.95)] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:rounded-2xl sm:border sm:border-[rgba(24,21,18,0.1)] sm:shadow-[0_20px_60px_rgba(24,21,18,0.16)]"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`позиция меню: ${item.name}`}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 14 }}
