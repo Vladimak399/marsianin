@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 
 const LAYER_Z_INDEX = {
@@ -16,9 +17,11 @@ const OVERLAY_GRID_STYLE = {
 } as const;
 
 export default function TransitionLayer({ children }: { children: ReactNode }) {
-  const { isTeleporting } = useLocation();
+  const pathname = usePathname();
+  const { isTeleporting, setIsTeleporting } = useLocation();
   const [useReducedMotion, setUseReducedMotion] = useState(false);
   const [retainedChildren, setRetainedChildren] = useState<ReactNode>(children);
+  const previousPathnameRef = useRef(pathname);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -41,6 +44,30 @@ export default function TransitionLayer({ children }: { children: ReactNode }) {
       setRetainedChildren(children);
     }
   }, [children, isTeleporting]);
+
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+
+    previousPathnameRef.current = pathname;
+
+    if (!isTeleporting) return;
+
+    const releaseTimer = window.setTimeout(() => {
+      setIsTeleporting(false);
+    }, useReducedMotion ? 40 : 160);
+
+    return () => window.clearTimeout(releaseTimer);
+  }, [isTeleporting, pathname, setIsTeleporting, useReducedMotion]);
+
+  useEffect(() => {
+    if (!isTeleporting) return;
+
+    const fallbackTimer = window.setTimeout(() => {
+      setIsTeleporting(false);
+    }, useReducedMotion ? 120 : 1200);
+
+    return () => window.clearTimeout(fallbackTimer);
+  }, [isTeleporting, setIsTeleporting, useReducedMotion]);
 
   const transitionClasses = useReducedMotion
     ? 'duration-75 ease-linear'
