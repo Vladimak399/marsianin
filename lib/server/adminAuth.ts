@@ -1,15 +1,36 @@
 import { createHash, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 
-const ADMIN_LOGIN = process.env.ADMIN_LOGIN ?? 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'mars2026';
-const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET ?? 'marsianin-session-secret';
 const ADMIN_COOKIE_NAME = 'marsianin_admin_session';
 
-const hashToken = (login: string, password: string) =>
-  createHash('sha256').update(`${login}:${password}:${ADMIN_SESSION_SECRET}`).digest('hex');
+const DEV_ADMIN_LOGIN = 'admin';
+const DEV_ADMIN_PASSWORD = 'mars2026';
+const DEV_ADMIN_SESSION_SECRET = 'marsianin-session-secret';
 
-const expectedToken = () => hashToken(ADMIN_LOGIN, ADMIN_PASSWORD);
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getAdminEnv = (key: 'ADMIN_LOGIN' | 'ADMIN_PASSWORD' | 'ADMIN_SESSION_SECRET', developmentFallback: string) => {
+  const value = process.env[key];
+  if (value) return value;
+
+  if (!isProduction) return developmentFallback;
+
+  throw new Error(`Missing required admin auth environment variable: ${key}`);
+};
+
+const getAdminConfig = () => ({
+  login: getAdminEnv('ADMIN_LOGIN', DEV_ADMIN_LOGIN),
+  password: getAdminEnv('ADMIN_PASSWORD', DEV_ADMIN_PASSWORD),
+  sessionSecret: getAdminEnv('ADMIN_SESSION_SECRET', DEV_ADMIN_SESSION_SECRET)
+});
+
+const hashToken = (login: string, password: string, sessionSecret: string) =>
+  createHash('sha256').update(`${login}:${password}:${sessionSecret}`).digest('hex');
+
+const expectedToken = () => {
+  const { login, password, sessionSecret } = getAdminConfig();
+  return hashToken(login, password, sessionSecret);
+};
 
 const safeCompare = (left: string, right: string) => {
   const leftBuffer = Buffer.from(left);
@@ -18,8 +39,10 @@ const safeCompare = (left: string, right: string) => {
   return timingSafeEqual(leftBuffer, rightBuffer);
 };
 
-export const validateAdminCredentials = (login: string, password: string) =>
-  safeCompare(hashToken(login.trim(), password), expectedToken());
+export const validateAdminCredentials = (login: string, password: string) => {
+  const { sessionSecret } = getAdminConfig();
+  return safeCompare(hashToken(login.trim(), password, sessionSecret), expectedToken());
+};
 
 export const setAdminSessionCookie = async () => {
   const cookieStore = await cookies();
