@@ -45,14 +45,18 @@ export default function MenuPage({
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
-
-  useEffect(() => {
-    if (!initialLocation) return;
+  const initialResolvedLocation = useMemo<LocationId | null>(() => {
+    if (!initialLocation) return null;
 
     const normalized = initialLocation.toLowerCase();
-    const isKnownLocation = locations.some((location) => location.id === normalized);
-    if (isKnownLocation) setSelectedLocation(normalized as LocationId);
-  }, [initialLocation, setSelectedLocation]);
+    const matchedLocation = locations.find((location) => location.id === normalized);
+    return matchedLocation?.id ?? null;
+  }, [initialLocation]);
+
+  useEffect(() => {
+    if (!initialResolvedLocation) return;
+    setSelectedLocation(initialResolvedLocation);
+  }, [initialResolvedLocation, setSelectedLocation]);
 
   useEffect(() => {
     if (!initialGuestCoordinates) return;
@@ -64,7 +68,7 @@ export default function MenuPage({
   }, [initialEntrySource, setEntrySource]);
 
   const categories = useMemo(() => menuCatalog.map((section) => section.category), [menuCatalog]);
-  const activeLocation = selectedLocation ?? DEFAULT_LOCATION;
+  const activeLocation = selectedLocation ?? initialResolvedLocation ?? DEFAULT_LOCATION;
   const currentLocation = locations.find((location) => location.id === activeLocation);
 
   useEffect(() => {
