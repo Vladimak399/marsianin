@@ -20,6 +20,7 @@ type MenuDetailViewProps = {
 };
 
 const SWIPE_THRESHOLD = 60;
+const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 export default function MenuDetailView({
   item,
@@ -108,7 +109,7 @@ export default function MenuDetailView({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] ${detailButtonFocusClass}`}
                 >
                   закрыть
                 </button>
@@ -138,7 +139,7 @@ export default function MenuDetailView({
                   type="button"
                   onClick={handlePrev}
                   disabled={!hasPrev}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   назад
                 </button>
@@ -149,7 +150,7 @@ export default function MenuDetailView({
                   type="button"
                   onClick={handleNext}
                   disabled={!hasNext}
-                  className="min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   вперед
                 </button>
