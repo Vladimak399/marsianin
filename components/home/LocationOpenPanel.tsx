@@ -112,7 +112,7 @@ export default function LocationOpenPanel({
         <motion.footer className="mt-8 border-t border-black/[0.08] pt-4 text-[10px] tracking-[0.02em] text-black/42" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.32 }}>
           <p>марсианин</p>
           <p className="mt-1">точки: {LOCATIONS.map((point) => point.code).join(' · ')}</p>
-          <p className="mt-1">режим: ежедневно 08:00-22:00</p>
+          <p className="mt-1">режим: {selectedLocation.workingHours}</p>
           <p className="mt-1">инн/огрн: данные уточняются</p>
           <p className="mt-1">информация на сайте не является публичной офертой</p>
         </motion.footer>
