@@ -34,7 +34,11 @@ jobs:
         with:
           url: 'https://api.deepseek.com/v1/chat/completions'
           method: 'POST'
-          customHeaders: '{"Content-Type": "application/json", "Authorization": "Bearer ${{ secrets.DEEPSEEK_API_KEY }}"}'
+          customHeaders: |
+            {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer ${{ secrets.DEEPSEEK_API_KEY }}"
+            }
           data: |
             {
               "model": "deepseek-chat",
@@ -65,7 +69,6 @@ jobs:
             
             // Разбиваем на блоки файлов
             const blocks = content.split('---');
-            const changes = [];
             
             for (const block of blocks) {
               const fileMatch = block.match(/FILE:\s*(.+)/);
@@ -74,14 +77,12 @@ jobs:
                 const filePath = fileMatch[1].trim();
                 const fileContent = contentMatch[1].trim();
                 // Убедимся, что папка существует (создастся автоматически при записи)
-                fs.mkdirSync(require('path').dirname(filePath), { recursive: true });
+                const path = require('path');
+                fs.mkdirSync(path.dirname(filePath), { recursive: true });
                 fs.writeFileSync(filePath, fileContent);
-                changes.push(filePath);
+                console.log(`Файл ${filePath} обновлён`);
               }
             }
-            
-            // Сохраним список изменённых файлов для последующего шага
-            core.setOutput('changed_files', changes.join(', '));
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -94,5 +95,5 @@ jobs:
             
             Задача: ${{ fromJson(steps.issue.outputs.result).title }}
             
-            Изменены файлы: ${{ steps.apply.outputs.changed_files }}
+            Изменения сгенерированы моделью DeepSeek.
           labels: 'ai-generated'
