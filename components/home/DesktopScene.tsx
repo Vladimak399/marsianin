@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import RollingCoordinate from '@/components/home/RollingCoordinate';
 import { LocationId } from '@/data/locations';
@@ -31,6 +31,7 @@ export default function DesktopScene({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const desktopPoints = [
     { id: 'o12' as LocationId, x: 24, y: 70 },
     { id: 'k10' as LocationId, x: 67, y: 35 },
@@ -96,9 +97,9 @@ export default function DesktopScene({
                 className="pointer-events-none absolute inset-0 h-full w-full"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
-                initial={{ opacity: 0 }}
+                initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.32, ease: premiumEase }}
+                transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: premiumEase }}
               >
                 <motion.path
                   d="M 22 70 C 35 35, 55 22, 68 36 S 82 55, 88 74"
@@ -107,9 +108,9 @@ export default function DesktopScene({
                   strokeOpacity="0.34"
                   strokeWidth="0.72"
                   strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
+                  initial={reduceMotion ? false : { pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.9, ease: premiumEase }}
+                  transition={{ duration: reduceMotion ? 0.01 : 0.9, ease: premiumEase }}
                 />
                 <motion.path
                   d="M 24 27 C 42 48, 58 64, 91 84"
@@ -118,9 +119,9 @@ export default function DesktopScene({
                   strokeDasharray="1.4 2.3"
                   strokeOpacity="0.18"
                   strokeWidth="0.32"
-                  initial={{ pathLength: 0 }}
+                  initial={reduceMotion ? false : { pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 1.1, delay: 0.08, ease: premiumEase }}
+                  transition={{ duration: reduceMotion ? 0.01 : 1.1, delay: reduceMotion ? 0 : 0.08, ease: premiumEase }}
                 />
               </motion.svg>
 
@@ -142,15 +143,15 @@ export default function DesktopScene({
                       isBusy ? 'cursor-progress opacity-80' : 'hover:shadow-[0_16px_34px_rgba(237,106,50,0.12)]'
                     } ${isHighlighted ? 'shadow-[0_18px_42px_rgba(237,106,50,0.13)]' : ''}`}
                     style={{ left: `${visual.x}%`, top: `${visual.y}%` }}
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                     animate={{
                       opacity: selected && !isActive ? 0.34 : 1,
                       y: 0,
-                      scale: isHighlighted ? 1.035 : 1,
+                      scale: reduceMotion ? 1 : isHighlighted ? 1.035 : 1,
                       borderColor: isHighlighted ? 'rgba(237,106,50,.9)' : 'rgba(0,0,0,.065)'
                     }}
-                    transition={{ duration: 0.34, delay: index * 0.05, ease: premiumEase }}
-                    whileHover={phase === 'map' ? { y: -3 } : undefined}
+                    transition={{ duration: reduceMotion ? 0.01 : 0.34, delay: reduceMotion ? 0 : index * 0.05, ease: premiumEase }}
+                    whileHover={!reduceMotion && phase === 'map' ? { y: -3 } : undefined}
                   >
                     <div className="pointer-events-none absolute -left-3 top-1/2 h-px w-6 -translate-y-1/2 bg-[#ed6a32]/45" />
                     <div className="pointer-events-none absolute left-1/2 -top-3 h-6 w-px -translate-x-1/2 bg-[#ed6a32]/28" />
