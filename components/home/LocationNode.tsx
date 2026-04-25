@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import RollingCoordinate from '@/components/home/RollingCoordinate';
 import { premiumEase } from '@/lib/animations';
 import GateCode from './GateCode';
@@ -27,6 +27,7 @@ export function LocationNode({
   nearestDistance?: number | null;
   mode?: 'desktop' | 'mobile';
 }) {
+  const reduceMotion = useReducedMotion();
   const isActive = selected?.id === point.id;
   const isDimmed = selected && !isActive;
   const isNearest = nearestId === point.id;
@@ -47,9 +48,9 @@ export function LocationNode({
         } ${isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/62' : 'border-black/[0.08]'}`}
         onClick={() => onSelect(point)}
         disabled={isBusy}
-        initial={{ opacity: 0, y: 10 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: hidden ? 0 : isDimmed ? 0.42 : 1, y: 0 }}
-        transition={{ duration: 0.38, delay: phase === 'map' ? index * 0.07 : 0, ease: premiumEase }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.38, delay: reduceMotion ? 0 : phase === 'map' ? index * 0.07 : 0, ease: premiumEase }}
       >
         <div className="grid grid-cols-[150px_1fr] gap-3 max-[380px]:grid-cols-[136px_1fr]">
           <div className="shrink-0">
@@ -64,7 +65,7 @@ export function LocationNode({
               active={shouldRollCoordinates}
               variant="compact"
               animationKey={rollKey}
-              delayOffset={index * 0.06}
+              delayOffset={reduceMotion ? 0 : index * 0.06}
               className={`mt-2 text-[10px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
             />
             {isNearest && !selected ? <div className="mt-2 text-[10px] text-[#bc4c1f]">ближайшая точка · {(nearestDistance ?? 0).toFixed(2)} км</div> : null}
@@ -85,16 +86,16 @@ export function LocationNode({
       style={{ left: `${point.visual.x}%`, top: `${point.visual.y}%` }}
       onClick={() => onSelect(point)}
       disabled={isBusy}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: hidden ? 0 : isDimmed ? 0.14 : 1, y: 0, scale: isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
-      transition={{ duration: 0.44, delay: phase === 'map' ? index * 0.065 : 0, ease: premiumEase }}
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: hidden ? 0 : isDimmed ? 0.14 : 1, y: 0, scale: !reduceMotion && isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.44, delay: reduceMotion ? 0 : phase === 'map' ? index * 0.065 : 0, ease: premiumEase }}
     >
       <motion.div
         className={`relative w-[min(292px,76vw)] border bg-[#fffdf8] px-4 py-4 ${
           isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/72' : 'border-black/[0.08]'
         }`}
-        animate={{ opacity: isDimmed ? 0.8 : 1, y: isActive ? -2 : 0, scale: isActive ? 1.01 : isNearest ? 1.004 : 1 }}
-        transition={{ duration: 0.3 }}
+        animate={{ opacity: isDimmed ? 0.8 : 1, y: !reduceMotion && isActive ? -2 : 0, scale: !reduceMotion && isActive ? 1.01 : !reduceMotion && isNearest ? 1.004 : 1 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.3 }}
       >
         <div className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'}`} />
 
@@ -109,7 +110,7 @@ export function LocationNode({
               active={shouldRollCoordinates}
               variant="compact"
               animationKey={rollKey}
-              delayOffset={index * 0.05}
+              delayOffset={reduceMotion ? 0 : index * 0.05}
               className={`mt-2 text-[9px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
             />
           </div>
@@ -120,16 +121,18 @@ export function LocationNode({
 }
 
 export function LockCaption({ selected, phase }: { selected: LocationPoint | null; phase: Phase }) {
+  const reduceMotion = useReducedMotion();
+
   if (!selected || phase === 'open') return null;
 
   return (
     <AnimatePresence>
       <motion.div
         className="pointer-events-none absolute left-7 right-7 top-[113px] z-40 grid grid-cols-[1fr_auto] items-center gap-4 border-y border-black/[0.045] bg-[#fffdf8]/90 py-3 backdrop-blur-sm"
-        initial={{ opacity: 0, y: -8 }}
+        initial={reduceMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.26 }}
+        exit={{ opacity: 0, y: reduceMotion ? 0 : -8 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.26 }}
       >
         <div>
           <div className="text-[9px] tracking-[0.14em] text-[#ed6a32]">фиксация точки</div>
