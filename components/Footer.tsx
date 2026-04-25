@@ -31,7 +31,7 @@ export default function Footer() {
                   <a
                     href={location.links.maps.yandex}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-black/62 transition hover:text-[#ed6a32]"
                   >
                     построить маршрут
@@ -39,18 +39,18 @@ export default function Footer() {
                   <a
                     href={location.links.maps.twoGis}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-black/62 transition hover:text-[#ed6a32]"
                   >
                     открыть в 2гис
                   </a>
-                  <a href={deliveryLink} target="_blank" rel="noreferrer" className="text-black/62 transition hover:text-[#ed6a32]">
+                  <a href={deliveryLink} target="_blank" rel="noopener noreferrer" className="text-black/62 transition hover:text-[#ed6a32]">
                     заказать доставку
                   </a>
                   <a
                     href={location.links.reviews.twoGis}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-black/62 transition hover:text-[#ed6a32]"
                   >
                     оставить отзыв
