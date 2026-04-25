@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { menuData } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 
+const DESSERT_CATEGORY = 'десерты';
+
 export const MENU_PREVIEW = [
   { number: '01', title: 'кофе', text: 'классика и авторские напитки', category: 'напитки' },
   { number: '02', title: 'завтраки', text: 'с 8:00 до 14:00', category: 'завтраки' },
-  { number: '03', title: 'десерты', text: 'для сладких моментов', category: null }
+  { number: '03', title: 'десерты', text: 'для сладких моментов', category: DESSERT_CATEGORY }
 ] as const;
 
 function getPreviewCount(category: string | null) {
@@ -16,6 +18,11 @@ function getPreviewCount(category: string | null) {
 }
 
 export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (category: string | null) => void }) {
+  const previewItems = MENU_PREVIEW.map((item) => ({
+    ...item,
+    previewCount: getPreviewCount(item.category)
+  }));
+
   return (
     <motion.div
       className="mt-5 overflow-hidden border border-[#ed6a32]/44 bg-[#fffdf8]"
@@ -23,7 +30,7 @@ export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (categ
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.16, duration: 0.38, ease: premiumEase }}
     >
-      {MENU_PREVIEW.map((item, index) => (
+      {previewItems.map((item, index) => (
         <motion.button
           type="button"
           onClick={() => onOpenCategory(item.category)}
@@ -39,7 +46,7 @@ export default function MenuPreview({ onOpenCategory }: { onOpenCategory: (categ
             <div className="text-[13px] font-semibold tracking-[0.01em] text-[#0b0b0b]">{item.title}</div>
             <div className="mt-1 text-[12px] text-[#403e3e]">{item.text}</div>
           </div>
-          <div className="text-right text-[10px] text-[#403e3e]">{getPreviewCount(item.category) ? `${getPreviewCount(item.category)} поз.` : '→'}</div>
+          <div className="text-right text-[10px] text-[#403e3e]">{item.previewCount ? `${item.previewCount} поз.` : '→'}</div>
         </motion.button>
       ))}
     </motion.div>
