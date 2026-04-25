@@ -20,7 +20,7 @@ export default function CoordinateSystemLayer({ mode, verticalShift = 0, muted =
   const shiftY = reduceMotion ? 0 : verticalShift;
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-white" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-transparent" aria-hidden>
       <motion.div
         className="absolute inset-0"
         animate={{ opacity: baseOpacity, y: shiftY }}
