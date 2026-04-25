@@ -24,7 +24,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
     <motion.button
       type="button"
       onClick={() => onOpen(item, category)}
-      className={`group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_8px_20px_rgba(24,21,18,0.06)] transition-opacity sm:flex sm:flex-col ${
+      className={`group relative grid w-full grid-cols-[112px_1fr] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] text-left shadow-[0_8px_20px_rgba(24,21,18,0.06)] transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] sm:flex sm:flex-col ${
         hasPrice ? '' : 'opacity-70'
       }`}
       whileTap={{ scale: 0.992 }}
