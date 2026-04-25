@@ -33,12 +33,16 @@ export function LocationNode({
   const hidden = phase === 'open';
   const shouldRollCoordinates = phase === 'map' || isActive || (isNearest && !selected);
   const rollKey = `coord-${point.id}-${phase}-${isActive ? 'active' : 'idle'}-${isNearest ? 'nearest' : 'normal'}`;
+  const accessibleLabel = isNearest ? `выбрать точку ${point.code}, ${point.title}, ближайшая точка` : `выбрать точку ${point.code}, ${point.title}`;
+  const nodeFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
   if (mode === 'mobile') {
     return (
       <motion.button
         type="button"
-        className={`w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${
+        aria-label={accessibleLabel}
+        aria-pressed={isActive}
+        className={`w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${nodeFocusClass} ${
           isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
         } ${isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/62' : 'border-black/[0.08]'}`}
         onClick={() => onSelect(point)}
@@ -73,7 +77,9 @@ export function LocationNode({
   return (
     <motion.button
       type="button"
-      className={`absolute z-30 -translate-y-1/2 text-left outline-none transition-opacity ${
+      aria-label={accessibleLabel}
+      aria-pressed={isActive}
+      className={`absolute z-30 -translate-y-1/2 text-left outline-none transition-opacity ${nodeFocusClass} ${
         isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
       }`}
       style={{ left: `${point.visual.x}%`, top: `${point.visual.y}%` }}
