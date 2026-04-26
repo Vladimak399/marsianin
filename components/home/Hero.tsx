@@ -35,6 +35,7 @@ export default function Hero() {
   const phaseRef = useRef<Phase>('map');
 
   const nearest = useMemo(() => getNearestLocation(userCoords), [userCoords]);
+  const visibleNearest = geoUnavailable ? null : nearest;
   const cameraY = useMemo(() => (selected ? 50 - selected.visual.y : 0), [selected]);
   const isBusy = phase !== 'map' && phase !== 'open';
 
@@ -55,7 +56,7 @@ export default function Hero() {
   useEffect(() => {
     const applyDemoFallback = () => {
       // В production геолокация часто блокируется (HTTP, отказ пользователя, политика браузера),
-      // поэтому всегда показываем рабочие координаты и оставляем интерфейс живым.
+      // поэтому держим карту рабочей, но не выдаём demo-координаты за реальные координаты гостя.
       applyCoordinates(DEMO_USER_COORDS, true);
     };
 
@@ -140,15 +141,15 @@ export default function Hero() {
         <AnimatePresence>
           <UserCoordinateTrace
             userCoords={userCoords}
-            nearest={nearest}
+            nearest={visibleNearest}
             phase={phase}
             selected={selected}
             geoUnavailable={geoUnavailable}
           />
         </AnimatePresence>
-        <CoordinateBackground selected={selected} phase={phase} nearestId={nearest?.id ?? null} />
-        <UserTraceLayer userCoords={userCoords} nearest={nearest} selected={selected} phase={phase} />
-        <LocationMap phase={phase} cameraY={cameraY} selected={selected} isBusy={isBusy} nearest={nearest} onSelect={select} />
+        <CoordinateBackground selected={selected} phase={phase} nearestId={visibleNearest?.id ?? null} />
+        <UserTraceLayer userCoords={userCoords} nearest={visibleNearest} selected={selected} phase={phase} />
+        <LocationMap phase={phase} cameraY={cameraY} selected={selected} isBusy={isBusy} nearest={visibleNearest} onSelect={select} />
         <LockCaption selected={selected} phase={phase} />
         <TransitionOverlay selected={selected} phase={phase} />
         <AnimatePresence>
@@ -168,8 +169,9 @@ export default function Hero() {
       <DesktopScene
         selected={selected}
         phase={phase}
-        nearest={nearest}
+        nearest={visibleNearest}
         userCoords={userCoords}
+        geoUnavailable={geoUnavailable}
         isBusy={isBusy}
         onSelect={select}
         onBack={back}
