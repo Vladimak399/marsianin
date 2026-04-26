@@ -13,10 +13,13 @@ type MenuSectionProps = {
 
 export default function MenuSection({ section, selectedLocation, onOpenItem, isFirstSection = false }: MenuSectionProps) {
   return (
-    <section id={`section-${section.category}`} data-category={section.category} className="scroll-mt-32 border-t border-[rgba(24,21,18,0.08)] pt-7 first:border-t-0 first:pt-0">
-      <header className="mb-4 flex items-end justify-between gap-4">
-        <h2 className="text-[1.35rem] font-semibold tracking-[-0.03em] text-[#181512]">{section.category}</h2>
-        <p className="mars-coordinate-label rounded-full border border-[#ed6a32]/30 bg-[#ed6a32]/10 px-2.5 py-1 text-xs text-[#ed6a32]">
+    <section id={`section-${section.category}`} data-category={section.category} className="scroll-mt-32 border-t border-black/[0.055] pt-7 first:border-t-0 first:pt-0">
+      <header className="mb-4 grid grid-cols-[1fr_auto] items-end gap-4 border-b border-black/[0.045] pb-3">
+        <div>
+          <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">раздел меню</p>
+          <h2 className="mt-1 text-[1.32rem] font-semibold tracking-[-0.035em] text-[#181512]">{section.category}</h2>
+        </div>
+        <p className="mars-coordinate-label border border-[#ed6a32]/26 bg-[#ed6a32]/8 px-2.5 py-1 text-[10px] text-[#ed6a32]">
           {section.items.length} поз.
         </p>
       </header>
