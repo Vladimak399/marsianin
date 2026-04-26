@@ -15,6 +15,7 @@ export default function DesktopScene({
   phase,
   nearest,
   userCoords,
+  geoUnavailable = false,
   isBusy,
   onSelect,
   onBack,
@@ -25,6 +26,7 @@ export default function DesktopScene({
   phase: Phase;
   nearest: NearestLocation | null;
   userCoords: Coordinates | null;
+  geoUnavailable?: boolean;
   isBusy: boolean;
   onSelect: (point: LocationPoint) => void;
   onBack: () => void;
@@ -56,18 +58,34 @@ export default function DesktopScene({
               <div className="mt-2 max-w-[245px] text-[13px] leading-relaxed text-black/58">выберите точку, чтобы открыть меню и маршрут</div>
 
               <div className="mt-6 border-t border-black/[0.06] pt-4">
-                <div className="text-[10px] tracking-[0.12em] text-black/42">координаты гостя</div>
-                {userCoords ? (
-                  <RollingCoordinate lat={userCoords.lat} lng={userCoords.lng} active className="mt-2 text-[10px] text-black/45" />
+                <div className="text-[10px] tracking-[0.12em] text-black/42">ваши координаты</div>
+                {userCoords && !geoUnavailable ? (
+                  <RollingCoordinate
+                    lat={userCoords.lat}
+                    lng={userCoords.lng}
+                    active
+                    variant="labeled"
+                    animationKey={`${userCoords.lat}-${userCoords.lng}`}
+                    className="mt-2 text-[10px] text-black/45"
+                  />
                 ) : (
-                  <div className="mt-2 text-[11px] text-black/38">координаты определяются…</div>
+                  <motion.div
+                    className="mt-2 text-[11px] leading-relaxed text-black/38"
+                    initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: reduceMotion ? 0.01 : 0.28, ease: premiumEase }}
+                  >
+                    {geoUnavailable ? 'геолокация не получена, выберите точку вручную' : 'координаты определяются…'}
+                  </motion.div>
                 )}
               </div>
 
               <div className="mt-5 border-t border-black/[0.06] pt-4">
                 <div className="text-[10px] tracking-[0.12em] text-black/42">ближайшая точка</div>
                 <div className="mt-2 text-[48px] font-black leading-none tracking-[-0.04em] text-[#ed6a32]">{nearest?.code ?? selected?.code ?? 'о12'}</div>
-                <div className="mt-2 text-xs text-black/42">{nearest ? `${nearest.distance.toFixed(2)} км` : 'выберите точку'}</div>
+                <div className="mt-2 text-xs text-black/42">
+                  {nearest ? `${nearest.distance.toFixed(2)} км` : geoUnavailable ? 'нужен доступ к геолокации' : 'выберите точку'}
+                </div>
               </div>
 
               <div className="mt-5 grid grid-cols-3 gap-2">
@@ -80,7 +98,7 @@ export default function DesktopScene({
                       onClick={() => onSelect(point)}
                       disabled={isBusy}
                       className={`border bg-[#fffdf8] px-3 py-3 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
-                        isNearest ? 'border-[#ed6a32]/70 shadow-[0_10px_24px_rgba(237,106,50,0.12)]' : 'border-black/[0.065] hover:border-[#ed6a32]/45'
+                        isNearest ? 'border-[#ed6a32]/80 shadow-[0_0_0_1px_rgba(237,106,50,0.24),0_14px_34px_rgba(237,106,50,0.18)]' : 'border-black/[0.065] hover:border-[#ed6a32]/45'
                       } ${isBusy ? 'cursor-progress opacity-70' : 'hover:-translate-y-0.5'}`}
                     >
                       <GateCode id={point.code} size="small" active={isNearest} />
@@ -141,7 +159,7 @@ export default function DesktopScene({
                     disabled={isBusy}
                     className={`absolute z-20 w-[238px] -translate-x-1/2 -translate-y-1/2 border bg-[#fffdf8]/90 p-4 text-left backdrop-blur-sm transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
                       isBusy ? 'cursor-progress opacity-80' : 'hover:shadow-[0_16px_34px_rgba(237,106,50,0.12)]'
-                    } ${isHighlighted ? 'shadow-[0_18px_42px_rgba(237,106,50,0.13)]' : ''}`}
+                    } ${isNearest ? 'shadow-[0_0_0_1px_rgba(237,106,50,0.26),0_0_44px_rgba(237,106,50,0.18),0_18px_42px_rgba(237,106,50,0.16)]' : isActive ? 'shadow-[0_18px_42px_rgba(237,106,50,0.13)]' : ''}`}
                     style={{ left: `${visual.x}%`, top: `${visual.y}%` }}
                     initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                     animate={{
@@ -153,6 +171,15 @@ export default function DesktopScene({
                     transition={{ duration: reduceMotion ? 0.01 : 0.34, delay: reduceMotion ? 0 : index * 0.05, ease: premiumEase }}
                     whileHover={!reduceMotion && phase === 'map' ? { y: -3 } : undefined}
                   >
+                    {isNearest ? (
+                      <motion.div
+                        aria-hidden
+                        className="pointer-events-none absolute -inset-3 border border-[#ed6a32]/20"
+                        initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: reduceMotion ? 0.01 : 0.42, ease: premiumEase }}
+                      />
+                    ) : null}
                     <div className="pointer-events-none absolute -left-3 top-1/2 h-px w-6 -translate-y-1/2 bg-[#ed6a32]/45" />
                     <div className="pointer-events-none absolute left-1/2 -top-3 h-6 w-px -translate-x-1/2 bg-[#ed6a32]/28" />
                     <GateCode id={point.code} active={isHighlighted} />
