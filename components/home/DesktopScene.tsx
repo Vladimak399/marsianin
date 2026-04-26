@@ -48,7 +48,7 @@ export default function DesktopScene({
         <>
           <CoordinateSystemLayer mode={phase === 'docking' || phase === 'wash' ? 'transition' : 'map'} />
           <div className="pointer-events-none absolute -left-16 top-12 z-[2] h-80 w-80 rounded-full bg-[#ed6a32]/10 blur-3xl" />
-          <BrandHeader />
+          <BrandHeader phase={phase} />
 
           <div className="relative z-10 grid min-h-[100dvh] grid-cols-[330px_1fr] gap-10 px-10 pb-10 pt-32">
             <aside className="self-start border border-black/[0.055] bg-[#fffdf8]/72 p-6 backdrop-blur-sm">
