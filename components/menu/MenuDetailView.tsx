@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect } from 'react';
 import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
@@ -31,6 +31,8 @@ export default function MenuDetailView({
   onClose,
   onChangeIndex
 }: MenuDetailViewProps) {
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     if (!item) return;
 
@@ -77,22 +79,22 @@ export default function MenuDetailView({
     <AnimatePresence>
       {item ? (
         <motion.div
-          className="fixed inset-0 z-50 bg-[#0b0b0b]/34 backdrop-blur-[3px]"
+          className="fixed inset-0 z-50 bg-[#0b0b0b]/30 backdrop-blur-[3px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.16, ease: premiumEase }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.16, ease: premiumEase }}
           onClick={onClose}
         >
           <motion.article
-            className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[rgba(255,255,255,0.95)] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:rounded-2xl sm:border sm:border-[rgba(24,21,18,0.1)] sm:shadow-[0_20px_60px_rgba(24,21,18,0.16)]"
+            className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[#fffdf8] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:border sm:border-black/[0.08] sm:shadow-[0_20px_60px_rgba(24,21,18,0.14)]"
             role="dialog"
             aria-modal="true"
             aria-label={`позиция меню: ${item.name}`}
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 14 }}
-            transition={{ duration: 0.2, ease: premiumEase }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : 14 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.2, ease: premiumEase }}
             onClick={(event) => event.stopPropagation()}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -103,13 +105,13 @@ export default function MenuDetailView({
               <CoordinateSystemLayer mode="menu" muted />
             </div>
 
-            <div className="sticky top-0 z-20 border-b border-[rgba(24,21,18,0.08)] bg-[rgba(255,255,255,0.86)] px-7 py-4 backdrop-blur-sm">
+            <div className="sticky top-0 z-20 border-b border-black/[0.065] bg-[#fffdf8]/88 px-7 py-4 backdrop-blur-sm">
               <div className="flex items-center justify-between gap-3">
                 <p className="mars-coordinate-label font-sans text-[10px] text-[#ed6a32] lowercase">{category}</p>
                 <button
                   type="button"
                   onClick={onClose}
-                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] ${detailButtonFocusClass}`}
+                  className={`min-h-10 border border-black/[0.105] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] ${detailButtonFocusClass}`}
                 >
                   закрыть
                 </button>
@@ -117,29 +119,31 @@ export default function MenuDetailView({
             </div>
 
             <div className="relative z-10 px-7 pb-8 pt-5">
-              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-[rgba(24,21,18,0.1)] bg-white/80 shadow-[0_10px_30px_rgba(24,21,18,0.08)]">
-                <Image src={item.image} alt={item.name} fill className="object-cover opacity-90" sizes="(max-width: 430px) 100vw, 430px" />
+              <div className="relative aspect-[16/10] overflow-hidden border border-black/[0.08] bg-white/80 shadow-[0_10px_30px_rgba(24,21,18,0.06)]">
+                <Image src={item.image} alt={item.name} fill className="object-cover opacity-92" sizes="(max-width: 430px) 100vw, 430px" />
+                <div className="pointer-events-none absolute left-0 top-0 h-px w-[42%] bg-[#ed6a32]/42" />
               </div>
 
-              <div className="mt-5 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[rgba(255,255,255,0.8)] px-4 py-4 backdrop-blur-sm">
-                <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
-                <div className="mt-2 flex items-start justify-between gap-4">
-                  <h2 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
+              <div className="mt-5 border border-black/[0.08] bg-white/72 px-4 py-4 backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-3 border-b border-black/[0.055] pb-3">
+                  <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                   {hasPrice ? (
-                    <p className="shrink-0 text-2xl font-semibold text-[#ed6a32]">{price} ₽</p>
+                    <p className="mars-coordinate-label border border-[#ed6a32]/28 bg-[#ed6a32]/8 px-2.5 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
                   ) : (
-                    <p className="shrink-0 text-right text-sm font-medium leading-tight text-[#a29a93]">нет в этой точке</p>
+                    <p className="mars-coordinate-label max-w-[120px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
                   )}
                 </div>
+
+                <h2 className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
                 <p className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
               </div>
 
-              <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-[rgba(24,21,18,0.08)] pb-4">
+              <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.065] pb-4">
                 <button
                   type="button"
                   onClick={handlePrev}
                   disabled={!hasPrev}
-                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
+                  className={`min-h-10 border border-black/[0.105] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   назад
                 </button>
@@ -150,7 +154,7 @@ export default function MenuDetailView({
                   type="button"
                   onClick={handleNext}
                   disabled={!hasNext}
-                  className={`min-h-10 rounded-lg border border-[rgba(24,21,18,0.12)] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
+                  className={`min-h-10 border border-black/[0.105] bg-white/90 px-3 py-2 font-sans text-xs tracking-[0.08em] lowercase text-[#504942] transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40 ${detailButtonFocusClass}`}
                 >
                   вперед
                 </button>
