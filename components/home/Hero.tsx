@@ -136,7 +136,7 @@ export default function Hero() {
           muted={phase === 'open'}
         />
         <div className="pointer-events-none absolute -right-20 top-24 z-[3] h-64 w-64 rounded-full bg-[#ed6a32]/12 blur-3xl" />
-        {phase !== 'open' ? <BrandHeader /> : null}
+        {phase !== 'open' ? <BrandHeader phase={phase} /> : null}
         <AnimatePresence>
           <UserCoordinateTrace
             userCoords={userCoords}
