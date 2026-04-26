@@ -39,6 +39,8 @@ export default function DesktopScene({
   ];
 
   const isOpen = phase === 'open' && selected;
+  const focusPoint = selected ?? (nearest ? (LOCATIONS.find((point) => point.id === nearest.id) ?? null) : null);
+  const focusVisual = focusPoint ? desktopPoints.find((point) => point.id === focusPoint.id) : null;
 
   return (
     <div className="relative mx-auto hidden min-h-[100dvh] w-full max-w-[1180px] bg-[#fffdf8] shadow-[0_16px_56px_rgba(0,0,0,.06)] lg:block">
@@ -102,27 +104,49 @@ export default function DesktopScene({
                 transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: premiumEase }}
               >
                 <motion.path
-                  d="M 22 70 C 35 35, 55 22, 68 36 S 82 55, 88 74"
+                  d="M 24 70 H 67 V 35 H 87 V 74"
                   fill="none"
                   stroke="#ed6a32"
-                  strokeOpacity="0.34"
-                  strokeWidth="0.72"
-                  strokeLinecap="round"
+                  strokeOpacity="0.24"
+                  strokeWidth="0.32"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
                   initial={reduceMotion ? false : { pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: reduceMotion ? 0.01 : 0.9, ease: premiumEase }}
+                  transition={{ duration: reduceMotion ? 0.01 : 0.72, ease: premiumEase }}
                 />
                 <motion.path
-                  d="M 24 27 C 42 48, 58 64, 91 84"
+                  d="M 24 70 H 87 M 67 35 V 74"
                   fill="none"
                   stroke="#ed6a32"
-                  strokeDasharray="1.4 2.3"
-                  strokeOpacity="0.18"
-                  strokeWidth="0.32"
-                  initial={reduceMotion ? false : { pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: reduceMotion ? 0.01 : 1.1, delay: reduceMotion ? 0 : 0.08, ease: premiumEase }}
+                  strokeDasharray="1.2 2.4"
+                  strokeOpacity="0.14"
+                  strokeWidth="0.24"
+                  strokeLinecap="square"
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: reduceMotion ? 0.01 : 0.38, delay: reduceMotion ? 0 : 0.16, ease: premiumEase }}
                 />
+                {focusVisual ? (
+                  <motion.g
+                    initial={reduceMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: premiumEase }}
+                  >
+                    <line x1="0" x2="100" y1={focusVisual.y} y2={focusVisual.y} stroke="#ed6a32" strokeOpacity="0.18" strokeWidth="0.18" />
+                    <line x1={focusVisual.x} x2={focusVisual.x} y1="0" y2="100" stroke="#ed6a32" strokeOpacity="0.18" strokeWidth="0.18" />
+                    <rect
+                      x={focusVisual.x - 3.2}
+                      y={focusVisual.y - 3.2}
+                      width="6.4"
+                      height="6.4"
+                      fill="none"
+                      stroke="#ed6a32"
+                      strokeOpacity="0.34"
+                      strokeWidth="0.22"
+                    />
+                  </motion.g>
+                ) : null}
               </motion.svg>
 
               {desktopPoints.map((visual, index) => {
