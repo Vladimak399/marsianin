@@ -120,7 +120,7 @@ export default function MenuDetailView({
 
             <div className="relative z-10 px-7 pb-8 pt-5">
               <div className="relative aspect-[16/10] overflow-hidden border border-black/[0.08] bg-white/80 shadow-[0_10px_30px_rgba(24,21,18,0.06)]">
-                <Image src={item.image} alt={item.name} fill className="object-cover opacity-92" sizes="(max-width: 430px) 100vw, 430px" />
+                <Image src={item.image} alt={item.name} fill className="object-cover opacity-[0.92]" sizes="(max-width: 430px) 100vw, 430px" />
                 <div className="pointer-events-none absolute left-0 top-0 h-px w-[42%] bg-[#ed6a32]/42" />
               </div>
 
@@ -128,7 +128,7 @@ export default function MenuDetailView({
                 <div className="flex items-center justify-between gap-3 border-b border-black/[0.055] pb-3">
                   <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                   {hasPrice ? (
-                    <p className="mars-coordinate-label border border-[#ed6a32]/28 bg-[#ed6a32]/8 px-2.5 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
+                    <p className="mars-coordinate-label border border-[#ed6a32]/28 bg-[#ed6a32]/[0.08] px-2.5 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
                   ) : (
                     <p className="mars-coordinate-label max-w-[120px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
                   )}
