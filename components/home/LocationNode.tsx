@@ -45,11 +45,11 @@ export function LocationNode({
         aria-pressed={isActive}
         className={`w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${nodeFocusClass} ${
           isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
-        } ${isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/62' : 'border-black/[0.08]'}`}
+        } ${isActive ? 'border-[#ed6a32] shadow-[0_12px_30px_rgba(237,106,50,0.1)]' : isNearest ? 'border-[#ed6a32]/58' : 'border-black/[0.065]'}`}
         onClick={() => onSelect(point)}
         disabled={isBusy}
         initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: hidden ? 0 : isDimmed ? 0.42 : 1, y: 0 }}
+        animate={{ opacity: hidden ? 0 : isDimmed ? 0.34 : 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.38, delay: reduceMotion ? 0 : phase === 'map' ? index * 0.07 : 0, ease: premiumEase }}
       >
         <div className="grid grid-cols-[150px_1fr] gap-3 max-[380px]:grid-cols-[136px_1fr]">
@@ -57,7 +57,7 @@ export function LocationNode({
             <GateCode id={point.code} active={isActive || isNearest} />
           </div>
           <div className="min-w-0 pt-1">
-            <div className="text-[13px] tracking-[-0.02em] text-black/56">{point.title}</div>
+            <div className={`text-[13px] tracking-[-0.02em] ${isActive ? 'text-black/70' : 'text-black/48'}`}>{point.title}</div>
             <RollingCoordinate
               key={rollKey}
               lat={point.lat}
@@ -66,7 +66,7 @@ export function LocationNode({
               variant="compact"
               animationKey={rollKey}
               delayOffset={reduceMotion ? 0 : index * 0.06}
-              className={`mt-2 text-[10px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
+              className={`mt-2 text-[10px] ${isActive ? 'text-black/52' : isNearest ? 'text-black/48' : 'text-black/28'}`}
             />
             {isNearest && !selected ? <div className="mt-2 text-[10px] text-[#bc4c1f]">ближайшая точка · {(nearestDistance ?? 0).toFixed(2)} км</div> : null}
           </div>
@@ -87,22 +87,26 @@ export function LocationNode({
       onClick={() => onSelect(point)}
       disabled={isBusy}
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-      animate={{ opacity: hidden ? 0 : isDimmed ? 0.14 : 1, y: 0, scale: !reduceMotion && isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
+      animate={{ opacity: hidden ? 0 : isDimmed ? 0.12 : 1, y: 0, scale: !reduceMotion && isActive ? (phase === 'docking' ? 1.018 : 1) : 1 }}
       transition={{ duration: reduceMotion ? 0.01 : 0.44, delay: reduceMotion ? 0 : phase === 'map' ? index * 0.065 : 0, ease: premiumEase }}
     >
       <motion.div
         className={`relative w-[min(292px,76vw)] border bg-[#fffdf8] px-4 py-4 ${
-          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/72' : 'border-black/[0.08]'
+          isActive
+            ? 'border-[#ed6a32] shadow-[0_16px_34px_rgba(237,106,50,0.11)]'
+            : isNearest
+              ? 'border-[#ed6a32]/64'
+              : 'border-black/[0.06]'
         }`}
-        animate={{ opacity: isDimmed ? 0.8 : 1, y: !reduceMotion && isActive ? -2 : 0, scale: !reduceMotion && isActive ? 1.01 : !reduceMotion && isNearest ? 1.004 : 1 }}
+        animate={{ opacity: isDimmed ? 0.74 : 1, y: !reduceMotion && isActive ? -2 : 0, scale: !reduceMotion && isActive ? 1.01 : !reduceMotion && isNearest ? 1.004 : 1 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.3 }}
       >
-        <div className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'}`} />
+        <div className={`absolute left-0 top-0 h-px bg-[#ed6a32] ${isActive ? 'w-full opacity-85' : isNearest ? 'w-[68%] opacity-55' : 'w-[20%] opacity-28'}`} />
 
         <div className="grid grid-cols-[106px_1fr] items-start gap-4">
           <GateCode id={point.code} active={isActive || isNearest} />
           <div className="pt-1.5">
-            <div className="text-[13px] tracking-[-0.02em] text-black/50">{point.title}</div>
+            <div className={`text-[13px] tracking-[-0.02em] ${isActive ? 'text-black/68' : 'text-black/42'}`}>{point.title}</div>
             <RollingCoordinate
               key={rollKey}
               lat={point.lat}
@@ -111,7 +115,7 @@ export function LocationNode({
               variant="compact"
               animationKey={rollKey}
               delayOffset={reduceMotion ? 0 : index * 0.05}
-              className={`mt-2 text-[9px] ${isNearest ? 'text-black/55' : 'text-black/34'}`}
+              className={`mt-2 text-[9px] ${isActive ? 'text-black/52' : isNearest ? 'text-black/46' : 'text-black/28'}`}
             />
           </div>
         </div>
