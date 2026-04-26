@@ -43,15 +43,30 @@ export function LocationNode({
         type="button"
         aria-label={accessibleLabel}
         aria-pressed={isActive}
-        className={`w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${nodeFocusClass} ${
+        className={`relative w-full border bg-[#fffdf8] px-4 py-4 text-left outline-none transition-opacity ${nodeFocusClass} ${
           isBusy ? 'cursor-progress opacity-80' : 'cursor-pointer'
-        } ${isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/62' : 'border-black/[0.08]'}`}
+        } ${
+          isActive
+            ? 'border-[#ed6a32]/78'
+            : isNearest
+              ? 'border-[#ed6a32]/76 shadow-[0_0_0_1px_rgba(237,106,50,0.22),0_14px_34px_rgba(237,106,50,0.16)]'
+              : 'border-black/[0.08]'
+        }`}
         onClick={() => onSelect(point)}
         disabled={isBusy}
         initial={reduceMotion ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: hidden ? 0 : isDimmed ? 0.42 : 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.38, delay: reduceMotion ? 0 : phase === 'map' ? index * 0.07 : 0, ease: premiumEase }}
       >
+        {isNearest ? (
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -inset-1 border border-[#ed6a32]/18"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.34, ease: premiumEase }}
+          />
+        ) : null}
         <div className="grid grid-cols-[150px_1fr] gap-3 max-[380px]:grid-cols-[136px_1fr]">
           <div className="shrink-0">
             <GateCode id={point.code} active={isActive || isNearest} />
@@ -92,11 +107,12 @@ export function LocationNode({
     >
       <motion.div
         className={`relative w-[min(292px,76vw)] border bg-[#fffdf8] px-4 py-4 ${
-          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/72' : 'border-black/[0.08]'
+          isActive ? 'border-[#ed6a32]/78' : isNearest ? 'border-[#ed6a32]/76 shadow-[0_0_0_1px_rgba(237,106,50,0.22),0_14px_34px_rgba(237,106,50,0.16)]' : 'border-black/[0.08]'
         }`}
         animate={{ opacity: isDimmed ? 0.8 : 1, y: !reduceMotion && isActive ? -2 : 0, scale: !reduceMotion && isActive ? 1.01 : !reduceMotion && isNearest ? 1.004 : 1 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.3 }}
       >
+        {isNearest ? <div className="pointer-events-none absolute -inset-1 border border-[#ed6a32]/18" /> : null}
         <div className={`absolute left-0 top-0 h-px bg-[#ed6a32]/58 ${isActive ? 'w-full' : isNearest ? 'w-[68%]' : 'w-[24%]'}`} />
 
         <div className="grid grid-cols-[106px_1fr] items-start gap-4">
