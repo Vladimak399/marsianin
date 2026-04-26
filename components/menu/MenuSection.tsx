@@ -19,7 +19,7 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
           <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">раздел меню</p>
           <h2 className="mt-1 text-[1.32rem] font-semibold tracking-[-0.035em] text-[#181512]">{section.category}</h2>
         </div>
-        <p className="mars-coordinate-label border border-[#ed6a32]/26 bg-[#ed6a32]/8 px-2.5 py-1 text-[10px] text-[#ed6a32]">
+        <p className="mars-coordinate-label border border-[#ed6a32]/26 bg-[#ed6a32]/[0.08] px-2.5 py-1 text-[10px] text-[#ed6a32]">
           {section.items.length} поз.
         </p>
       </header>

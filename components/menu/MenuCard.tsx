@@ -28,7 +28,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       className={`group relative grid w-full grid-cols-[112px_1fr] overflow-hidden border bg-[#fffdf8] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] sm:flex sm:flex-col ${
         hasPrice
           ? 'border-black/[0.075] shadow-[0_8px_20px_rgba(24,21,18,0.045)] hover:border-[#ed6a32]/34 hover:shadow-[0_14px_34px_rgba(237,106,50,0.08)]'
-          : 'border-black/[0.055] opacity-68'
+          : 'border-black/[0.055] opacity-[0.68]'
       }`}
       whileTap={reduceMotion ? undefined : { scale: 0.992 }}
       transition={{ duration: reduceMotion ? 0.01 : 0.14, ease: premiumEase }}
@@ -42,7 +42,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
           fill
           priority={priority}
           sizes="(max-width: 640px) 112px, (max-width: 1024px) 430px, 33vw"
-          className={`object-cover transition-transform duration-300 ${hasPrice ? 'opacity-94 sm:group-hover:scale-[1.025]' : 'opacity-58 grayscale'}`}
+          className={`object-cover transition-transform duration-300 ${hasPrice ? 'opacity-[0.94] sm:group-hover:scale-[1.025]' : 'opacity-[0.58] grayscale'}`}
         />
         {!hasPrice ? <div className="absolute inset-0 bg-[#fffdf8]/38" /> : null}
       </div>
@@ -51,7 +51,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <h3 className="min-w-0 text-[0.98rem] font-semibold leading-snug tracking-[-0.02em] text-[#181512] sm:text-[1rem]">{item.name}</h3>
           {hasPrice ? (
-            <p className="mars-coordinate-label shrink-0 border border-[#ed6a32]/28 bg-[#ed6a32]/8 px-2 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
+            <p className="mars-coordinate-label shrink-0 border border-[#ed6a32]/28 bg-[#ed6a32]/[0.08] px-2 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
           ) : (
             <p className="mars-coordinate-label shrink-0 max-w-[82px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
           )}
