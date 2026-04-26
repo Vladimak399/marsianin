@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { premiumEase } from '@/lib/animations';
 import RollingCoordinate from './RollingCoordinate';
@@ -22,6 +23,7 @@ export default function LocationOpenPanel({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const [isOpeningMenu, setIsOpeningMenu] = useState(false);
   const reduceMotion = useReducedMotion();
   const selectedLocation = LOCATION_DETAILS[selected.id];
 
@@ -31,10 +33,16 @@ export default function LocationOpenPanel({
     'group relative grid min-h-[92px] w-full grid-cols-[44px_1fr_auto] items-center gap-3 border border-[#ed6a32]/72 bg-[#ed6a32] px-4 py-4 text-left text-white shadow-[0_18px_42px_rgba(237,106,50,0.20)] transition hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99] disabled:cursor-progress disabled:bg-[#df8f6e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#ed6a32]';
   const utilityLinkClass =
     'inline-flex min-h-12 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] hover:shadow-[0_10px_24px_rgba(237,106,50,0.08)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
-  const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'открыть меню';
+  const mainCtaText = isOpeningMenu ? 'открываем меню' : selected.code ? `открыть меню ${selected.code}` : 'открыть меню';
   const enterInitial = reduceMotion ? false : { y: 14, opacity: 0 };
   const enterAnimate = { y: 0, opacity: 1 };
   const enterTransition = { delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0.01 : 0.34, ease: premiumEase };
+
+  const handleOpenMenu = () => {
+    if (isBusy || isOpeningMenu) return;
+    setIsOpeningMenu(true);
+    onOpenCategory(null);
+  };
 
   return (
     <motion.div
@@ -94,7 +102,7 @@ export default function LocationOpenPanel({
           animate={enterAnimate}
           transition={enterTransition}
         >
-          <button type="button" onClick={() => onOpenCategory(null)} disabled={isBusy} className={primaryActionCardClass}>
+          <button type="button" onClick={handleOpenMenu} disabled={isBusy || isOpeningMenu} aria-busy={isOpeningMenu} className={primaryActionCardClass}>
             <span className="mars-coordinate-label text-[10px] text-white/82" aria-hidden>
               01
             </span>
@@ -102,7 +110,7 @@ export default function LocationOpenPanel({
               <span className="block text-[13px] font-semibold tracking-[0.01em]">{mainCtaText}</span>
               <span className="mt-1 block text-[12px] text-white/82">полное меню, цены и кбжу</span>
             </span>
-            <span className="text-[10px] font-semibold text-white/86">перейти</span>
+            <span className="text-[10px] font-semibold text-white/86">{isOpeningMenu ? '...' : 'перейти'}</span>
           </button>
 
           <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={`${actionCardClass} border-t-0`}>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { premiumEase } from '@/lib/animations';
@@ -22,14 +23,21 @@ export default function DesktopOpenPanel({
   onSwitch: (point: LocationPoint) => void;
   onOpenCategory: (category: string | null) => void;
 }) {
+  const [isOpeningMenu, setIsOpeningMenu] = useState(false);
   const reduceMotion = useReducedMotion();
   const selectedLocation = LOCATION_DETAILS[selected.id];
-  const mainCtaText = selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
+  const mainCtaText = isOpeningMenu ? 'открываем меню' : selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
   const actionLinkClass =
     'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
   const enterInitial = reduceMotion ? false : { y: 14, opacity: 0 };
   const enterAnimate = { y: 0, opacity: 1 };
   const enterTransition = { delay: reduceMotion ? 0 : 0.05, duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase };
+
+  const handleOpenMenu = () => {
+    if (isBusy || isOpeningMenu) return;
+    setIsOpeningMenu(true);
+    onOpenCategory(null);
+  };
 
   return (
     <div className="relative min-h-[100dvh] bg-[#fffdf8]">
@@ -75,10 +83,11 @@ export default function DesktopOpenPanel({
 
             <button
               type="button"
-              onClick={() => onOpenCategory(null)}
-              disabled={isBusy}
+              onClick={handleOpenMenu}
+              disabled={isBusy || isOpeningMenu}
+              aria-busy={isOpeningMenu}
               className={`mt-5 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.04em] text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
-                isBusy ? 'cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99]'
+                isBusy || isOpeningMenu ? 'cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99]'
               }`}
             >
               {mainCtaText}
