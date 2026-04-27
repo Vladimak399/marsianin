@@ -59,17 +59,53 @@ export default function DesktopScene({
               <div className="text-[11px] tracking-[0.14em] text-[#ed6a32]">карта точек</div>
               <div className="mt-2 max-w-[245px] text-[13px] leading-relaxed text-black/58">выберите точку, чтобы открыть меню и маршрут</div>
 
-              <div className="mt-6 border-t border-black/[0.06] pt-4">
-                <div className="text-[10px] tracking-[0.12em] text-black/42">ваши координаты</div>
+              <div className="mt-6 overflow-hidden border-t border-black/[0.06] pt-4">
+                <div className="flex items-center gap-2 text-[10px] tracking-[0.12em] text-black/42">
+                  <span>ваши координаты</span>
+                  {userCoords && !geoUnavailable ? (
+                    <motion.span
+                      aria-hidden
+                      className="h-1.5 w-1.5 border border-[#ed6a32]/70 bg-[#fffdf8]"
+                      initial={reduceMotion ? false : { opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: reduceMotion ? 0.01 : 0.24, ease: premiumEase }}
+                    />
+                  ) : null}
+                </div>
                 {userCoords && !geoUnavailable ? (
-                  <RollingCoordinate
-                    lat={userCoords.lat}
-                    lng={userCoords.lng}
-                    active
-                    variant="labeled"
-                    animationKey={`${userCoords.lat}-${userCoords.lng}`}
-                    className="mt-2 text-[10px] text-black/45"
-                  />
+                  <motion.div
+                    className="relative mt-2 overflow-hidden"
+                    initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: reduceMotion ? 0.01 : 0.28, ease: premiumEase }}
+                  >
+                    {!reduceMotion ? (
+                      <motion.div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-[#ed6a32]/12 to-transparent"
+                        initial={{ x: '-120%', opacity: 0 }}
+                        animate={{ x: '260%', opacity: [0, 1, 0] }}
+                        transition={{ duration: 0.82, ease: premiumEase }}
+                      />
+                    ) : null}
+                    <RollingCoordinate
+                      lat={userCoords.lat}
+                      lng={userCoords.lng}
+                      active
+                      variant="labeled"
+                      animationKey={`${userCoords.lat}-${userCoords.lng}`}
+                      delayOffset={0.08}
+                      className="text-[10px] text-black/45"
+                    />
+                    <motion.div
+                      className="mt-1 text-[9px] tracking-[0.08em] text-black/30"
+                      initial={reduceMotion ? false : { opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: reduceMotion ? 0 : 0.7, duration: reduceMotion ? 0.01 : 0.22, ease: premiumEase }}
+                    >
+                      координаты получены
+                    </motion.div>
+                  </motion.div>
                 ) : (
                   <motion.div
                     className="mt-2 text-[11px] leading-relaxed text-black/38"

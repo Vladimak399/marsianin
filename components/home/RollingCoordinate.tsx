@@ -63,15 +63,20 @@ function RollingGroup({
 
   return (
     <div className="relative h-[1.35em] overflow-hidden leading-[1.35]">
-      <div className="opacity-100">
+      <motion.div
+        key={`final-${axis}-${finalValue}-${animationKey ?? 'auto'}`}
+        initial={{ opacity: 0.36 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.42, delay: delay + 0.44, ease: premiumEase }}
+      >
         {label ? <span className="mr-1.5 text-black/45">{label}</span> : null}
         <span>{finalValue}</span>
-      </div>
+      </motion.div>
       <motion.div
         key={`${axis}-${finalValue}-${animationKey ?? 'auto'}`}
         className="absolute inset-0 [will-change:transform,opacity]"
         initial={{ y: '-56%', opacity: 0.34 }}
-        animate={{ y: ['-56%', '-136%', '-133.33%'], opacity: [0.34, 0.9, 0] }}
+        animate={{ y: ['-56%', '-136%', '-133.33%'], opacity: [0.34, 0.92, 0] }}
         transition={{
           y: {
             duration: 1.12,
@@ -86,6 +91,7 @@ function RollingGroup({
             times: [0, 0.62, 1]
           }
         }}
+        aria-hidden
       >
         {rows.map((row) => (
           <div key={`${axis}-${row}`}>
