@@ -7,6 +7,7 @@ import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
+const DEFAULT_MENU_LOCATION = 'o12';
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
@@ -32,6 +33,7 @@ export default function AdminPanel() {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(catalog[0]?.category ?? '');
   const [draftItem, setDraftItem] = useState<MenuItem>(createDraftItem());
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -69,24 +71,32 @@ export default function AdminPanel() {
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
+    setAuthError('');
+    setIsLoggingIn(true);
 
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ login, password })
-    });
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ login, password })
+      });
 
-    if (response.ok) {
-      window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
-      setIsAuthorized(true);
-      setAuthError('');
-      setSaveMessage('');
-      return;
+      if (response.ok) {
+        window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
+        setIsAuthorized(true);
+        setAuthError('');
+        setSaveMessage('');
+        return;
+      }
+
+      const payload = (await response.json().catch(() => ({ message: 'Ошибка входа' }))) as { message: string };
+      setAuthError(payload.message);
+    } catch {
+      setAuthError('Не удалось подключиться к админке. Проверьте соединение и настройки Vercel.');
+    } finally {
+      setIsLoggingIn(false);
     }
-
-    const payload = (await response.json().catch(() => ({ message: 'Ошибка входа' }))) as { message: string };
-    setAuthError(payload.message);
   };
 
   const handleLogout = async () => {
@@ -180,6 +190,8 @@ export default function AdminPanel() {
               className="w-full border border-black/[0.1] px-3 py-2 text-sm"
               placeholder="Логин"
               autoComplete="username"
+              disabled={isLoggingIn}
+              required
             />
             <input
               type="password"
@@ -188,10 +200,16 @@ export default function AdminPanel() {
               className="w-full border border-black/[0.1] px-3 py-2 text-sm"
               placeholder="Пароль"
               autoComplete="current-password"
+              disabled={isLoggingIn}
+              required
             />
             {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
-            <button type="submit" className="w-full border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-              Войти
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60"
+            >
+              {isLoggingIn ? 'Входим…' : 'Войти'}
             </button>
           </form>
         </div>
@@ -274,7 +292,7 @@ export default function AdminPanel() {
             >
               Сохранить
             </button>
-            <Link href="/menu" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+            <Link href={`/menu/${DEFAULT_MENU_LOCATION}`} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Открыть меню
             </Link>
             <button type="button" onClick={handleLogout} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
