@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { list, put } from '@vercel/blob';
 import { MenuCategory } from '@/data/menu';
 import { getDefaultMenuCatalog, sanitizeMenuCatalog } from '@/lib/menuCatalog';
 
@@ -7,16 +7,17 @@ const MENU_BLOB_PATH = 'menu/catalog.json';
 const hasBlobToken = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 const readCatalogFromBlob = async (): Promise<MenuCategory[]> => {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return getDefaultMenuCatalog();
+  if (!hasBlobToken()) return getDefaultMenuCatalog();
 
-  const response = await fetch(`https://blob.vercel-storage.com/${MENU_BLOB_PATH}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    },
-    cache: 'no-store'
+  const { blobs } = await list({
+    prefix: MENU_BLOB_PATH,
+    limit: 1
   });
 
+  const catalogBlob = blobs.find((blob) => blob.pathname === MENU_BLOB_PATH);
+  if (!catalogBlob) return getDefaultMenuCatalog();
+
+  const response = await fetch(catalogBlob.url, { cache: 'no-store' });
   if (!response.ok) return getDefaultMenuCatalog();
 
   const payload = (await response.json()) as unknown;
