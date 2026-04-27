@@ -1,35 +1,34 @@
-# Марсианин — landing для кофейни
+# марсианин — сайт кофейни
 
-Production-ready проект на **Next.js (App Router) + TypeScript + TailwindCSS**.
+Production-ready проект для кофейни «марсианин»: выбор точки, меню по точкам, координатная навигация, быстрые действия для маршрута, доставки, звонка и отзывов.
 
 ## Стек
 
-- Next.js 14
+- Next.js 15
 - React 18
 - TypeScript
-- TailwindCSS
+- Tailwind CSS
+- framer-motion
+- Vercel
 
-## Структура
+## Основные сценарии
 
-```bash
-/app
-  layout.tsx
-  page.tsx
-/components
-  /ui
-    PrimaryButton.tsx
-  /menu
-    MenuSection.tsx
-    MenuCard.tsx
-    NutritionTable.tsx
-/data
-  menu.ts
-/styles
-  globals.css
-/public
-  favicon.svg
-  /images
+- Главная страница показывает координатную карту точек `о12`, `к10`, `п7`.
+- Пользователь выбирает точку и попадает в open-state выбранной точки.
+- Кнопка `открыть меню` ведёт на `/menu/{location}`.
+- Для каждой точки доступны быстрые действия: маршрут, доставка, звонок, яндекс карты, 2гис, отзыв.
+- Если пользователь разрешил геолокацию, ближайшая точка подсвечивается.
+- Если пользователь отказал в геолокации, сайт не использует demo-координаты как реальные и предлагает выбрать точку вручную.
+
+## Важное правило навигации
+
+Переход из hero/open-state в меню сейчас сделан через hard navigation:
+
+```ts
+window.location.assign(href);
 ```
+
+Это рабочий фикс против бага, когда после клика `открыть меню` сайт визуально возвращался на hero вместо меню. Не заменять на `router.push()` без отдельной проверки всего transition-flow.
 
 ## Запуск
 
@@ -38,22 +37,90 @@ npm install
 npm run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000).
-Админ-кабинет меню доступен по адресу [http://localhost:3000/admin](http://localhost:3000/admin).
-Демо-авторизация админки: `admin / mars2026` (только базовая клиентская защита для локального стенда).
+Открыть локально:
 
-## Дополнительно
+```txt
+http://localhost:3000
+```
 
-- SEO metadata добавлены в `app/layout.tsx`
-- favicon добавлен в `public/favicon.svg`
-- изображения оптимизируются через `next/image` и современные форматы (`avif`, `webp`) в `next.config.mjs`
+Админ-кабинет меню:
 
-## Деплой на Vercel
+```txt
+http://localhost:3000/admin
+```
 
-Если после подключения GitHub-репозитория Vercel показывает `404: NOT_FOUND`, проверьте:
+## Проверки перед PR или merge
 
-- Root Directory указывает на корень проекта (где лежит `package.json`);
-- Framework Preset = **Next.js**;
-- в репозитории есть `vercel.json` с `framework: "nextjs"`.
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-В этом проекте `vercel.json` уже добавлен, чтобы Vercel не определял пресет как `Other`.
+Если production start падает из-за занятого порта `3000`, можно запустить на другом порту:
+
+```powershell
+$env:PORT=3005; npm run start
+```
+
+## Админка и env
+
+В production должны быть заданы env variables:
+
+```bash
+ADMIN_LOGIN
+ADMIN_PASSWORD
+ADMIN_SESSION_SECRET
+```
+
+В development fallback-значения могут использоваться только для локальной разработки. В production публичные дефолтные credentials не должны работать.
+
+Админка поддерживает обновление меню через JSON. Подробнее:
+
+```txt
+docs/menu-management.md
+docs/menu-json-template.json
+```
+
+## Фотографии меню
+
+Для production-фотографий используем путь к файлу в проекте:
+
+```txt
+/images/menu/dish-name.webp
+```
+
+Файл должен лежать здесь:
+
+```txt
+public/images/menu/dish-name.webp
+```
+
+Google Drive не использовать как источник картинок для сайта.
+
+## Vercel
+
+Проект деплоится через Vercel Git integration.
+
+В `vercel.json` включён `ignoreCommand`, который пропускает preview deploys не из `main`, чтобы снизить расход build quota. Production deploy запускается при merge в `main`.
+
+Если GitHub показывает `build-rate-limit`, это лимит Vercel, а не обязательно ошибка кода. Перед merge всё равно нужно проверить локально:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Подробнее:
+
+```txt
+docs/vercel.md
+```
+
+## Релизный принцип
+
+- `main` не трогать напрямую.
+- Работать маленькими PR от свежего `main`.
+- Несколько связанных безопасных правок можно объединять в один batch PR, чтобы не тратить лишние Vercel deploys.
+- После каждого batch обязательно проверять сценарии из `CHECKLIST.md`.
