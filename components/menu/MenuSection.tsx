@@ -12,6 +12,8 @@ type MenuSectionProps = {
 };
 
 export default function MenuSection({ section, selectedLocation, onOpenItem, isFirstSection = false }: MenuSectionProps) {
+  const hasItems = section.items.length > 0;
+
   return (
     <section id={`section-${section.category}`} data-category={section.category} className="scroll-mt-32 border-t border-black/[0.055] pt-7 first:border-t-0 first:pt-0">
       <header className="mb-4 grid grid-cols-[1fr_auto] items-end gap-4 border-b border-black/[0.045] pb-3">
@@ -23,18 +25,26 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
           {section.items.length} поз.
         </p>
       </header>
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
-        {section.items.map((item, index) => (
-          <MenuCard
-            key={item.id}
-            item={item}
-            category={section.category}
-            selectedLocation={selectedLocation}
-            onOpen={onOpenItem}
-            priority={isFirstSection && index === 0}
-          />
-        ))}
-      </div>
+
+      {hasItems ? (
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
+          {section.items.map((item, index) => (
+            <MenuCard
+              key={item.id}
+              item={item}
+              category={section.category}
+              selectedLocation={selectedLocation}
+              onOpen={onOpenItem}
+              priority={isFirstSection && index === 0}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="border border-dashed border-black/[0.08] bg-white/62 px-4 py-8 text-center">
+          <p className="mars-coordinate-label text-[10px] text-[#ed6a32]">меню обновляется</p>
+          <p className="mt-2 text-sm leading-relaxed text-[#504942]">позиции в этом разделе скоро появятся</p>
+        </div>
+      )}
     </section>
   );
 }
