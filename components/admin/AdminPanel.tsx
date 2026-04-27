@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { MenuItem } from '@/data/menu';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
+const DEFAULT_MENU_LOCATION = 'o12';
+const IMAGE_PATH_EXAMPLE = '/images/menu/dish-name.webp';
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
@@ -26,12 +28,21 @@ const createDraftItem = (): MenuItem => ({
   }
 });
 
+const getCatalogFromJsonPayload = (payload: unknown): MenuCategory[] | null => {
+  if (Array.isArray(payload)) return payload as MenuCategory[];
+  if (!payload || typeof payload !== 'object') return null;
+
+  const catalog = (payload as { catalog?: unknown }).catalog;
+  return Array.isArray(catalog) ? (catalog as MenuCategory[]) : null;
+};
+
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(catalog[0]?.category ?? '');
   const [draftItem, setDraftItem] = useState<MenuItem>(createDraftItem());
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -39,6 +50,7 @@ export default function AdminPanel() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const draftImageInputRef = useRef<HTMLInputElement>(null);
+  const catalogJsonInputRef = useRef<HTMLInputElement>(null);
 
   const activeCategory = useMemo(
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
@@ -69,24 +81,32 @@ export default function AdminPanel() {
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
+    setAuthError('');
+    setIsLoggingIn(true);
 
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ login, password })
-    });
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ login, password })
+      });
 
-    if (response.ok) {
-      window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
-      setIsAuthorized(true);
-      setAuthError('');
-      setSaveMessage('');
-      return;
+      if (response.ok) {
+        window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
+        setIsAuthorized(true);
+        setAuthError('');
+        setSaveMessage('');
+        return;
+      }
+
+      const payload = (await response.json().catch(() => ({ message: 'Ошибка входа' }))) as { message: string };
+      setAuthError(payload.message);
+    } catch {
+      setAuthError('Не удалось подключиться к админке. Проверьте соединение и настройки Vercel.');
+    } finally {
+      setIsLoggingIn(false);
     }
-
-    const payload = (await response.json().catch(() => ({ message: 'Ошибка входа' }))) as { message: string };
-    setAuthError(payload.message);
   };
 
   const handleLogout = async () => {
@@ -110,6 +130,43 @@ export default function AdminPanel() {
     await updateCatalog(catalog);
     setHasUnsavedChanges(false);
     setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
+  };
+
+  const handleExportCatalogJson = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      catalog
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `marsianin-menu-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setSaveMessage('JSON меню скачан');
+  };
+
+  const handleImportCatalogJson = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const payload = JSON.parse(await file.text()) as unknown;
+      const nextCatalog = getCatalogFromJsonPayload(payload);
+
+      if (!nextCatalog) {
+        setSaveMessage('Не удалось загрузить JSON: внутри должен быть массив категорий или поле catalog');
+        return;
+      }
+
+      applyCatalogLocally(nextCatalog);
+      setSelectedCategory(nextCatalog[0]?.category ?? '');
+      setSaveMessage('JSON загружен. Проверьте меню и нажмите «Сохранить»');
+    } catch {
+      setSaveMessage('Не удалось загрузить JSON. Проверьте структуру файла');
+    }
   };
 
   const handleUploadImage = async (file: File, itemId?: string) => {
@@ -166,6 +223,21 @@ export default function AdminPanel() {
     applyCatalogLocally(nextCatalog);
   };
 
+  const moveItem = (itemId: string, direction: 'up' | 'down') => {
+    if (!activeCategory) return;
+
+    const currentIndex = activeCategory.items.findIndex((item) => item.id === itemId);
+    const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeCategory.items.length) return;
+
+    const nextItems = [...activeCategory.items];
+    [nextItems[currentIndex], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[currentIndex]];
+
+    const nextCatalog = catalog.map((entry) => (entry.category === activeCategory.category ? { ...entry, items: nextItems } : entry));
+    applyCatalogLocally(nextCatalog);
+  };
+
   if (!isAuthorized) {
     return (
       <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
@@ -180,6 +252,8 @@ export default function AdminPanel() {
               className="w-full border border-black/[0.1] px-3 py-2 text-sm"
               placeholder="Логин"
               autoComplete="username"
+              disabled={isLoggingIn}
+              required
             />
             <input
               type="password"
@@ -188,10 +262,16 @@ export default function AdminPanel() {
               className="w-full border border-black/[0.1] px-3 py-2 text-sm"
               placeholder="Пароль"
               autoComplete="current-password"
+              disabled={isLoggingIn}
+              required
             />
             {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
-            <button type="submit" className="w-full border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-              Войти
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60"
+            >
+              {isLoggingIn ? 'Входим…' : 'Войти'}
             </button>
           </form>
         </div>
@@ -274,7 +354,14 @@ export default function AdminPanel() {
             >
               Сохранить
             </button>
-            <Link href="/menu" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+            <button type="button" onClick={handleExportCatalogJson} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Скачать JSON
+            </button>
+            <button type="button" onClick={() => catalogJsonInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Загрузить JSON
+            </button>
+            <input ref={catalogJsonInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void handleImportCatalogJson(event)} />
+            <Link href={`/menu/${DEFAULT_MENU_LOCATION}`} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Открыть меню
             </Link>
             <button type="button" onClick={handleLogout} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
@@ -332,7 +419,7 @@ export default function AdminPanel() {
             <h2 className="text-lg font-semibold">Позиции: {activeCategory?.category ?? '—'}</h2>
 
             <div className="space-y-3">
-              {activeCategory?.items.map((item) => (
+              {activeCategory?.items.map((item, itemIndex) => (
                 <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
                   <div className="grid gap-2 md:grid-cols-2">
                     <input
@@ -341,12 +428,20 @@ export default function AdminPanel() {
                       className="border border-black/[0.1] px-3 py-2 text-sm"
                       placeholder="Название"
                     />
-                    <div className="flex gap-2">
-                      <input value={item.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
-                      <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                        +
-                        <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
-                      </label>
+                    <div className="space-y-1">
+                      <div className="flex gap-2">
+                        <input
+                          value={item.image}
+                          onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: event.target.value }))}
+                          className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+                          placeholder={IMAGE_PATH_EXAMPLE}
+                        />
+                        <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
+                          +
+                          <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
+                        </label>
+                      </div>
+                      <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
                     </div>
                   </div>
                   <textarea
@@ -442,9 +537,27 @@ export default function AdminPanel() {
                     </label>
                   </div>
 
-                  <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
-                    Удалить позицию
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => moveItem(item.id, 'up')}
+                      disabled={itemIndex === 0}
+                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Выше
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveItem(item.id, 'down')}
+                      disabled={itemIndex === activeCategory.items.length - 1}
+                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Ниже
+                    </button>
+                    <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+                      Удалить позицию
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -458,18 +571,26 @@ export default function AdminPanel() {
                   className="border border-black/[0.1] px-3 py-2 text-sm"
                   placeholder="Название"
                 />
-                <div className="flex gap-2">
-                  <input value={draftItem.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
-                  <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                    +
-                  </button>
-                  <input
-                    ref={draftImageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
-                    className="hidden"
-                    onChange={(event) => void handleFileChange(event)}
-                  />
+                <div className="space-y-1">
+                  <div className="flex gap-2">
+                    <input
+                      value={draftItem.image}
+                      onChange={(event) => setDraftItem((prev) => ({ ...prev, image: event.target.value }))}
+                      className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+                      placeholder={IMAGE_PATH_EXAMPLE}
+                    />
+                    <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
+                      +
+                    </button>
+                    <input
+                      ref={draftImageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/avif"
+                      className="hidden"
+                      onChange={(event) => void handleFileChange(event)}
+                    />
+                  </div>
+                  <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
                 </div>
               </div>
               <textarea
