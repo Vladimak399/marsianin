@@ -8,6 +8,7 @@ import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 const DEFAULT_MENU_LOCATION = 'o12';
+const IMAGE_PATH_EXAMPLE = '/images/menu/dish-name.webp';
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
@@ -173,6 +174,21 @@ export default function AdminPanel() {
       };
     });
 
+    applyCatalogLocally(nextCatalog);
+  };
+
+  const moveItem = (itemId: string, direction: 'up' | 'down') => {
+    if (!activeCategory) return;
+
+    const currentIndex = activeCategory.items.findIndex((item) => item.id === itemId);
+    const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeCategory.items.length) return;
+
+    const nextItems = [...activeCategory.items];
+    [nextItems[currentIndex], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[currentIndex]];
+
+    const nextCatalog = catalog.map((entry) => (entry.category === activeCategory.category ? { ...entry, items: nextItems } : entry));
     applyCatalogLocally(nextCatalog);
   };
 
@@ -350,7 +366,7 @@ export default function AdminPanel() {
             <h2 className="text-lg font-semibold">Позиции: {activeCategory?.category ?? '—'}</h2>
 
             <div className="space-y-3">
-              {activeCategory?.items.map((item) => (
+              {activeCategory?.items.map((item, itemIndex) => (
                 <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
                   <div className="grid gap-2 md:grid-cols-2">
                     <input
@@ -359,12 +375,20 @@ export default function AdminPanel() {
                       className="border border-black/[0.1] px-3 py-2 text-sm"
                       placeholder="Название"
                     />
-                    <div className="flex gap-2">
-                      <input value={item.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
-                      <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                        +
-                        <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
-                      </label>
+                    <div className="space-y-1">
+                      <div className="flex gap-2">
+                        <input
+                          value={item.image}
+                          onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: event.target.value }))}
+                          className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+                          placeholder={IMAGE_PATH_EXAMPLE}
+                        />
+                        <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
+                          +
+                          <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
+                        </label>
+                      </div>
+                      <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
                     </div>
                   </div>
                   <textarea
@@ -460,9 +484,27 @@ export default function AdminPanel() {
                     </label>
                   </div>
 
-                  <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm">
-                    Удалить позицию
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => moveItem(item.id, 'up')}
+                      disabled={itemIndex === 0}
+                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Выше
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveItem(item.id, 'down')}
+                      disabled={itemIndex === activeCategory.items.length - 1}
+                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Ниже
+                    </button>
+                    <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+                      Удалить позицию
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -476,18 +518,26 @@ export default function AdminPanel() {
                   className="border border-black/[0.1] px-3 py-2 text-sm"
                   placeholder="Название"
                 />
-                <div className="flex gap-2">
-                  <input value={draftItem.image} readOnly className="w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Изображение" />
-                  <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                    +
-                  </button>
-                  <input
-                    ref={draftImageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
-                    className="hidden"
-                    onChange={(event) => void handleFileChange(event)}
-                  />
+                <div className="space-y-1">
+                  <div className="flex gap-2">
+                    <input
+                      value={draftItem.image}
+                      onChange={(event) => setDraftItem((prev) => ({ ...prev, image: event.target.value }))}
+                      className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+                      placeholder={IMAGE_PATH_EXAMPLE}
+                    />
+                    <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
+                      +
+                    </button>
+                    <input
+                      ref={draftImageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/avif"
+                      className="hidden"
+                      onChange={(event) => void handleFileChange(event)}
+                    />
+                  </div>
+                  <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
                 </div>
               </div>
               <textarea
