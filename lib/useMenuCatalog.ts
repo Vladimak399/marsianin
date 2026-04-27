@@ -15,6 +15,7 @@ const parseApiErrorMessage = async (response: Response, fallback: string) => {
 
 export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   const [catalog, setCatalog] = useState<MenuCategory[]>(() => loadMenuCatalog());
+  const [isServerSyncing, setIsServerSyncing] = useState(true);
 
   const applyCatalog = useCallback((nextCatalog: MenuCategory[]) => {
     const normalized = sanitizeMenuCatalog(nextCatalog);
@@ -33,15 +34,31 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const syncFromServer = async () => {
-      const endpoint = options.admin ? '/api/admin/menu' : '/api/menu';
-      const response = await fetch(endpoint, { method: 'GET', credentials: 'include' });
-      if (!response.ok) return;
-      const payload = (await response.json()) as { catalog: MenuCategory[] };
-      applyCatalog(payload.catalog);
+      setIsServerSyncing(true);
+      try {
+        const endpoint = options.admin ? '/api/admin/menu' : '/api/menu';
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { catalog: MenuCategory[] };
+        if (!isMounted) return;
+        applyCatalog(payload.catalog);
+      } finally {
+        if (isMounted) setIsServerSyncing(false);
+      }
     };
 
     void syncFromServer();
+
+    return () => {
+      isMounted = false;
+    };
   }, [applyCatalog, options.admin]);
 
   const updateCatalog = useCallback(
@@ -88,5 +105,5 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
     }
   }, [options.admin]);
 
-  return { catalog, updateCatalog, restoreCatalog, applyCatalog };
+  return { catalog, updateCatalog, restoreCatalog, applyCatalog, isServerSyncing };
 };
