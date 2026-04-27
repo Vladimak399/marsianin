@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { isAdminAuthorized } from '@/lib/server/adminAuth';
 
@@ -19,6 +18,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
   }
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      { message: 'Не настроен BLOB_READ_WRITE_TOKEN в Vercel Environment Variables' },
+      { status: 500 }
+    );
+  }
+
   const formData = await request.formData();
   const file = formData.get('file');
 
@@ -34,15 +40,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Файл больше 5MB' }, { status: 400 });
   }
 
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'menu');
-  await mkdir(uploadDir, { recursive: true });
-
   const extension = extensionByType[file.type] ?? 'jpg';
-  const fileName = `${Date.now()}-${randomUUID()}.${extension}`;
-  const targetPath = path.join(uploadDir, fileName);
+  const fileName = `menu/${Date.now()}-${randomUUID()}.${extension}`;
 
-  const bytes = await file.arrayBuffer();
-  await writeFile(targetPath, Buffer.from(bytes));
+  const blob = await put(fileName, file, {
+    access: 'public',
+    contentType: file.type
+  });
 
-  return NextResponse.json({ url: `/uploads/menu/${fileName}` });
+  return NextResponse.json({ url: blob.url, pathname: blob.pathname });
 }
