@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { MenuItem } from '@/data/menu';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 
@@ -28,6 +28,14 @@ const createDraftItem = (): MenuItem => ({
   }
 });
 
+const getCatalogFromJsonPayload = (payload: unknown): MenuCategory[] | null => {
+  if (Array.isArray(payload)) return payload as MenuCategory[];
+  if (!payload || typeof payload !== 'object') return null;
+
+  const catalog = (payload as { catalog?: unknown }).catalog;
+  return Array.isArray(catalog) ? (catalog as MenuCategory[]) : null;
+};
+
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -42,6 +50,7 @@ export default function AdminPanel() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const draftImageInputRef = useRef<HTMLInputElement>(null);
+  const catalogJsonInputRef = useRef<HTMLInputElement>(null);
 
   const activeCategory = useMemo(
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
@@ -121,6 +130,43 @@ export default function AdminPanel() {
     await updateCatalog(catalog);
     setHasUnsavedChanges(false);
     setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
+  };
+
+  const handleExportCatalogJson = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      catalog
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `marsianin-menu-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setSaveMessage('JSON меню скачан');
+  };
+
+  const handleImportCatalogJson = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const payload = JSON.parse(await file.text()) as unknown;
+      const nextCatalog = getCatalogFromJsonPayload(payload);
+
+      if (!nextCatalog) {
+        setSaveMessage('Не удалось загрузить JSON: внутри должен быть массив категорий или поле catalog');
+        return;
+      }
+
+      applyCatalogLocally(nextCatalog);
+      setSelectedCategory(nextCatalog[0]?.category ?? '');
+      setSaveMessage('JSON загружен. Проверьте меню и нажмите «Сохранить»');
+    } catch {
+      setSaveMessage('Не удалось загрузить JSON. Проверьте структуру файла');
+    }
   };
 
   const handleUploadImage = async (file: File, itemId?: string) => {
@@ -308,6 +354,13 @@ export default function AdminPanel() {
             >
               Сохранить
             </button>
+            <button type="button" onClick={handleExportCatalogJson} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Скачать JSON
+            </button>
+            <button type="button" onClick={() => catalogJsonInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+              Загрузить JSON
+            </button>
+            <input ref={catalogJsonInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void handleImportCatalogJson(event)} />
             <Link href={`/menu/${DEFAULT_MENU_LOCATION}`} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Открыть меню
             </Link>
