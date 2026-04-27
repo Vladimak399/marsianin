@@ -43,38 +43,78 @@ export function UserCoordinateTrace({
   selected: LocationPoint | null;
   geoUnavailable?: boolean;
 }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      className="absolute left-7 right-7 top-[98px] z-40 border-y border-black/[0.055] bg-[#fffdf8]/90 py-3 backdrop-blur-sm max-md:top-[92px]"
+      className="absolute left-7 right-7 top-[98px] z-40 overflow-hidden border-y border-black/[0.055] bg-[#fffdf8]/90 py-3 backdrop-blur-sm max-md:top-[92px]"
       initial={{ opacity: 0, y: -8 }}
       animate={phase === 'open' ? { opacity: 0, y: -10, scale: 0.985 } : { opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ delay: phase === 'open' ? 0 : 0.12, duration: 0.28, ease: premiumEase }}
+      transition={{ delay: phase === 'open' ? 0 : 0.12, duration: reduceMotion ? 0.01 : 0.28, ease: premiumEase }}
       aria-hidden={phase === 'open'}
     >
+      {userCoords && !reduceMotion ? (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-[#ed6a32]/12 to-transparent"
+          initial={{ x: '-120%', opacity: 0 }}
+          animate={{ x: '330%', opacity: [0, 1, 0] }}
+          transition={{ duration: 0.9, ease: premiumEase }}
+        />
+      ) : null}
+
       {!userCoords ? (
-        <div className="text-[10px] text-black/45">
+        <motion.div
+          className="text-[10px] text-black/45"
+          initial={reduceMotion ? false : { opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.26, ease: premiumEase }}
+        >
           {geoUnavailable ? 'геолокация недоступна, выберите точку вручную' : 'определяем координаты'}
-        </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-[1fr_auto] items-start gap-4">
           <div>
-            <div className="text-[9px] tracking-[0.12em] text-[#ed6a32]">ваши координаты</div>
+            <motion.div
+              className="flex items-center gap-2 text-[9px] tracking-[0.12em] text-[#ed6a32]"
+              initial={reduceMotion ? false : { opacity: 0, y: 3 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0.01 : 0.28, ease: premiumEase }}
+            >
+              <span>ваши координаты</span>
+              <motion.span
+                aria-hidden
+                className="h-1.5 w-1.5 border border-[#ed6a32]/70 bg-[#fffdf8]"
+                initial={reduceMotion ? false : { scale: 0.7, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0.01 : 0.26, ease: premiumEase }}
+              />
+            </motion.div>
             <RollingCoordinate
               lat={userCoords.lat}
               lng={userCoords.lng}
               active
               variant="labeled"
               animationKey={`${userCoords.lat}-${userCoords.lng}`}
+              delayOffset={0.08}
               className="mt-1 text-[10px] text-black/45"
             />
+            <motion.div
+              className="mt-1 text-[9px] tracking-[0.08em] text-black/30"
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: reduceMotion ? 0 : 0.7, duration: reduceMotion ? 0.01 : 0.22, ease: premiumEase }}
+            >
+              координаты получены
+            </motion.div>
           </div>
           {nearest ? (
             <motion.div
               className="text-right"
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.24, duration: 0.3, ease: premiumEase }}
+              transition={{ delay: reduceMotion ? 0 : 0.84, duration: reduceMotion ? 0.01 : 0.3, ease: premiumEase }}
             >
               <div className="text-[9px] tracking-[0.1em] text-black/38">ближайшая точка</div>
               <div className="mt-1.5 flex items-center justify-end gap-1.5">
@@ -116,7 +156,7 @@ export function UserTraceLayer({
       className="pointer-events-none absolute inset-0 z-[15]"
       initial={{ opacity: 0 }}
       animate={{ opacity: phase === 'open' ? 0 : 1 }}
-      transition={{ duration: 0.26, ease: premiumEase }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.26, ease: premiumEase }}
       aria-hidden={phase === 'open'}
     >
       <svg aria-hidden className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -134,7 +174,7 @@ export function UserTraceLayer({
       </svg>
 
       <motion.div
-        className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 border border-[#ed6a32]/70 bg-white"
+        className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 border border-[#ed6a32]/70 bg-white shadow-[0_0_28px_rgba(237,106,50,0.18)]"
         style={{ left: `${userVisual.x}%`, top: `${userVisual.y}%` }}
         initial={reduceMotion ? false : { scale: 0.8, opacity: 0 }}
         animate={{ scale: phase === 'open' ? 0.9 : 1, opacity: markerOpacity }}
