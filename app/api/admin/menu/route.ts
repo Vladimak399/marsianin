@@ -17,7 +17,14 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
   }
 
-  const { catalog } = await request.json().catch(() => ({ catalog: null }));
-  const saved = await writeCatalogToFile(sanitizeMenuCatalog(catalog));
-  return NextResponse.json({ catalog: saved });
+  try {
+    const { catalog } = await request.json().catch(() => ({ catalog: null }));
+    const saved = await writeCatalogToFile(sanitizeMenuCatalog(catalog));
+    return NextResponse.json({ catalog: saved });
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Не удалось сохранить меню' },
+      { status: 500 }
+    );
+  }
 }
