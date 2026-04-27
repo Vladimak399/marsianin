@@ -21,6 +21,7 @@ type MenuDetailViewProps = {
 
 const SWIPE_THRESHOLD = 60;
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
+const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
 const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 export default function MenuDetailView({
@@ -61,7 +62,7 @@ export default function MenuDetailView({
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
   const price = item?.priceByLocation[selectedLocation];
-  const hasPrice = typeof price === 'number';
+  const hasPrice = hasValidPrice(price);
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
