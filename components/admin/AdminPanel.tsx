@@ -5,10 +5,10 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 're
 import { MenuCategory, MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
+import AdminImageField from './AdminImageField';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 const DEFAULT_MENU_LOCATION = 'o12';
-const IMAGE_PATH_EXAMPLE = '/images/menu/dish-name.webp';
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
@@ -57,7 +57,6 @@ export default function AdminPanel() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const draftImageInputRef = useRef<HTMLInputElement>(null);
   const catalogJsonInputRef = useRef<HTMLInputElement>(null);
   const latestCatalogRef = useRef<MenuCategory[]>(catalog);
 
@@ -210,6 +209,7 @@ export default function AdminPanel() {
 
     if (!itemId) {
       setDraftItem((prev) => ({ ...prev, image: payload.url ?? prev.image }));
+      setSaveMessage('Фото загружено. Проверьте превью и нажмите «Добавить позицию»');
       return;
     }
 
@@ -223,13 +223,7 @@ export default function AdminPanel() {
     });
 
     applyCatalogLocally(nextCatalog);
-  };
-
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>, itemId?: string) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-    await handleUploadImage(file, itemId);
+    setSaveMessage('Фото загружено. Проверьте превью и нажмите «Сохранить»');
   };
 
   const updateItem = (itemId: string, updater: (item: MenuItem) => MenuItem) => {
@@ -455,21 +449,11 @@ export default function AdminPanel() {
                       className="border border-black/[0.1] px-3 py-2 text-sm"
                       placeholder="Название"
                     />
-                    <div className="space-y-1">
-                      <div className="flex gap-2">
-                        <input
-                          value={item.image}
-                          onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: event.target.value }))}
-                          className="w-full border border-black/[0.1] px-3 py-2 text-sm"
-                          placeholder={IMAGE_PATH_EXAMPLE}
-                        />
-                        <label className="cursor-pointer border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
-                          +
-                          <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event, item.id)} />
-                        </label>
-                      </div>
-                      <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
-                    </div>
+                    <AdminImageField
+                      value={item.image}
+                      onChange={(nextValue) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: nextValue }))}
+                      onUpload={(file) => handleUploadImage(file, item.id)}
+                    />
                   </div>
                   <textarea
                     value={item.description}
@@ -598,27 +582,11 @@ export default function AdminPanel() {
                   className="border border-black/[0.1] px-3 py-2 text-sm"
                   placeholder="Название"
                 />
-                <div className="space-y-1">
-                  <div className="flex gap-2">
-                    <input
-                      value={draftItem.image}
-                      onChange={(event) => setDraftItem((prev) => ({ ...prev, image: event.target.value }))}
-                      className="w-full border border-black/[0.1] px-3 py-2 text-sm"
-                      placeholder={IMAGE_PATH_EXAMPLE}
-                    />
-                    <button type="button" onClick={() => draftImageInputRef.current?.click()} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]" title="тестовая загрузка файла">
-                      +
-                    </button>
-                    <input
-                      ref={draftImageInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/avif"
-                      className="hidden"
-                      onChange={(event) => void handleFileChange(event)}
-                    />
-                  </div>
-                  <p className="text-[11px] text-black/38">Для production используйте путь вида {IMAGE_PATH_EXAMPLE}</p>
-                </div>
+                <AdminImageField
+                  value={draftItem.image}
+                  onChange={(nextValue) => setDraftItem((prev) => ({ ...prev, image: nextValue }))}
+                  onUpload={(file) => handleUploadImage(file)}
+                />
               </div>
               <textarea
                 value={draftItem.description}
