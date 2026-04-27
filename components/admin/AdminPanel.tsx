@@ -48,14 +48,20 @@ export default function AdminPanel() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const draftImageInputRef = useRef<HTMLInputElement>(null);
   const catalogJsonInputRef = useRef<HTMLInputElement>(null);
+  const latestCatalogRef = useRef<MenuCategory[]>(catalog);
 
   const activeCategory = useMemo(
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
     [catalog, selectedCategory]
   );
+
+  useEffect(() => {
+    latestCatalogRef.current = catalog;
+  }, [catalog]);
 
   useEffect(() => {
     if (!activeCategory) return;
@@ -122,20 +128,30 @@ export default function AdminPanel() {
   };
 
   const applyCatalogLocally = (nextCatalog: typeof catalog) => {
+    latestCatalogRef.current = nextCatalog;
     applyCatalog(nextCatalog);
     markDirty();
   };
 
   const handleSaveChanges = async () => {
-    await updateCatalog(catalog);
-    setHasUnsavedChanges(false);
-    setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
+    setIsSaving(true);
+    setSaveMessage('Сохраняем…');
+
+    try {
+      await updateCatalog(latestCatalogRef.current);
+      setHasUnsavedChanges(false);
+      setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
+    } catch {
+      setSaveMessage('Не удалось сохранить изменения. Проверьте авторизацию и повторите попытку');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExportCatalogJson = () => {
     const payload = {
       exportedAt: new Date().toISOString(),
-      catalog
+      catalog: latestCatalogRef.current
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -191,7 +207,7 @@ export default function AdminPanel() {
     }
 
     if (!activeCategory) return;
-    const nextCatalog = catalog.map((entry) => {
+    const nextCatalog = latestCatalogRef.current.map((entry) => {
       if (entry.category !== activeCategory.category) return entry;
       return {
         ...entry,
@@ -212,7 +228,7 @@ export default function AdminPanel() {
   const updateItem = (itemId: string, updater: (item: MenuItem) => MenuItem) => {
     if (!activeCategory) return;
 
-    const nextCatalog = catalog.map((entry) => {
+    const nextCatalog = latestCatalogRef.current.map((entry) => {
       if (entry.category !== activeCategory.category) return entry;
       return {
         ...entry,
@@ -226,15 +242,18 @@ export default function AdminPanel() {
   const moveItem = (itemId: string, direction: 'up' | 'down') => {
     if (!activeCategory) return;
 
-    const currentIndex = activeCategory.items.findIndex((item) => item.id === itemId);
+    const currentCategory = latestCatalogRef.current.find((entry) => entry.category === activeCategory.category);
+    if (!currentCategory) return;
+
+    const currentIndex = currentCategory.items.findIndex((item) => item.id === itemId);
     const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activeCategory.items.length) return;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= currentCategory.items.length) return;
 
-    const nextItems = [...activeCategory.items];
+    const nextItems = [...currentCategory.items];
     [nextItems[currentIndex], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[currentIndex]];
 
-    const nextCatalog = catalog.map((entry) => (entry.category === activeCategory.category ? { ...entry, items: nextItems } : entry));
+    const nextCatalog = latestCatalogRef.current.map((entry) => (entry.category === currentCategory.category ? { ...entry, items: nextItems } : entry));
     applyCatalogLocally(nextCatalog);
   };
 
@@ -285,7 +304,7 @@ export default function AdminPanel() {
     if (!trimmed) return;
     if (catalog.some((entry) => entry.category === trimmed)) return;
 
-    const nextCatalog = [...catalog, { category: trimmed, items: [] }];
+    const nextCatalog = [...latestCatalogRef.current, { category: trimmed, items: [] }];
     applyCatalogLocally(nextCatalog);
     setSelectedCategory(trimmed);
     setNewCategoryName('');
@@ -294,8 +313,8 @@ export default function AdminPanel() {
   const handleRemoveCategory = (category: string) => {
     if (!confirm(`Удалить категорию «${category}»?`)) return;
 
-    const nextCatalog = catalog.filter((entry) => entry.category !== category);
-    const normalizedCatalog = nextCatalog.length > 0 ? nextCatalog : catalog;
+    const nextCatalog = latestCatalogRef.current.filter((entry) => entry.category !== category);
+    const normalizedCatalog = nextCatalog.length > 0 ? nextCatalog : latestCatalogRef.current;
     applyCatalogLocally(normalizedCatalog);
     if (selectedCategory === category && nextCatalog[0]) setSelectedCategory(nextCatalog[0].category);
   };
@@ -304,7 +323,7 @@ export default function AdminPanel() {
     event.preventDefault();
     if (!activeCategory) return;
 
-    const nextCatalog = catalog.map((entry) => {
+    const nextCatalog = latestCatalogRef.current.map((entry) => {
       if (entry.category !== activeCategory.category) return entry;
       return {
         ...entry,
@@ -325,7 +344,7 @@ export default function AdminPanel() {
   const handleRemoveItem = (itemId: string) => {
     if (!activeCategory) return;
 
-    const nextCatalog = catalog.map((entry) => {
+    const nextCatalog = latestCatalogRef.current.map((entry) => {
       if (entry.category !== activeCategory.category) return entry;
       return {
         ...entry,
@@ -349,10 +368,10 @@ export default function AdminPanel() {
             <button
               type="button"
               onClick={() => void handleSaveChanges()}
-              disabled={!hasUnsavedChanges}
+              disabled={!hasUnsavedChanges || isSaving}
               className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Сохранить
+              {isSaving ? 'Сохраняем…' : 'Сохранить'}
             </button>
             <button type="button" onClick={handleExportCatalogJson} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Скачать JSON
@@ -371,6 +390,7 @@ export default function AdminPanel() {
               type="button"
               onClick={() => {
                 void restoreCatalog();
+                latestCatalogRef.current = catalog;
                 setHasUnsavedChanges(false);
                 setSaveMessage('Каталог сброшен до исходного состояния');
               }}
