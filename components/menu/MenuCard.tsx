@@ -16,13 +16,14 @@ type MenuCardProps = {
 };
 
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
+const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
 
 export default function MenuCard({ item, category, selectedLocation, onOpen, priority = false }: MenuCardProps) {
   const reduceMotion = useReducedMotion();
   const fallbackLocation: LocationId = 'o12';
   const location = selectedLocation ?? fallbackLocation;
   const price = item.priceByLocation[location];
-  const hasPrice = typeof price === 'number';
+  const hasPrice = hasValidPrice(price);
   const normalizedImage = item.image?.trim() || FALLBACK_MENU_IMAGE;
   const [imageSrc, setImageSrc] = useState(normalizedImage);
 
