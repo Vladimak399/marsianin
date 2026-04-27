@@ -8,6 +8,11 @@ type UseMenuCatalogOptions = {
   admin?: boolean;
 };
 
+const parseApiErrorMessage = async (response: Response, fallback: string) => {
+  const payload = (await response.json().catch(() => null)) as { message?: unknown } | null;
+  return typeof payload?.message === 'string' && payload.message.trim() ? payload.message : fallback;
+};
+
 export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   const [catalog, setCatalog] = useState<MenuCategory[]>(() => loadMenuCatalog());
 
@@ -46,7 +51,7 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
 
       if (!options.admin) return;
 
-      await fetch('/api/admin/menu', {
+      const response = await fetch('/api/admin/menu', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -54,6 +59,10 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
         credentials: 'include',
         body: JSON.stringify({ catalog: normalized })
       });
+
+      if (!response.ok) {
+        throw new Error(await parseApiErrorMessage(response, 'Не удалось сохранить меню'));
+      }
     },
     [applyCatalog, options.admin]
   );
@@ -65,7 +74,7 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
 
     if (!options.admin) return;
 
-    await fetch('/api/admin/menu', {
+    const response = await fetch('/api/admin/menu', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -73,6 +82,10 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
       credentials: 'include',
       body: JSON.stringify({ catalog: defaultCatalog })
     });
+
+    if (!response.ok) {
+      throw new Error(await parseApiErrorMessage(response, 'Не удалось сбросить меню'));
+    }
   }, [options.admin]);
 
   return { catalog, updateCatalog, restoreCatalog, applyCatalog };
