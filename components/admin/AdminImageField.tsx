@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
 const FALLBACK_PREVIEW = '/images/mock/breakfast-card.svg';
 const IMAGE_FORMAT_HINT = 'рекомендуется 4:3: 1200×900 или 1600×1200, jpg/png/webp/avif до 5 мб';
@@ -15,9 +15,12 @@ export default function AdminImageField({
   onUpload: (file: File) => Promise<void> | void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previewSrc, setPreviewSrc] = useState(value.trim() || FALLBACK_PREVIEW);
-
   const normalizedValue = value.trim();
+  const [previewSrc, setPreviewSrc] = useState(normalizedValue || FALLBACK_PREVIEW);
+
+  useEffect(() => {
+    setPreviewSrc(normalizedValue || FALLBACK_PREVIEW);
+  }, [normalizedValue]);
 
   const handleTextChange = (nextValue: string) => {
     onChange(nextValue);
