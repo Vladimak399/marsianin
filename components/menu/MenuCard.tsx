@@ -1,7 +1,6 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
@@ -29,7 +28,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
 
   useEffect(() => {
     setImageSrc(normalizedImage);
-  }, [normalizedImage]);
+  }, [normalizedImage, item.id]);
 
   return (
     <motion.button
@@ -46,13 +45,12 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       <div className="pointer-events-none absolute bottom-0 left-0 z-10 h-px w-full bg-[#ed6a32]/24" />
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-px w-[34%] bg-[#ed6a32]/38" />
       <div className="relative min-h-[146px] w-full overflow-hidden border-r border-black/[0.07] bg-white sm:aspect-[4/3] sm:min-h-0 sm:border-b sm:border-r-0">
-        <Image
+        <img
           src={imageSrc}
           alt={item.name}
-          fill
-          priority={priority}
-          sizes="(max-width: 640px) 112px, (max-width: 1024px) 430px, 33vw"
-          className={`object-cover transition-transform duration-300 ${hasPrice ? 'opacity-[0.94] sm:group-hover:scale-[1.025]' : 'opacity-[0.58] grayscale'}`}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          className={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 ${hasPrice ? 'opacity-[0.94] sm:group-hover:scale-[1.025]' : 'opacity-[0.58] grayscale'}`}
           onError={() => {
             if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
           }}
