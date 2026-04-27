@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
@@ -20,6 +20,8 @@ type MenuDetailViewProps = {
 };
 
 const SWIPE_THRESHOLD = 60;
+const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
+const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
 const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 export default function MenuDetailView({
@@ -32,6 +34,12 @@ export default function MenuDetailView({
   onChangeIndex
 }: MenuDetailViewProps) {
   const reduceMotion = useReducedMotion();
+  const normalizedImage = item?.image?.trim() || FALLBACK_MENU_IMAGE;
+  const [imageSrc, setImageSrc] = useState(normalizedImage);
+
+  useEffect(() => {
+    setImageSrc(normalizedImage);
+  }, [normalizedImage]);
 
   useEffect(() => {
     if (!item) return;
@@ -54,7 +62,7 @@ export default function MenuDetailView({
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
   const price = item?.priceByLocation[selectedLocation];
-  const hasPrice = typeof price === 'number';
+  const hasPrice = hasValidPrice(price);
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
@@ -120,7 +128,16 @@ export default function MenuDetailView({
 
             <div className="relative z-10 px-7 pb-8 pt-5">
               <div className="relative aspect-[16/10] overflow-hidden border border-black/[0.08] bg-white/80 shadow-[0_10px_30px_rgba(24,21,18,0.06)]">
-                <Image src={item.image} alt={item.name} fill className="object-cover opacity-[0.92]" sizes="(max-width: 430px) 100vw, 430px" />
+                <Image
+                  src={imageSrc}
+                  alt={item.name}
+                  fill
+                  className="object-cover opacity-[0.92]"
+                  sizes="(max-width: 430px) 100vw, 430px"
+                  onError={() => {
+                    if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
+                  }}
+                />
                 <div className="pointer-events-none absolute left-0 top-0 h-px w-[42%] bg-[#ed6a32]/42" />
               </div>
 

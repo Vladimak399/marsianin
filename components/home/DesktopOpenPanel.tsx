@@ -6,7 +6,6 @@ import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import { premiumEase } from '@/lib/animations';
 import GateCode from './GateCode';
 import LocationSwitcher from './LocationSwitcher';
-import MenuPreview from './MenuPreview';
 import RollingCoordinate from './RollingCoordinate';
 import { LOCATION_DETAILS, LocationPoint, LOCATIONS } from './types';
 
@@ -26,9 +25,13 @@ export default function DesktopOpenPanel({
   const [isOpeningMenu, setIsOpeningMenu] = useState(false);
   const reduceMotion = useReducedMotion();
   const selectedLocation = LOCATION_DETAILS[selected.id];
-  const mainCtaText = isOpeningMenu ? 'открываем меню' : selected.code ? `открыть меню ${selected.code}` : 'смотреть меню';
-  const actionLinkClass =
-    'inline-flex min-h-11 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
+  const mainCtaText = isOpeningMenu ? 'открываем меню' : selected.code ? `открыть меню ${selected.code}` : 'открыть меню';
+  const actionCardClass =
+    'group relative grid min-h-[86px] w-full grid-cols-[48px_1fr_auto] items-center gap-4 border border-black/[0.08] bg-[#fffdf8] px-5 py-4 text-left transition hover:-translate-y-0.5 hover:border-[#ed6a32]/48 hover:shadow-[0_14px_34px_rgba(237,106,50,0.10)] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#ed6a32]';
+  const primaryActionCardClass =
+    'group relative grid min-h-[92px] w-full grid-cols-[48px_1fr_auto] items-center gap-4 border border-[#ed6a32]/72 bg-[#ed6a32] px-5 py-4 text-left text-white shadow-[0_18px_42px_rgba(237,106,50,0.20)] transition hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99] disabled:cursor-progress disabled:bg-[#df8f6e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#ed6a32]';
+  const utilityLinkClass =
+    'inline-flex min-h-12 items-center justify-center border border-black/[0.08] bg-[#fffdf8] px-3 py-2 text-[10px] tracking-[0.04em] text-black/58 transition hover:-translate-y-0.5 hover:border-[#ed6a32]/45 hover:text-[#ed6a32] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
   const enterInitial = reduceMotion ? false : { y: 14, opacity: 0 };
   const enterAnimate = { y: 0, opacity: 1 };
   const enterTransition = { delay: reduceMotion ? 0 : 0.05, duration: reduceMotion ? 0.01 : 0.36, ease: premiumEase };
@@ -78,39 +81,56 @@ export default function DesktopOpenPanel({
             initial={enterInitial}
             animate={enterAnimate}
             transition={enterTransition}
+            role="group"
+            aria-label="действия выбранной точки"
           >
-            <MenuPreview onOpenCategory={onOpenCategory} />
+            <div className="overflow-hidden border border-[#ed6a32]/36 bg-[#fffdf8]">
+              <button type="button" onClick={handleOpenMenu} disabled={isBusy || isOpeningMenu} aria-busy={isOpeningMenu} className={primaryActionCardClass}>
+                <span className="mars-coordinate-label text-[10px] text-white/82" aria-hidden>
+                  01
+                </span>
+                <span>
+                  <span className="block text-[13px] font-semibold tracking-[0.01em]">{mainCtaText}</span>
+                  <span className="mt-1 block text-[12px] text-white/82">полное меню, цены и кбжу</span>
+                </span>
+                <span className="text-[10px] font-semibold text-white/86">{isOpeningMenu ? '...' : 'перейти'}</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={handleOpenMenu}
-              disabled={isBusy || isOpeningMenu}
-              aria-busy={isOpeningMenu}
-              className={`mt-5 inline-flex min-h-12 w-full items-center justify-center border border-[#ed6a32]/75 px-4 py-3 text-xs font-semibold tracking-[0.04em] text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
-                isBusy || isOpeningMenu ? 'cursor-progress bg-[#df8f6e]' : 'bg-[#ed6a32] hover:-translate-y-0.5 hover:bg-[#df5f2c] active:scale-[0.99]'
-              }`}
-            >
-              {mainCtaText}
-            </button>
+              <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={`${actionCardClass} border-t-0`}>
+                <span className="mars-coordinate-label text-[10px] text-[#f87c56]" aria-hidden>
+                  02
+                </span>
+                <span>
+                  <span className="block text-[13px] font-semibold tracking-[0.01em] text-[#0b0b0b]">построить маршрут</span>
+                  <span className="mt-1 block text-[12px] text-[#403e3e]">открыть точку в яндекс картах</span>
+                </span>
+                <span className="text-[10px] text-[#403e3e] group-hover:text-[#ed6a32]">маршрут</span>
+              </a>
+
+              <a href={selectedLocation.links.yandexEda} target="_blank" rel="noopener noreferrer" className={`${actionCardClass} border-t-0`}>
+                <span className="mars-coordinate-label text-[10px] text-[#f87c56]" aria-hidden>
+                  03
+                </span>
+                <span>
+                  <span className="block text-[13px] font-semibold tracking-[0.01em] text-[#0b0b0b]">доставка</span>
+                  <span className="mt-1 block text-[12px] text-[#403e3e]">заказать через яндекс еду</span>
+                </span>
+                <span className="text-[10px] text-[#403e3e] group-hover:text-[#ed6a32]">заказать</span>
+              </a>
+            </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={`${actionLinkClass} col-span-2`}>
-                построить маршрут
-              </a>
-              <a href={selectedLocation.links.yandexEda} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
-                доставка
-              </a>
-              <a href={`tel:${selectedLocation.phoneTel}`} className={actionLinkClass}>
+              <a href={`tel:${selectedLocation.phoneTel}`} className={utilityLinkClass}>
                 звонок
               </a>
-              <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
+              <a href={selectedLocation.links.maps.yandex} target="_blank" rel="noopener noreferrer" className={utilityLinkClass}>
                 яндекс карты
               </a>
-              <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noopener noreferrer" className={actionLinkClass}>
+              <a href={selectedLocation.links.maps.twoGis} target="_blank" rel="noopener noreferrer" className={utilityLinkClass}>
                 2гис
               </a>
-              <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noopener noreferrer" className={`${actionLinkClass} col-span-2 text-black/46`}>
-                отзывы
+              <a href={selectedLocation.links.reviews.yandex} target="_blank" rel="noopener noreferrer" className={utilityLinkClass}>
+                оставить отзыв
               </a>
             </div>
 
