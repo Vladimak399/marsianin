@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { MenuCategory, MenuItem } from '@/data/menu';
 import { locations } from '@/data/locations';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 import AdminImageField from './AdminImageField';
+import AdminNumberField from './AdminNumberField';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 const DEFAULT_MENU_LOCATION = 'o12';
@@ -42,6 +43,9 @@ const getCatalogSummary = (nextCatalog: MenuCategory[]) => {
   const itemText = itemCount === 1 ? 'позиция' : itemCount > 1 && itemCount < 5 ? 'позиции' : 'позиций';
   return `${nextCatalog.length} ${categoryText}, ${itemCount} ${itemText}`;
 };
+
+const fieldClass = 'border border-black/[0.1] px-3 py-2 text-sm';
+const numberFieldClass = 'mt-1 w-full border border-black/[0.1] px-2 py-1';
 
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
@@ -81,6 +85,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!isAuthorized) return;
+
     const handler = (event: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges) return;
       event.preventDefault();
@@ -90,6 +95,17 @@ export default function AdminPanel() {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasUnsavedChanges, isAuthorized]);
+
+  const markDirty = () => {
+    setHasUnsavedChanges(true);
+    setSaveMessage('Есть несохраненные изменения');
+  };
+
+  const applyCatalogLocally = (nextCatalog: MenuCategory[]) => {
+    latestCatalogRef.current = nextCatalog;
+    applyCatalog(nextCatalog);
+    markDirty();
+  };
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
@@ -126,17 +142,6 @@ export default function AdminPanel() {
     window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
     setIsAuthorized(false);
     setPassword('');
-  };
-
-  const markDirty = () => {
-    setHasUnsavedChanges(true);
-    setSaveMessage('Есть несохраненные изменения');
-  };
-
-  const applyCatalogLocally = (nextCatalog: typeof catalog) => {
-    latestCatalogRef.current = nextCatalog;
-    applyCatalog(nextCatalog);
-    markDirty();
   };
 
   const handleSaveChanges = async () => {
@@ -258,6 +263,26 @@ export default function AdminPanel() {
     applyCatalogLocally(nextCatalog);
   };
 
+  const updateDraftPrice = (locationId: keyof MenuItem['priceByLocation'], value: number) => {
+    setDraftItem((prev) => ({
+      ...prev,
+      priceByLocation: {
+        ...prev.priceByLocation,
+        [locationId]: value
+      }
+    }));
+  };
+
+  const updateDraftNutrition = (field: keyof MenuItem['nutrition'], value: number) => {
+    setDraftItem((prev) => ({
+      ...prev,
+      nutrition: {
+        ...prev.nutrition,
+        [field]: value
+      }
+    }));
+  };
+
   if (!isAuthorized) {
     return (
       <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
@@ -266,31 +291,10 @@ export default function AdminPanel() {
           <p className="mt-2 text-sm text-black/60">Введите логин и пароль администратора.</p>
 
           <form onSubmit={handleLogin} className="mt-4 space-y-3">
-            <input
-              value={login}
-              onChange={(event) => setLogin(event.target.value)}
-              className="w-full border border-black/[0.1] px-3 py-2 text-sm"
-              placeholder="Логин"
-              autoComplete="username"
-              disabled={isLoggingIn}
-              required
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full border border-black/[0.1] px-3 py-2 text-sm"
-              placeholder="Пароль"
-              autoComplete="current-password"
-              disabled={isLoggingIn}
-              required
-            />
+            <input value={login} onChange={(event) => setLogin(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Логин" autoComplete="username" disabled={isLoggingIn} required />
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Пароль" autoComplete="current-password" disabled={isLoggingIn} required />
             {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
-            <button
-              type="submit"
-              disabled={isLoggingIn}
-              className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60"
-            >
+            <button type="submit" disabled={isLoggingIn} className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60">
               {isLoggingIn ? 'Входим…' : 'Войти'}
             </button>
           </form>
@@ -366,12 +370,7 @@ export default function AdminPanel() {
             {saveMessage ? <p className="text-xs text-[#ed6a32]">{saveMessage}</p> : null}
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => void handleSaveChanges()}
-              disabled={!hasUnsavedChanges || isSaving}
-              className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <button type="button" onClick={() => void handleSaveChanges()} disabled={!hasUnsavedChanges || isSaving} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50">
               {isSaving ? 'Сохраняем…' : 'Сохранить'}
             </button>
             <button type="button" onClick={handleExportCatalogJson} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
@@ -408,13 +407,7 @@ export default function AdminPanel() {
             <div className="space-y-2">
               {catalog.map((entry) => (
                 <div key={entry.category} className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCategory(entry.category)}
-                    className={`flex-1 border px-3 py-2 text-left text-sm ${
-                      activeCategory?.category === entry.category ? 'border-[#ed6a32] text-[#ed6a32]' : 'border-black/[0.1]'
-                    }`}
-                  >
+                  <button type="button" onClick={() => setSelectedCategory(entry.category)} className={`flex-1 border px-3 py-2 text-left text-sm ${activeCategory?.category === entry.category ? 'border-[#ed6a32] text-[#ed6a32]' : 'border-black/[0.1]'}`}>
                     {entry.category}
                   </button>
                   <button type="button" onClick={() => handleRemoveCategory(entry.category)} className="border border-black/[0.1] px-2 text-sm">
@@ -424,12 +417,7 @@ export default function AdminPanel() {
               ))}
             </div>
             <form onSubmit={handleAddCategory} className="space-y-2">
-              <input
-                value={newCategoryName}
-                onChange={(event) => setNewCategoryName(event.target.value)}
-                className="w-full border border-black/[0.1] px-3 py-2 text-sm"
-                placeholder="новая категория"
-              />
+              <input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} className={`w-full ${fieldClass}`} placeholder="новая категория" />
               <button type="submit" className="w-full border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
                 Добавить категорию
               </button>
@@ -443,43 +431,21 @@ export default function AdminPanel() {
               {activeCategory?.items.map((item, itemIndex) => (
                 <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
                   <div className="grid gap-2 md:grid-cols-2">
-                    <input
-                      value={item.name}
-                      onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, name: event.target.value }))}
-                      className="border border-black/[0.1] px-3 py-2 text-sm"
-                      placeholder="Название"
-                    />
-                    <AdminImageField
-                      value={item.image}
-                      onChange={(nextValue) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: nextValue }))}
-                      onUpload={(file) => handleUploadImage(file, item.id)}
-                    />
+                    <input value={item.name} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, name: event.target.value }))} className={fieldClass} placeholder="Название" />
+                    <AdminImageField value={item.image} onChange={(nextValue) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: nextValue }))} onUpload={(file) => handleUploadImage(file, item.id)} />
                   </div>
-                  <textarea
-                    value={item.description}
-                    onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, description: event.target.value }))}
-                    className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm"
-                    placeholder="Описание"
-                  />
+
+                  <textarea value={item.description} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, description: event.target.value }))} className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Описание" />
 
                   <div className="grid gap-2 md:grid-cols-3">
                     {locations.map((location) => (
                       <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] px-2 py-1 text-sm">
                         <span>{location.label}</span>
-                        <input
-                          type="number"
+                        <AdminNumberField
                           value={item.priceByLocation[location.id]}
-                          onChange={(event) => {
-                            const value = Number(event.target.value);
-                            updateItem(item.id, (entryItem) => ({
-                              ...entryItem,
-                              priceByLocation: {
-                                ...entryItem.priceByLocation,
-                                [location.id]: Number.isFinite(value) ? value : 0
-                              }
-                            }));
-                          }}
+                          onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, priceByLocation: { ...entryItem.priceByLocation, [location.id]: value } }))}
                           className="w-full border border-black/[0.1] px-2 py-1"
+                          ariaLabel={`цена ${location.label}`}
                         />
                       </label>
                     ))}
@@ -488,81 +454,27 @@ export default function AdminPanel() {
                   <div className="grid gap-2 md:grid-cols-4">
                     <label className="text-sm">
                       ккал
-                      <input
-                        type="number"
-                        value={item.nutrition.calories}
-                        onChange={(event) => {
-                          const value = Number(event.target.value);
-                          updateItem(item.id, (entryItem) => ({
-                            ...entryItem,
-                            nutrition: { ...entryItem.nutrition, calories: Number.isFinite(value) ? value : 0 }
-                          }));
-                        }}
-                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
-                      />
+                      <AdminNumberField value={item.nutrition.calories} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, calories: value } }))} className={numberFieldClass} ariaLabel="ккал" />
                     </label>
                     <label className="text-sm">
                       белки
-                      <input
-                        type="number"
-                        value={item.nutrition.protein}
-                        onChange={(event) => {
-                          const value = Number(event.target.value);
-                          updateItem(item.id, (entryItem) => ({
-                            ...entryItem,
-                            nutrition: { ...entryItem.nutrition, protein: Number.isFinite(value) ? value : 0 }
-                          }));
-                        }}
-                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
-                      />
+                      <AdminNumberField value={item.nutrition.protein} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, protein: value } }))} className={numberFieldClass} ariaLabel="белки" />
                     </label>
                     <label className="text-sm">
                       жиры
-                      <input
-                        type="number"
-                        value={item.nutrition.fat}
-                        onChange={(event) => {
-                          const value = Number(event.target.value);
-                          updateItem(item.id, (entryItem) => ({
-                            ...entryItem,
-                            nutrition: { ...entryItem.nutrition, fat: Number.isFinite(value) ? value : 0 }
-                          }));
-                        }}
-                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
-                      />
+                      <AdminNumberField value={item.nutrition.fat} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, fat: value } }))} className={numberFieldClass} ariaLabel="жиры" />
                     </label>
                     <label className="text-sm">
                       углеводы
-                      <input
-                        type="number"
-                        value={item.nutrition.carbs}
-                        onChange={(event) => {
-                          const value = Number(event.target.value);
-                          updateItem(item.id, (entryItem) => ({
-                            ...entryItem,
-                            nutrition: { ...entryItem.nutrition, carbs: Number.isFinite(value) ? value : 0 }
-                          }));
-                        }}
-                        className="mt-1 w-full border border-black/[0.1] px-2 py-1"
-                      />
+                      <AdminNumberField value={item.nutrition.carbs} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, carbs: value } }))} className={numberFieldClass} ariaLabel="углеводы" />
                     </label>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => moveItem(item.id, 'up')}
-                      disabled={itemIndex === 0}
-                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
-                    >
+                    <button type="button" onClick={() => moveItem(item.id, 'up')} disabled={itemIndex === 0} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
                       Выше
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => moveItem(item.id, 'down')}
-                      disabled={itemIndex === activeCategory.items.length - 1}
-                      className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40"
-                    >
+                    <button type="button" onClick={() => moveItem(item.id, 'down')} disabled={itemIndex === activeCategory.items.length - 1} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
                       Ниже
                     </button>
                     <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
@@ -576,54 +488,25 @@ export default function AdminPanel() {
             <form onSubmit={handleAddItem} className="space-y-3 border border-dashed border-black/[0.2] p-3">
               <h3 className="font-medium">Добавить новую позицию</h3>
               <div className="grid gap-2 md:grid-cols-2">
-                <input
-                  value={draftItem.name}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, name: event.target.value }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="Название"
-                />
-                <AdminImageField
-                  value={draftItem.image}
-                  onChange={(nextValue) => setDraftItem((prev) => ({ ...prev, image: nextValue }))}
-                  onUpload={(file) => handleUploadImage(file)}
-                />
+                <input value={draftItem.name} onChange={(event) => setDraftItem((prev) => ({ ...prev, name: event.target.value }))} className={fieldClass} placeholder="Название" />
+                <AdminImageField value={draftItem.image} onChange={(nextValue) => setDraftItem((prev) => ({ ...prev, image: nextValue }))} onUpload={(file) => handleUploadImage(file)} />
               </div>
-              <textarea
-                value={draftItem.description}
-                onChange={(event) => setDraftItem((prev) => ({ ...prev, description: event.target.value }))}
-                className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm"
-                placeholder="Описание"
-              />
+              <textarea value={draftItem.description} onChange={(event) => setDraftItem((prev) => ({ ...prev, description: event.target.value }))} className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Описание" />
+
+              <div className="grid gap-2 md:grid-cols-3">
+                {locations.map((location) => (
+                  <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] px-2 py-1 text-sm">
+                    <span>{location.label}</span>
+                    <AdminNumberField value={draftItem.priceByLocation[location.id]} onChange={(value) => updateDraftPrice(location.id, value)} className="w-full border border-black/[0.1] px-2 py-1" ariaLabel={`цена новой позиции ${location.label}`} />
+                  </label>
+                ))}
+              </div>
 
               <div className="grid gap-2 md:grid-cols-4">
-                <input
-                  type="number"
-                  value={draftItem.nutrition.calories}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, calories: Number(event.target.value) || 0 } }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="ккал"
-                />
-                <input
-                  type="number"
-                  value={draftItem.nutrition.protein}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, protein: Number(event.target.value) || 0 } }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="белки"
-                />
-                <input
-                  type="number"
-                  value={draftItem.nutrition.fat}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, fat: Number(event.target.value) || 0 } }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="жиры"
-                />
-                <input
-                  type="number"
-                  value={draftItem.nutrition.carbs}
-                  onChange={(event) => setDraftItem((prev) => ({ ...prev, nutrition: { ...prev.nutrition, carbs: Number(event.target.value) || 0 } }))}
-                  className="border border-black/[0.1] px-3 py-2 text-sm"
-                  placeholder="углеводы"
-                />
+                <AdminNumberField value={draftItem.nutrition.calories} onChange={(value) => updateDraftNutrition('calories', value)} className={fieldClass} placeholder="ккал" ariaLabel="ккал новой позиции" />
+                <AdminNumberField value={draftItem.nutrition.protein} onChange={(value) => updateDraftNutrition('protein', value)} className={fieldClass} placeholder="белки" ariaLabel="белки новой позиции" />
+                <AdminNumberField value={draftItem.nutrition.fat} onChange={(value) => updateDraftNutrition('fat', value)} className={fieldClass} placeholder="жиры" ariaLabel="жиры новой позиции" />
+                <AdminNumberField value={draftItem.nutrition.carbs} onChange={(value) => updateDraftNutrition('carbs', value)} className={fieldClass} placeholder="углеводы" ariaLabel="углеводы новой позиции" />
               </div>
 
               <button type="submit" className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
