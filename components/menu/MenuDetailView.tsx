@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
 import { MenuItem } from '@/data/menu';
@@ -34,6 +34,12 @@ export default function MenuDetailView({
   onChangeIndex
 }: MenuDetailViewProps) {
   const reduceMotion = useReducedMotion();
+  const titleId = useId();
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const isOpen = Boolean(item);
   const normalizedImage = item?.image?.trim() || FALLBACK_MENU_IMAGE;
   const [imageSrc, setImageSrc] = useState(normalizedImage);
 
@@ -42,10 +48,17 @@ export default function MenuDetailView({
   }, [normalizedImage]);
 
   useEffect(() => {
-    if (!item) return;
+    if (!isOpen) return;
 
-    const previous = document.body.style.overflow;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const focusTimer = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus({ preventScroll: true });
+      if (!closeButtonRef.current) dialogRef.current?.focus({ preventScroll: true });
+    });
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -54,10 +67,17 @@ export default function MenuDetailView({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previous;
+      window.cancelAnimationFrame(focusTimer);
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
+
+      const previousFocus = previousFocusRef.current;
+      if (previousFocus && document.contains(previousFocus)) {
+        previousFocus.focus({ preventScroll: true });
+      }
+      previousFocusRef.current = null;
     };
-  }, [item, onClose]);
+  }, [isOpen, onClose]);
 
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
@@ -95,16 +115,19 @@ export default function MenuDetailView({
           onClick={onClose}
         >
           <motion.article
+            ref={dialogRef}
             className="absolute inset-0 mx-auto max-w-[430px] overflow-y-auto bg-[#fffdf8] text-[#181512] sm:inset-y-8 sm:max-h-[min(90vh,760px)] sm:border sm:border-black/[0.08] sm:shadow-[0_20px_60px_rgba(24,21,18,0.14)]"
             role="dialog"
             aria-modal="true"
-            aria-label={`позиция меню: ${item.name}`}
+            aria-labelledby={titleId}
+            aria-describedby={descriptionId}
+            tabIndex={-1}
             initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduceMotion ? 0 : 14 }}
             transition={{ duration: reduceMotion ? 0.01 : 0.2, ease: premiumEase }}
             onClick={(event) => event.stopPropagation()}
-            drag="x"
+            drag={reduceMotion ? false : 'x'}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.08}
             onDragEnd={handleDragEnd}
@@ -117,6 +140,7 @@ export default function MenuDetailView({
               <div className="flex items-center justify-between gap-3">
                 <p className="mars-coordinate-label font-sans text-[10px] text-[#ed6a32] lowercase">{category}</p>
                 <button
+                  ref={closeButtonRef}
                   type="button"
                   onClick={onClose}
                   className={`min-h-10 border border-black/[0.105] bg-white/90 px-4 py-2 font-sans text-xs tracking-[0.08em] text-[#504942] lowercase transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] ${detailButtonFocusClass}`}
@@ -151,8 +175,8 @@ export default function MenuDetailView({
                   )}
                 </div>
 
-                <h2 className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
-                <p className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
+                <h2 id={titleId} className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
+                <p id={descriptionId} className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
               </div>
 
               <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.065] pb-4">

@@ -13,6 +13,11 @@ const extensionByType: Record<string, string> = {
   'image/avif': 'avif'
 };
 
+const getUploadErrorMessage = (error: unknown) => {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  return 'Не удалось загрузить файл';
+};
+
 export async function POST(request: Request) {
   if (!(await isAdminAuthorized())) {
     return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
@@ -25,28 +30,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const formData = await request.formData();
-  const file = formData.get('file');
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file');
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ message: 'Файл не найден' }, { status: 400 });
+    if (!(file instanceof File)) {
+      return NextResponse.json({ message: 'Файл не найден' }, { status: 400 });
+    }
+
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return NextResponse.json({ message: 'Разрешены только JPG, PNG, WEBP или AVIF' }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return NextResponse.json({ message: 'Файл больше 5MB' }, { status: 400 });
+    }
+
+    const extension = extensionByType[file.type] ?? 'jpg';
+    const fileName = `menu/${Date.now()}-${randomUUID()}.${extension}`;
+
+    const blob = await put(fileName, file, {
+      access: 'public',
+      contentType: file.type
+    });
+
+    return NextResponse.json({ url: blob.url, pathname: blob.pathname });
+  } catch (error) {
+    return NextResponse.json({ message: getUploadErrorMessage(error) }, { status: 500 });
   }
-
-  if (!ALLOWED_TYPES.has(file.type)) {
-    return NextResponse.json({ message: 'Разрешены только JPG, PNG, WEBP или AVIF' }, { status: 400 });
-  }
-
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    return NextResponse.json({ message: 'Файл больше 5MB' }, { status: 400 });
-  }
-
-  const extension = extensionByType[file.type] ?? 'jpg';
-  const fileName = `menu/${Date.now()}-${randomUUID()}.${extension}`;
-
-  const blob = await put(fileName, file, {
-    access: 'public',
-    contentType: file.type
-  });
-
-  return NextResponse.json({ url: blob.url, pathname: blob.pathname });
 }
