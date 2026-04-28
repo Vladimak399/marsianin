@@ -189,13 +189,21 @@ export default function MenuPage({
         <div className="relative z-10 px-5 pb-12 pt-7 sm:px-7 sm:pt-9 lg:px-10">
           <section className="relative overflow-visible">
             <motion.div
-              className="relative z-10 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] px-4 pb-5 pt-4 shadow-[0_10px_24px_rgba(24,21,18,0.06)] sm:px-5"
+              className="relative z-10 overflow-hidden border border-[rgba(24,21,18,0.095)] bg-[#fffdf8]/94 px-4 pb-5 pt-4 shadow-[0_8px_20px_rgba(24,21,18,0.045)] backdrop-blur-sm sm:px-5"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: premiumEase }}
             >
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[#ed6a32]/42" />
+              <div className="pointer-events-none absolute bottom-0 left-0 h-px w-[38%] bg-[#ed6a32]/34" />
+              <div className="pointer-events-none absolute left-0 top-0 h-full w-px bg-[#ed6a32]/22" />
+
               <div className="grid grid-cols-[1fr_auto] items-start gap-4">
                 <div className="min-w-0">
+                  <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[8px] tracking-[0.14em] text-black/32">
+                    <span className="mars-coordinate-label text-[#ed6a32]">active menu node</span>
+                    <span className="mars-coordinate-label">catalogue system</span>
+                  </div>
                   <Link href="/" className="inline-block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]">
                     <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
                     <div className="mt-1.5 text-[11px] tracking-[0.04em] text-black/46">кофейня, где есть жизнь</div>
@@ -206,8 +214,11 @@ export default function MenuPage({
                   </p>
                 </div>
                 {currentLocation ? (
-                  <div className="mt-[66px] text-right text-[58px] font-black leading-[0.86] tracking-[-0.03em] text-[#ed6a32]">
-                    {currentLocation.label}
+                  <div className="mt-[70px] text-right">
+                    <p className="mars-coordinate-label mb-2 text-[8px] tracking-[0.14em] text-black/32">location index</p>
+                    <div className="text-[58px] font-black leading-[0.86] tracking-[-0.03em] text-[#ed6a32]">
+                      {currentLocation.label}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -216,14 +227,14 @@ export default function MenuPage({
                 {currentLocation ? (
                   <a
                     href={`tel:${currentLocation.phoneTel}`}
-                    className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[rgba(24,21,18,0.12)] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-xs tracking-[0.06em] text-[#504942] backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
+                    className="inline-flex min-h-12 items-center justify-center border border-[rgba(24,21,18,0.105)] bg-[rgba(255,255,255,0.82)] px-4 py-3 text-xs tracking-[0.06em] text-[#504942] backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]"
                   >
                     позвонить
                   </a>
                 ) : null}
                 <Link
                   href="/"
-                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[rgba(24,21,18,0.12)] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-xs tracking-[0.06em] text-[#504942] backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32]"
+                  className="inline-flex min-h-12 items-center justify-center border border-[rgba(24,21,18,0.105)] bg-[rgba(255,255,255,0.82)] px-4 py-3 text-xs tracking-[0.06em] text-[#504942] backdrop-blur-sm transition hover:border-[#ed6a32]/45 hover:text-[#ed6a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]"
                 >
                   сменить точку
                 </Link>
@@ -231,11 +242,12 @@ export default function MenuPage({
             </motion.div>
 
             <motion.div
-              className="relative z-10 mt-5 grid grid-cols-3 gap-2 rounded-2xl border border-[rgba(24,21,18,0.1)] bg-[#fffdf8] p-3 shadow-[0_8px_20px_rgba(24,21,18,0.05)]"
+              className="relative z-10 mt-5 grid grid-cols-3 gap-2 border border-[rgba(24,21,18,0.095)] bg-[#fffdf8]/92 p-3 shadow-[0_6px_16px_rgba(24,21,18,0.04)] backdrop-blur-sm"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.04, ease: premiumEase }}
             >
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[#ed6a32]/28" />
               {locations.map((location) => {
                 const isActive = activeLocation === location.id;
                 return (
@@ -243,14 +255,15 @@ export default function MenuPage({
                     key={location.id}
                     type="button"
                     onClick={() => handleLocationSwitch(location.id)}
-                    className={`min-h-12 whitespace-nowrap rounded-xl border bg-white px-3 py-2 text-left text-xs tracking-[0.04em] transition-colors ${
+                    className={`relative min-h-12 whitespace-nowrap border bg-white px-3 py-2 text-left text-xs tracking-[0.04em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] ${
                       isActive
-                        ? 'border-[#ed6a32]/80 text-[#ed6a32] shadow-[0_6px_18px_rgba(237,106,50,0.16)]'
-                        : 'border-[rgba(24,21,18,0.12)] text-[#504942] hover:border-[#ed6a32]/45 hover:text-[#ed6a32]'
+                        ? 'border-[#ed6a32]/80 text-[#ed6a32] shadow-[0_0_0_1px_rgba(237,106,50,0.18)]'
+                        : 'border-[rgba(24,21,18,0.105)] text-[#504942] hover:border-[#ed6a32]/45 hover:text-[#ed6a32]'
                     }`}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.16, ease: premiumEase }}
                   >
+                    {isActive ? <span className="pointer-events-none absolute inset-x-2 bottom-1 h-px bg-[#ed6a32]/70" /> : null}
                     <span className="font-black tracking-[-0.01em]">{location.label}</span>
                   </motion.button>
                 );
