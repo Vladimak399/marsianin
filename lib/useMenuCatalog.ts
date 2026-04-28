@@ -78,9 +78,11 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
   const updateCatalog = useCallback(
     async (nextCatalog: MenuCategory[]) => {
       const normalized = sanitizeMenuCatalog(nextCatalog);
-      applyCatalog(normalized);
 
-      if (!options.admin) return;
+      if (!options.admin) {
+        applyCatalog(normalized);
+        return;
+      }
 
       const response = await fetch('/api/admin/menu', {
         method: 'PUT',
@@ -99,6 +101,9 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
       if (!response.ok) {
         throw new Error(await parseApiErrorMessage(response, 'Не удалось сохранить меню'));
       }
+
+      const payload = (await response.json().catch(() => null)) as { catalog?: MenuCategory[] } | null;
+      applyCatalog(payload?.catalog ?? normalized);
     },
     [applyCatalog, options.admin]
   );
