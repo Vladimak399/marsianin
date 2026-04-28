@@ -63,7 +63,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       <div className="flex min-w-0 flex-1 flex-col gap-2.5 p-3.5 sm:gap-3 sm:p-4">
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0">
-            <p className="mars-coordinate-label mb-1 text-[8px] text-[#ed6a32]/82">product node</p>
+            <p className="mars-coordinate-label mb-1 text-[8px] text-[#ed6a32]/82">позиция меню</p>
             <h3 className="min-w-0 text-[0.98rem] font-semibold leading-snug tracking-[-0.02em] text-[#181512] sm:text-[1rem]">{item.name}</h3>
           </div>
           {hasPrice ? (
