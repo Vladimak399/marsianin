@@ -8,9 +8,17 @@ type UseMenuCatalogOptions = {
   admin?: boolean;
 };
 
+const ADMIN_SESSION_KEY = 'marsianin:admin:session';
+
 const parseApiErrorMessage = async (response: Response, fallback: string) => {
   const payload = (await response.json().catch(() => null)) as { message?: unknown } | null;
   return typeof payload?.message === 'string' && payload.message.trim() ? payload.message : fallback;
+};
+
+const handleAdminUnauthorized = () => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  window.location.reload();
 };
 
 export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
@@ -45,6 +53,12 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
           credentials: 'include',
           cache: 'no-store'
         });
+
+        if (options.admin && response.status === 401) {
+          handleAdminUnauthorized();
+          return;
+        }
+
         if (!response.ok) return;
         const payload = (await response.json()) as { catalog: MenuCategory[] };
         if (!isMounted) return;
@@ -77,6 +91,11 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
         body: JSON.stringify({ catalog: normalized })
       });
 
+      if (response.status === 401) {
+        handleAdminUnauthorized();
+        throw new Error('Сессия администратора истекла. Войдите заново');
+      }
+
       if (!response.ok) {
         throw new Error(await parseApiErrorMessage(response, 'Не удалось сохранить меню'));
       }
@@ -99,6 +118,11 @@ export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
       credentials: 'include',
       body: JSON.stringify({ catalog: defaultCatalog })
     });
+
+    if (response.status === 401) {
+      handleAdminUnauthorized();
+      throw new Error('Сессия администратора истекла. Войдите заново');
+    }
 
     if (!response.ok) {
       throw new Error(await parseApiErrorMessage(response, 'Не удалось сбросить меню'));
