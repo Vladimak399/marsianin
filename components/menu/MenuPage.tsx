@@ -201,8 +201,8 @@ export default function MenuPage({
               <div className="grid grid-cols-[1fr_auto] items-start gap-4">
                 <div className="min-w-0">
                   <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[8px] tracking-[0.14em] text-black/32">
-                    <span className="mars-coordinate-label text-[#ed6a32]">active menu node</span>
-                    <span className="mars-coordinate-label">catalogue system</span>
+                    <span className="mars-coordinate-label text-[#ed6a32]">активная точка</span>
+                    <span className="mars-coordinate-label">система меню</span>
                   </div>
                   <Link href="/" className="inline-block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]">
                     <div className="text-[23px] font-medium tracking-[0.12em] text-black/84">марсианин</div>
@@ -215,7 +215,7 @@ export default function MenuPage({
                 </div>
                 {currentLocation ? (
                   <div className="mt-[70px] text-right">
-                    <p className="mars-coordinate-label mb-2 text-[8px] tracking-[0.14em] text-black/32">location index</p>
+                    <p className="mars-coordinate-label mb-2 text-[8px] tracking-[0.14em] text-black/32">индекс точки</p>
                     <div className="text-[58px] font-black leading-[0.86] tracking-[-0.03em] text-[#ed6a32]">
                       {currentLocation.label}
                     </div>
