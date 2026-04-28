@@ -3,6 +3,7 @@ import { MenuCategory } from '@/data/menu';
 import { getDefaultMenuCatalog, sanitizeMenuCatalog } from '@/lib/menuCatalog';
 
 const MENU_BLOB_PATH = 'menu/catalog.json';
+const MENU_BACKUP_PREFIX = 'menu/backups/catalog';
 
 const hasBlobToken = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
@@ -24,6 +25,18 @@ const readCatalogFromBlob = async (): Promise<MenuCategory[]> => {
   return sanitizeMenuCatalog(payload);
 };
 
+const createCatalogBackup = async () => {
+  if (!hasBlobToken()) return;
+
+  const currentCatalog = await readCatalogFromBlob();
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+  await put(`${MENU_BACKUP_PREFIX}-${timestamp}.json`, JSON.stringify(currentCatalog, null, 2), {
+    access: 'public',
+    contentType: 'application/json'
+  });
+};
+
 export const readCatalogFromFile = async (): Promise<MenuCategory[]> => {
   try {
     return await readCatalogFromBlob();
@@ -38,6 +51,8 @@ export const writeCatalogToFile = async (catalog: MenuCategory[]) => {
   }
 
   const sanitized = sanitizeMenuCatalog(catalog);
+
+  await createCatalogBackup();
 
   await put(MENU_BLOB_PATH, JSON.stringify(sanitized, null, 2), {
     access: 'public',

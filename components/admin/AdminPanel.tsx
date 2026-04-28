@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { locations } from '@/data/locations';
+import { LocationId, locations } from '@/data/locations';
 import { MenuCategory, MenuItem } from '@/data/menu';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 import AdminImageField from './AdminImageField';
@@ -10,6 +10,9 @@ import AdminNumberField from './AdminNumberField';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 const DEFAULT_MENU_LOCATION = 'o12';
+
+const fieldClass = 'border border-black/[0.1] px-3 py-2 text-sm';
+const numberFieldClass = 'mt-1 w-full border border-black/[0.1] px-2 py-1';
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
@@ -44,8 +47,13 @@ const getCatalogSummary = (nextCatalog: MenuCategory[]) => {
   return `${nextCatalog.length} ${categoryText}, ${itemCount} ${itemText}`;
 };
 
-const fieldClass = 'border border-black/[0.1] px-3 py-2 text-sm';
-const numberFieldClass = 'mt-1 w-full border border-black/[0.1] px-2 py-1';
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  return fallback;
+};
+
+const isLikelyErrorMessage = (message: string) =>
+  /ошибка|не удалось|не авторизован|истекла|не настроен|проверьте/i.test(message);
 
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
@@ -96,6 +104,12 @@ export default function AdminPanel() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasUnsavedChanges, isAuthorized]);
 
+  const clearLocalAdminSession = () => {
+    window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    setIsAuthorized(false);
+    setPassword('');
+  };
+
   const markDirty = () => {
     setHasUnsavedChanges(true);
     setSaveMessage('Есть несохраненные изменения');
@@ -139,9 +153,7 @@ export default function AdminPanel() {
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
-    window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    setIsAuthorized(false);
-    setPassword('');
+    clearLocalAdminSession();
   };
 
   const handleSaveChanges = async () => {
@@ -152,8 +164,10 @@ export default function AdminPanel() {
       await updateCatalog(latestCatalogRef.current);
       setHasUnsavedChanges(false);
       setSaveMessage(`Сохранено: ${new Date().toLocaleTimeString('ru-RU')}`);
-    } catch {
-      setSaveMessage('Не удалось сохранить изменения. Проверьте авторизацию и повторите попытку');
+    } catch (error) {
+      const message = getErrorMessage(error, 'Не удалось сохранить изменения');
+      if (message.includes('Сессия администратора истекла')) clearLocalAdminSession();
+      setSaveMessage(message);
     } finally {
       setIsSaving(false);
     }
@@ -207,6 +221,13 @@ export default function AdminPanel() {
     });
 
     const payload = (await response.json().catch(() => ({ message: 'Не удалось загрузить файл' }))) as { url?: string; message?: string };
+
+    if (response.status === 401) {
+      clearLocalAdminSession();
+      setSaveMessage('Сессия администратора истекла. Войдите заново');
+      return;
+    }
+
     if (!response.ok || !payload.url) {
       setSaveMessage(payload.message ?? 'Ошибка загрузки файла');
       return;
@@ -263,7 +284,7 @@ export default function AdminPanel() {
     applyCatalogLocally(nextCatalog);
   };
 
-  const updateDraftPrice = (locationId: keyof MenuItem['priceByLocation'], value: number) => {
+  const updateDraftPrice = (locationId: LocationId, value: number) => {
     setDraftItem((prev) => ({
       ...prev,
       priceByLocation: {
@@ -367,7 +388,7 @@ export default function AdminPanel() {
           <div>
             <h1 className="text-2xl font-semibold">Админ-кабинет меню</h1>
             <p className="text-sm text-black/60">Изменения сохраняются на сервере после нажатия «Сохранить».</p>
-            {saveMessage ? <p className="text-xs text-[#ed6a32]">{saveMessage}</p> : null}
+            {saveMessage ? <p className={`text-xs ${isLikelyErrorMessage(saveMessage) ? 'text-red-600' : 'text-[#ed6a32]'}`}>{saveMessage}</p> : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => void handleSaveChanges()} disabled={!hasUnsavedChanges || isSaving} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50">
@@ -389,10 +410,13 @@ export default function AdminPanel() {
             <button
               type="button"
               onClick={() => {
-                void restoreCatalog();
-                latestCatalogRef.current = catalog;
-                setHasUnsavedChanges(false);
-                setSaveMessage('Каталог сброшен до исходного состояния');
+                void restoreCatalog()
+                  .then(() => {
+                    latestCatalogRef.current = catalog;
+                    setHasUnsavedChanges(false);
+                    setSaveMessage('Каталог сброшен до исходного состояния');
+                  })
+                  .catch((error) => setSaveMessage(getErrorMessage(error, 'Не удалось сбросить меню')));
               }}
               className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]"
             >
