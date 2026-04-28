@@ -17,6 +17,7 @@ export default function AdminImageField({
   const inputRef = useRef<HTMLInputElement>(null);
   const normalizedValue = value.trim();
   const [previewSrc, setPreviewSrc] = useState(normalizedValue || FALLBACK_PREVIEW);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setPreviewSrc(normalizedValue || FALLBACK_PREVIEW);
@@ -30,8 +31,14 @@ export default function AdminImageField({
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (!file) return;
-    await onUpload(file);
+    if (!file || isUploading) return;
+
+    setIsUploading(true);
+    try {
+      await onUpload(file);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -41,11 +48,16 @@ export default function AdminImageField({
           <img
             src={previewSrc}
             alt="превью изображения"
-            className="absolute inset-0 h-full w-full object-cover"
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isUploading ? 'opacity-45' : 'opacity-100'}`}
             onError={() => {
               if (previewSrc !== FALLBACK_PREVIEW) setPreviewSrc(FALLBACK_PREVIEW);
             }}
           />
+          {isUploading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/58 text-[10px] tracking-[0.08em] text-[#ed6a32]">
+              загружаем
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -54,20 +66,22 @@ export default function AdminImageField({
           <input
             value={value}
             onChange={(event) => handleTextChange(event.target.value)}
-            className="w-full border border-black/[0.1] px-3 py-2 text-sm"
+            disabled={isUploading}
+            className="w-full border border-black/[0.1] px-3 py-2 text-sm disabled:cursor-progress disabled:opacity-60"
             placeholder="/images/menu/dish-name.webp или Blob URL"
           />
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]"
+            disabled={isUploading}
+            className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-50"
             title="загрузить фото"
           >
-            +
+            {isUploading ? '...' : '+'}
           </button>
           <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/avif" className="hidden" onChange={(event) => void handleFileChange(event)} />
         </div>
-        <p className="text-[11px] leading-relaxed text-black/42">{IMAGE_FORMAT_HINT}</p>
+        <p className="text-[11px] leading-relaxed text-black/42">{isUploading ? 'файл загружается в Vercel Blob, дождитесь завершения' : IMAGE_FORMAT_HINT}</p>
         {normalizedValue ? <p className="break-all text-[10px] leading-relaxed text-black/30">текущий путь: {normalizedValue}</p> : null}
       </div>
     </div>
