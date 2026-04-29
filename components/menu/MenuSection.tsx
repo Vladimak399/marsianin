@@ -11,8 +11,28 @@ type MenuSectionProps = {
   isFirstSection?: boolean;
 };
 
+type GroupedItems = {
+  title: string;
+  items: MenuItem[];
+};
+
+function groupItemsBySubcategory(items: MenuItem[]): GroupedItems[] {
+  const groups = new Map<string, MenuItem[]>();
+
+  items.forEach((item) => {
+    const groupTitle = item.subcategory?.trim() || 'основное';
+    const existing = groups.get(groupTitle) ?? [];
+    existing.push(item);
+    groups.set(groupTitle, existing);
+  });
+
+  return Array.from(groups.entries()).map(([title, groupItems]) => ({ title, items: groupItems }));
+}
+
 export default function MenuSection({ section, selectedLocation, onOpenItem, isFirstSection = false }: MenuSectionProps) {
   const hasItems = section.items.length > 0;
+  const shouldGroupBySubcategory = section.category === 'напитки' && section.items.some((item) => item.subcategory);
+  const groupedItems = shouldGroupBySubcategory ? groupItemsBySubcategory(section.items) : [];
 
   return (
     <section id={`section-${section.category}`} data-category={section.category} className="scroll-mt-32 border-t border-black/[0.055] pt-7 first:border-t-0 first:pt-0">
@@ -26,7 +46,33 @@ export default function MenuSection({ section, selectedLocation, onOpenItem, isF
         </p>
       </header>
 
-      {hasItems ? (
+      {hasItems && shouldGroupBySubcategory ? (
+        <div className="space-y-7">
+          {groupedItems.map((group, groupIndex) => (
+            <div key={group.title} className="border-t border-black/[0.045] pt-4 first:border-t-0 first:pt-0">
+              <header className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">{String(groupIndex + 1).padStart(2, '0')} / подкатегория</p>
+                  <h3 className="mt-1 text-[1rem] font-semibold tracking-[-0.025em] text-[#181512]">{group.title}</h3>
+                </div>
+                <p className="mars-coordinate-label text-[9px] text-[#504942]/70">{group.items.length} поз.</p>
+              </header>
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
+                {group.items.map((item, index) => (
+                  <MenuCard
+                    key={item.id}
+                    item={item}
+                    category={section.category}
+                    selectedLocation={selectedLocation}
+                    onOpen={onOpenItem}
+                    priority={isFirstSection && groupIndex === 0 && index === 0}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : hasItems ? (
         <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
           {section.items.map((item, index) => (
             <MenuCard
