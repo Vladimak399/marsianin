@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useId, useRef, useState } from 'react';
 import Image from 'next/image';
 import { getLocationLabel, LocationId } from '@/data/locations';
-import { MenuItem } from '@/data/menu';
+import { MenuItem, PriceOption } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
 import NutritionTable from './NutritionTable';
@@ -23,6 +23,22 @@ const SWIPE_THRESHOLD = 60;
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
 const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
 const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
+
+function DetailPriceOptions({ options }: { options: PriceOption[] }) {
+  return (
+    <div className="mt-3 border border-[#ed6a32]/24 bg-[#ed6a32]/[0.055] p-3">
+      <p className="mars-coordinate-label mb-2 text-[9px] text-[#ed6a32]">объем / цена</p>
+      <div className="space-y-1.5">
+        {options.map((option) => (
+          <p key={`${option.label}-${option.price}`} className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-black/[0.045] pb-1.5 text-sm last:border-b-0 last:pb-0">
+            <span className="text-[#504942]">{option.label}</span>
+            <span className="font-semibold text-[#ed6a32]">{option.price} ₽</span>
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function MenuDetailView({
   item,
@@ -82,6 +98,7 @@ export default function MenuDetailView({
   const hasPrev = activeIndex > 0;
   const hasNext = activeIndex < items.length - 1;
   const price = item?.priceByLocation[selectedLocation];
+  const priceOptions = item?.priceOptionsByLocation?.[selectedLocation];
   const hasPrice = hasValidPrice(price);
 
   const handlePrev = () => {
@@ -168,15 +185,16 @@ export default function MenuDetailView({
               <div className="mt-5 border border-black/[0.08] bg-white/72 px-4 py-4 backdrop-blur-sm">
                 <div className="flex items-center justify-between gap-3 border-b border-black/[0.055] pb-3">
                   <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
-                  {hasPrice ? (
+                  {hasPrice && !priceOptions?.length ? (
                     <p className="mars-coordinate-label border border-[#ed6a32]/28 bg-[#ed6a32]/[0.08] px-2.5 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
-                  ) : (
+                  ) : !hasPrice ? (
                     <p className="mars-coordinate-label max-w-[120px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
-                  )}
+                  ) : null}
                 </div>
 
                 <h2 id={titleId} className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
-                <p id={descriptionId} className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p>
+                {priceOptions?.length ? <DetailPriceOptions options={priceOptions} /> : null}
+                {item.description ? <p id={descriptionId} className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p> : null}
               </div>
 
               <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.065] pb-4">
