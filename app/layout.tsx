@@ -12,9 +12,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'марсианин — кофейня и кухня на каждый день',
     description:
-      'минималистичная кофейня с фактическим меню: цены, состав и пищевая ценность каждого блюда.',
+      'кофейня в калининграде: specialty кофе, завтраки и прозрачное меню с ценами и кбжу.',
+    url: 'https://marsianin.online',
+    siteName: 'марсианин',
     type: 'website',
     locale: 'ru_RU'
+  },
+  alternates: {
+    canonical: 'https://marsianin.online'
   },
   icons: {
     icon: '/favicon.svg'
