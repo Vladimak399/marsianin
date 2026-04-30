@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { LocationId } from '@/data/locations';
 import { MenuItem, PriceOption } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
@@ -63,11 +64,12 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-px w-[38%] bg-[#ed6a32]/42" />
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-px bg-[#ed6a32]/16" />
       <div className="relative min-h-[154px] w-full overflow-hidden border-r border-black/[0.07] bg-white sm:aspect-[4/3] sm:min-h-0 sm:border-b sm:border-r-0">
-        <img
+        <Image
           src={imageSrc}
           alt={item.name}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
+          fill
+          sizes="(min-width: 640px) 33vw, 124px"
+          priority={priority}
           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 ${hasPrice ? 'opacity-[0.95] sm:group-hover:scale-[1.018]' : 'opacity-[0.58] grayscale'}`}
           onError={() => {
             if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
