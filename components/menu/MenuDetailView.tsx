@@ -22,6 +22,7 @@ type MenuDetailViewProps = {
 const SWIPE_THRESHOLD = 60;
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
 const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
+const hasNutritionData = (item: MenuItem) => Object.values(item.nutrition).some((value) => value > 0);
 const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 function DetailPriceOptions({ options }: { options: PriceOption[] }) {
@@ -100,6 +101,7 @@ export default function MenuDetailView({
   const price = item?.priceByLocation[selectedLocation];
   const priceOptions = item?.priceOptionsByLocation?.[selectedLocation];
   const hasPrice = hasValidPrice(price);
+  const shouldShowNutrition = item ? hasNutritionData(item) : false;
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
@@ -219,7 +221,7 @@ export default function MenuDetailView({
                 </button>
               </div>
 
-              <NutritionTable nutrition={item.nutrition} />
+              {shouldShowNutrition ? <NutritionTable nutrition={item.nutrition} /> : null}
             </div>
           </motion.article>
         </motion.div>
