@@ -1,6 +1,7 @@
 'use client';
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 const FALLBACK_PREVIEW = '/images/mock/breakfast-card.svg';
 const IMAGE_FORMAT_HINT = 'рекомендуется 4:3: 1200×900 или 1600×1200, jpg/png/webp/avif до 5 мб';
@@ -45,9 +46,11 @@ export default function AdminImageField({
     <div className="grid gap-2 md:grid-cols-[112px_1fr]">
       <div className="overflow-hidden border border-black/[0.08] bg-[#fffdf8]">
         <div className="relative aspect-[4/3] w-full bg-white">
-          <img
+          <Image
             src={previewSrc}
             alt="превью изображения"
+            fill
+            sizes="112px"
             className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isUploading ? 'opacity-45' : 'opacity-100'}`}
             onError={() => {
               if (previewSrc !== FALLBACK_PREVIEW) setPreviewSrc(FALLBACK_PREVIEW);
