@@ -58,6 +58,7 @@ const isLikelyErrorMessage = (message: string) =>
 export default function AdminPanel() {
   const { catalog, updateCatalog, restoreCatalog, applyCatalog } = useMenuCatalog({ admin: true });
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -88,7 +89,47 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setIsAuthorized(window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok');
+
+    let isMounted = true;
+
+    const verifySession = async () => {
+      if (window.sessionStorage.getItem(ADMIN_SESSION_KEY) !== 'ok') {
+        setIsCheckingSession(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/status', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+        const payload = (await response.json().catch(() => null)) as { authorized?: unknown } | null;
+
+        if (!isMounted) return;
+
+        if (payload?.authorized === true) {
+          setIsAuthorized(true);
+          return;
+        }
+
+        window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        setIsAuthorized(false);
+      } catch {
+        if (!isMounted) return;
+        window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        setIsAuthorized(false);
+        setAuthError('Не удалось проверить сессию администратора. Войдите заново');
+      } finally {
+        if (isMounted) setIsCheckingSession(false);
+      }
+    };
+
+    void verifySession();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -137,6 +178,7 @@ export default function AdminPanel() {
       if (response.ok) {
         window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
         setIsAuthorized(true);
+        setIsCheckingSession(false);
         setAuthError('');
         setSaveMessage('');
         return;
@@ -303,6 +345,17 @@ export default function AdminPanel() {
       }
     }));
   };
+
+  if (isCheckingSession) {
+    return (
+      <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
+        <div className="mx-auto w-full max-w-md border border-black/[0.08] bg-white p-5">
+          <h1 className="text-2xl font-semibold">проверяем сессию</h1>
+          <p className="mt-2 text-sm text-black/60">проверяем доступ к админ-кабинету на сервере.</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!isAuthorized) {
     return (
