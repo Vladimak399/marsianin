@@ -181,6 +181,9 @@ export default function MenuDetailView({
                     if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
                   }}
                 />
+                {item.containsAlcohol ? (
+                  <div className="mars-coordinate-label absolute right-3 top-3 z-10 border border-[#ed6a32]/35 bg-[#fffdf8]/90 px-2.5 py-1.5 text-[10px] text-[#ed6a32] backdrop-blur-sm">18+ · содержит алкоголь</div>
+                ) : null}
                 <div className="pointer-events-none absolute left-0 top-0 h-px w-[42%] bg-[#ed6a32]/42" />
               </div>
 
