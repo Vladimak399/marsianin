@@ -310,6 +310,13 @@ export default function MenuPage({
               ))}
             </div>
 
+            <div className="relative z-10 mt-8 border border-[#ed6a32]/22 bg-[#ed6a32]/[0.055] px-4 py-4">
+              <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">важно</p>
+              <p className="mt-2 text-xs leading-relaxed text-[#504942]">
+                если у вас есть аллергия на какие-либо продукты, пожалуйста, сообщите нам об этом
+              </p>
+            </div>
+
             <Footer />
           </section>
         </div>
