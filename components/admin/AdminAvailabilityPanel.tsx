@@ -254,7 +254,7 @@ export default function AdminAvailabilityPanel() {
                         Все точки
                       </button>
                       <button type="button" onClick={() => applyPreset(item, 'o12')} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                        Только O12
+                        Только о12
                       </button>
                       <button type="button" onClick={() => applyPreset(item, 'none')} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
                         Скрыть везде
