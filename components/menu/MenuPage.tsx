@@ -25,7 +25,7 @@ type MenuPageProps = {
   initialGuestCoordinates?: Coordinates | null;
 };
 
-type CategoryChangeSource = 'intersection-observer' | 'chip-click';
+type CategoryChangeSource = 'scroll' | 'chip-click';
 
 export default function MenuPage({
   initialLocation,
@@ -41,7 +41,7 @@ export default function MenuPage({
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
-  const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
+  const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('scroll');
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
@@ -103,29 +103,49 @@ export default function MenuPage({
   }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (categories.length === 0) return;
 
-        const next = visible[0]?.target.getAttribute('data-category');
-        if (next) {
-          setCategoryChangeSource('intersection-observer');
-          setActiveCategory(next);
+    let frameId = 0;
+
+    const getSectionElements = () =>
+      categories
+        .map((category) => document.getElementById(`section-${category}`))
+        .filter((section): section is HTMLElement => Boolean(section));
+
+    const updateActiveCategoryFromScroll = () => {
+      const sections = getSectionElements();
+      if (sections.length === 0) return;
+
+      const activationLine = window.scrollY + categoryNavHeight + 28;
+      let nextCategory = sections[0].getAttribute('data-category') ?? categories[0];
+
+      for (const section of sections) {
+        if (section.offsetTop <= activationLine) {
+          nextCategory = section.getAttribute('data-category') ?? nextCategory;
+        } else {
+          break;
         }
-      },
-      {
-        rootMargin: `-${categoryNavHeight + 18}px 0px -55% 0px`,
-        threshold: [0.15, 0.35, 0.6]
       }
-    );
 
-    const sections = document.querySelectorAll<HTMLElement>('[data-category]');
-    sections.forEach((section) => observer.observe(section));
+      setCategoryChangeSource('scroll');
+      setActiveCategory(nextCategory);
+    };
 
-    return () => observer.disconnect();
-  }, [categoryNavHeight]);
+    const requestUpdate = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateActiveCategoryFromScroll);
+    };
+
+    requestUpdate();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+    };
+  }, [categories, categoryNavHeight]);
 
   useEffect(() => {
     const container = chipsContainerRef.current;
@@ -140,7 +160,7 @@ export default function MenuPage({
     const left = Math.min(Math.max(targetLeft, 0), maxLeft);
     container.scrollTo({ left, behavior });
 
-    if (categoryChangeSource === 'chip-click') setCategoryChangeSource('intersection-observer');
+    if (categoryChangeSource === 'chip-click') setCategoryChangeSource('scroll');
   }, [activeCategory, categoryChangeSource]);
 
   const updateQuery = (nextCategory: string) => {
