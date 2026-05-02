@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { Coordinates } from '@/lib/geo';
-import { MenuItem } from '@/data/menu';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
@@ -17,6 +17,17 @@ import MenuSection from './MenuSection';
 import Footer from '@/components/Footer';
 
 const DEFAULT_LOCATION: LocationId = 'o12';
+
+const isItemAvailableAtLocation = (item: MenuItem, location: LocationId) => item.availableByLocation?.[location] !== false;
+
+const filterCatalogByLocation = (catalog: MenuCategory[], location: LocationId): MenuCategory[] => {
+  return catalog
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => isItemAvailableAtLocation(item, location))
+    }))
+    .filter((section) => section.items.length > 0);
+};
 
 type MenuPageProps = {
   initialLocation?: string;
@@ -67,8 +78,9 @@ export default function MenuPage({
     if (initialEntrySource === 'qr') setEntrySource('qr');
   }, [initialEntrySource, setEntrySource]);
 
-  const categories = useMemo(() => menuCatalog.map((section) => section.category), [menuCatalog]);
   const activeLocation = selectedLocation ?? initialResolvedLocation ?? DEFAULT_LOCATION;
+  const locationCatalog = useMemo(() => filterCatalogByLocation(menuCatalog, activeLocation), [activeLocation, menuCatalog]);
+  const categories = useMemo(() => locationCatalog.map((section) => section.category), [locationCatalog]);
   const currentLocation = locations.find((location) => location.id === activeLocation);
 
   useEffect(() => {
@@ -189,7 +201,7 @@ export default function MenuPage({
   };
 
   const handleOpenDetails = (item: MenuItem, category: string) => {
-    const section = menuCatalog.find((entry) => entry.category === category);
+    const section = locationCatalog.find((entry) => entry.category === category);
     const items = section?.items ?? [];
     const nextIndex = items.findIndex((entry) => entry.id === item.id);
     if (nextIndex < 0) return;
@@ -299,7 +311,7 @@ export default function MenuPage({
             />
 
             <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
-              {menuCatalog.map((section, index) => (
+              {locationCatalog.map((section, index) => (
                 <MenuSection
                   key={section.category}
                   section={section}
