@@ -68,6 +68,7 @@ export default function AdminPanel() {
   const [saveMessage, setSaveMessage] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isImportingSeed, setIsImportingSeed] = useState(false);
 
   const catalogJsonInputRef = useRef<HTMLInputElement>(null);
   const latestCatalogRef = useRef<MenuCategory[]>(catalog);
@@ -170,6 +171,44 @@ export default function AdminPanel() {
       setSaveMessage(message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleImportSeedCatalog = async () => {
+    const shouldImport = window.confirm(
+      'Загрузить seed-меню из кода в живой каталог? Текущее меню будет сохранено в backup, затем заменено seed-версией.'
+    );
+    if (!shouldImport) return;
+
+    setIsImportingSeed(true);
+    setSaveMessage('Загружаем seed-меню…');
+
+    try {
+      const response = await fetch('/api/admin/menu/seed', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.status === 401) {
+        clearLocalAdminSession();
+        throw new Error('Сессия администратора истекла. Войдите заново');
+      }
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({ message: 'Не удалось загрузить seed-меню' }))) as { message?: string };
+        throw new Error(payload.message ?? 'Не удалось загрузить seed-меню');
+      }
+
+      const payload = (await response.json()) as { catalog: MenuCategory[]; summary?: { categories: number; items: number } };
+      latestCatalogRef.current = payload.catalog;
+      applyCatalog(payload.catalog);
+      setSelectedCategory(payload.catalog[0]?.category ?? '');
+      setHasUnsavedChanges(false);
+      setSaveMessage(`Seed-меню загружено: ${getCatalogSummary(payload.catalog)}`);
+    } catch (error) {
+      setSaveMessage(getErrorMessage(error, 'Не удалось загрузить seed-меню'));
+    } finally {
+      setIsImportingSeed(false);
     }
   };
 
@@ -393,6 +432,9 @@ export default function AdminPanel() {
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => void handleSaveChanges()} disabled={!hasUnsavedChanges || isSaving} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-50">
               {isSaving ? 'Сохраняем…' : 'Сохранить'}
+            </button>
+            <button type="button" onClick={() => void handleImportSeedCatalog()} disabled={isImportingSeed || isSaving} className="border border-[#ed6a32]/40 px-3 py-2 text-sm text-[#ed6a32] enabled:hover:bg-[#ed6a32]/[0.06] disabled:cursor-not-allowed disabled:opacity-50">
+              {isImportingSeed ? 'Загружаем seed…' : 'Загрузить seed-меню'}
             </button>
             <button type="button" onClick={handleExportCatalogJson} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
               Скачать JSON
