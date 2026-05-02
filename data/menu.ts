@@ -18,6 +18,8 @@ export type MenuItem = {
   name: string;
   description: string;
   subcategory?: string;
+  availableByLocation?: Record<LocationId, boolean>;
+  containsAlcohol?: boolean;
   priceByLocation: Record<LocationId, number>;
   priceOptionsByLocation?: Record<LocationId, PriceOption[]>;
   image: string;
@@ -37,6 +39,12 @@ const price = (o12: number, k10: number, p7: number): Record<LocationId, number>
 
 const samePrice = (value: number): Record<LocationId, number> => price(value, value, value);
 
+const allLocationsAvailable = (): Record<LocationId, boolean> => ({
+  o12: true,
+  k10: true,
+  p7: true
+});
+
 const samePriceOptions = (options: PriceOption[]): Record<LocationId, PriceOption[]> => ({
   o12: options,
   k10: options,
@@ -50,6 +58,8 @@ const createFoodItem = (id: string, name: string, imageKey: Parameters<typeof ge
   id,
   name,
   description: '',
+  availableByLocation: allLocationsAvailable(),
+  containsAlcohol: false,
   priceByLocation: samePrice(0),
   image: getMockMenuImage(imageKey),
   nutrition: nutritionEmpty
@@ -114,6 +124,8 @@ export const menuData: MenuCategory[] = [
         name: 'эспрессо',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(190),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -123,6 +135,8 @@ export const menuData: MenuCategory[] = [
         name: 'фильтр',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(220),
         priceOptionsByLocation: volumePrices(
           { label: '0,2 л', price: 220 },
@@ -137,6 +151,8 @@ export const menuData: MenuCategory[] = [
         name: 'американо',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(220),
         priceOptionsByLocation: volumePrices(
           { label: '0,2 л', price: 220 },
@@ -150,6 +166,8 @@ export const menuData: MenuCategory[] = [
         name: 'v60 / аэропресс / лунго',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(330),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -159,6 +177,8 @@ export const menuData: MenuCategory[] = [
         name: 'гостевое зерно',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(450),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -168,6 +188,8 @@ export const menuData: MenuCategory[] = [
         name: 'кофе сет 1',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(350),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -177,6 +199,8 @@ export const menuData: MenuCategory[] = [
         name: 'кофе сет 2',
         description: '',
         subcategory: 'черный кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(400),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -186,6 +210,8 @@ export const menuData: MenuCategory[] = [
         name: 'флэт уайт',
         description: '',
         subcategory: 'классика',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(260),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -195,6 +221,8 @@ export const menuData: MenuCategory[] = [
         name: 'капучино',
         description: '',
         subcategory: 'классика',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(230),
         priceOptionsByLocation: volumePrices(
           { label: '0,2 л', price: 230 },
@@ -209,6 +237,8 @@ export const menuData: MenuCategory[] = [
         name: 'латте',
         description: '',
         subcategory: 'классика',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(290),
         priceOptionsByLocation: volumePrices(
           { label: '0,3 л', price: 290 },
@@ -222,6 +252,8 @@ export const menuData: MenuCategory[] = [
         name: 'раф',
         description: '',
         subcategory: 'классика',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(310),
         priceOptionsByLocation: volumePrices(
           { label: '0,3 л', price: 310 },
@@ -235,6 +267,8 @@ export const menuData: MenuCategory[] = [
         name: 'бамбл',
         description: 'апельсиновый фреш / вишневый сок',
         subcategory: 'классика',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(400),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -244,6 +278,8 @@ export const menuData: MenuCategory[] = [
         name: 'вкусовой опыт',
         description: '',
         subcategory: 'авторские напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(470),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -253,6 +289,8 @@ export const menuData: MenuCategory[] = [
         name: 'раф базилик',
         description: '',
         subcategory: 'авторские напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(360),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -262,6 +300,8 @@ export const menuData: MenuCategory[] = [
         name: 'мокко клубника',
         description: '',
         subcategory: 'авторские напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(360),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -271,6 +311,8 @@ export const menuData: MenuCategory[] = [
         name: 'маття цитрус',
         description: '',
         subcategory: 'авторские напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(380),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -280,6 +322,8 @@ export const menuData: MenuCategory[] = [
         name: 'маття клубника-банан',
         description: '',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(380),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -289,6 +333,8 @@ export const menuData: MenuCategory[] = [
         name: 'лимонад таежный',
         description: '',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(320),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -298,6 +344,8 @@ export const menuData: MenuCategory[] = [
         name: 'лимонад цветочный',
         description: '',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(320),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -307,6 +355,8 @@ export const menuData: MenuCategory[] = [
         name: 'эспрессо тоник',
         description: '',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(310),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -316,6 +366,8 @@ export const menuData: MenuCategory[] = [
         name: 'маття тоник',
         description: '',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(310),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -325,6 +377,8 @@ export const menuData: MenuCategory[] = [
         name: 'чай холодного заваривания',
         description: 'габа манго / ледяной тигуанинь',
         subcategory: 'холодные напитки',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(310),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -334,6 +388,8 @@ export const menuData: MenuCategory[] = [
         name: 'китайский чай',
         description: '',
         subcategory: 'чай',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -343,6 +399,8 @@ export const menuData: MenuCategory[] = [
         name: 'шу пуэр + ми сян габа',
         description: '',
         subcategory: 'чай',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(400),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -352,6 +410,8 @@ export const menuData: MenuCategory[] = [
         name: 'саган дайля-лимонник',
         description: '',
         subcategory: 'чай',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(370),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -361,6 +421,8 @@ export const menuData: MenuCategory[] = [
         name: 'барбарис-лемонграсс',
         description: '',
         subcategory: 'чай',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(370),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -370,6 +432,8 @@ export const menuData: MenuCategory[] = [
         name: 'малиновый лун цзин',
         description: '',
         subcategory: 'чай',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(370),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -379,6 +443,8 @@ export const menuData: MenuCategory[] = [
         name: 'какао',
         description: '',
         subcategory: 'не кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(290),
         priceOptionsByLocation: volumePrices(
           { label: '0,3 л', price: 290 },
@@ -392,6 +458,8 @@ export const menuData: MenuCategory[] = [
         name: 'какао особый',
         description: '',
         subcategory: 'не кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(450),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -401,6 +469,8 @@ export const menuData: MenuCategory[] = [
         name: 'маття',
         description: '',
         subcategory: 'не кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(240),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -410,6 +480,8 @@ export const menuData: MenuCategory[] = [
         name: 'маття латте',
         description: '',
         subcategory: 'не кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(290),
         priceOptionsByLocation: volumePrices(
           { label: '0,3 л', price: 290 },
@@ -423,6 +495,8 @@ export const menuData: MenuCategory[] = [
         name: 'апельсиновый фреш',
         description: '',
         subcategory: 'не кофе',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(380),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -432,6 +506,8 @@ export const menuData: MenuCategory[] = [
         name: 'альтернативное молоко',
         description: '',
         subcategory: 'дополнительно',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(90),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -441,6 +517,8 @@ export const menuData: MenuCategory[] = [
         name: 'ледяной те гуань инь',
         description: 'светлый улун; ноты сирени, цветы; расслабление',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -450,6 +528,8 @@ export const menuData: MenuCategory[] = [
         name: 'ми сян габа',
         description: 'цветы, мед, карамель; концентрация',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -459,6 +539,8 @@ export const menuData: MenuCategory[] = [
         name: 'габа манго',
         description: 'хвоя, карамель, цветы',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -468,6 +550,8 @@ export const menuData: MenuCategory[] = [
         name: 'най сян',
         description: 'сливки, карамель',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -477,6 +561,8 @@ export const menuData: MenuCategory[] = [
         name: 'си ху лун цзин',
         description: 'тыквенные семечки, печенье',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -486,6 +572,8 @@ export const menuData: MenuCategory[] = [
         name: 'да цзинь чжень ван',
         description: 'мед, хлеб, цитрус',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -495,6 +583,8 @@ export const menuData: MenuCategory[] = [
         name: 'да хун пао сяо чжун',
         description: 'карамель, сахар',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -504,6 +594,8 @@ export const menuData: MenuCategory[] = [
         name: 'линьцан ба цзи ча',
         description: 'цветочный, чернослив',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
@@ -513,6 +605,8 @@ export const menuData: MenuCategory[] = [
         name: 'синь и у чжен шу',
         description: 'лесной орех, карамель',
         subcategory: 'чайное меню',
+        availableByLocation: allLocationsAvailable(),
+        containsAlcohol: false,
         priceByLocation: samePrice(390),
         image: getMockMenuImage('drinks'),
         nutrition: nutritionEmpty
