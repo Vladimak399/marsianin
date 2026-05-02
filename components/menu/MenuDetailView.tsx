@@ -22,6 +22,7 @@ type MenuDetailViewProps = {
 const SWIPE_THRESHOLD = 60;
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
 const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
+const hasPendingPrice = (price: unknown) => typeof price === 'number' && Number.isFinite(price) && price === 0;
 const detailButtonFocusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32]';
 
 function DetailPriceOptions({ options }: { options: PriceOption[] }) {
@@ -100,6 +101,7 @@ export default function MenuDetailView({
   const price = item?.priceByLocation[selectedLocation];
   const priceOptions = item?.priceOptionsByLocation?.[selectedLocation];
   const hasPrice = hasValidPrice(price);
+  const isPricePending = hasPendingPrice(price);
 
   const handlePrev = () => {
     if (hasPrev) onChangeIndex(activeIndex - 1);
@@ -187,6 +189,8 @@ export default function MenuDetailView({
                   <p className="mars-coordinate-label text-[10px] text-[#ed6a32] lowercase">цена · {getLocationLabel(selectedLocation)}</p>
                   {hasPrice && !priceOptions?.length ? (
                     <p className="mars-coordinate-label border border-[#ed6a32]/28 bg-[#ed6a32]/[0.08] px-2.5 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
+                  ) : isPricePending ? (
+                    <p className="mars-coordinate-label border border-black/[0.08] bg-white/70 px-2.5 py-1 text-[10px] text-[#6f675f]">цена уточняется</p>
                   ) : !hasPrice ? (
                     <p className="mars-coordinate-label max-w-[120px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
                   ) : null}
@@ -194,7 +198,7 @@ export default function MenuDetailView({
 
                 <h2 id={titleId} className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.03em] text-[#181512] lowercase">{item.name}</h2>
                 {priceOptions?.length ? <DetailPriceOptions options={priceOptions} /> : null}
-                {item.description ? <p id={descriptionId} className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p> : null}
+                {item.description.trim() ? <p id={descriptionId} className="mt-4 text-sm leading-relaxed text-[#504942] lowercase">{item.description}</p> : null}
               </div>
 
               <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-black/[0.065] pb-4">
