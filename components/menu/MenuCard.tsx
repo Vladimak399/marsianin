@@ -77,6 +77,9 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
             if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
           }}
         />
+        {item.containsAlcohol ? (
+          <div className="mars-coordinate-label absolute right-2 top-2 z-10 border border-[#ed6a32]/35 bg-[#fffdf8]/90 px-2 py-1 text-[9px] text-[#ed6a32] backdrop-blur-sm">18+ · алкоголь</div>
+        ) : null}
         {!hasPrice && !isPricePending ? <div className="absolute inset-0 bg-[#fffdf8]/38" /> : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#181512]/16 to-transparent" />
       </div>
