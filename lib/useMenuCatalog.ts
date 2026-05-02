@@ -17,8 +17,13 @@ const parseApiErrorMessage = async (response: Response, fallback: string) => {
 
 const handleAdminUnauthorized = () => {
   if (typeof window === 'undefined') return;
+
+  const hadLocalAdminSession = window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok';
   window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
-  window.location.reload();
+
+  if (hadLocalAdminSession) {
+    window.location.reload();
+  }
 };
 
 export const useMenuCatalog = (options: UseMenuCatalogOptions = {}) => {
