@@ -40,6 +40,27 @@ const sanitizePriceByLocation = (priceByLocation: Partial<Record<LocationId, num
   );
 };
 
+const sanitizeAvailableByLocation = (availableByLocation: unknown): Record<LocationId, boolean> => {
+  if (!availableByLocation || typeof availableByLocation !== 'object') {
+    return locations.reduce(
+      (acc, location) => {
+        acc[location.id] = true;
+        return acc;
+      },
+      {} as Record<LocationId, boolean>
+    );
+  }
+
+  const source = availableByLocation as Partial<Record<LocationId, unknown>>;
+  return locations.reduce(
+    (acc, location) => {
+      acc[location.id] = source[location.id] !== false;
+      return acc;
+    },
+    {} as Record<LocationId, boolean>
+  );
+};
+
 const sanitizePriceOptions = (options: unknown): PriceOption[] => {
   if (!Array.isArray(options)) return [];
 
@@ -80,6 +101,8 @@ const sanitizeMenuItem = (item: Partial<MenuItem>, category: string, index: numb
     name: typeof item.name === 'string' ? item.name : `позиция ${index + 1}`,
     description: typeof item.description === 'string' ? item.description : '',
     subcategory: typeof item.subcategory === 'string' && item.subcategory.trim() ? item.subcategory.trim().toLowerCase() : undefined,
+    availableByLocation: sanitizeAvailableByLocation(item.availableByLocation),
+    containsAlcohol: item.containsAlcohol === true,
     image: item.image?.trim() || FALLBACK_IMAGE,
     priceByLocation: sanitizePriceByLocation(item.priceByLocation ?? {}),
     ...(priceOptionsByLocation ? { priceOptionsByLocation } : {}),
