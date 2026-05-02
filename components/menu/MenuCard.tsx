@@ -17,6 +17,7 @@ type MenuCardProps = {
 
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
 const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
+const hasPendingPrice = (price: unknown) => typeof price === 'number' && Number.isFinite(price) && price === 0;
 
 function PriceOptions({ options }: { options: PriceOption[] }) {
   return (
@@ -41,6 +42,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
   const price = item.priceByLocation[location];
   const priceOptions = item.priceOptionsByLocation?.[location];
   const hasPrice = hasValidPrice(price);
+  const isPricePending = hasPendingPrice(price);
   const normalizedImage = item.image?.trim() || FALLBACK_MENU_IMAGE;
   const [imageSrc, setImageSrc] = useState(normalizedImage);
 
@@ -53,7 +55,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
       type="button"
       onClick={() => onOpen(item, category)}
       className={`group relative grid w-full grid-cols-[124px_1fr] overflow-hidden border bg-[#fffdf8] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed6a32] sm:flex sm:flex-col ${
-        hasPrice
+        hasPrice || isPricePending
           ? 'border-black/[0.075] shadow-[0_6px_16px_rgba(24,21,18,0.035)] hover:border-[#ed6a32]/38 hover:shadow-[0_10px_28px_rgba(237,106,50,0.07)]'
           : 'border-black/[0.055] opacity-[0.68]'
       }`}
@@ -70,12 +72,12 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
           fill
           sizes="(min-width: 640px) 33vw, 124px"
           priority={priority}
-          className={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 ${hasPrice ? 'opacity-[0.95] sm:group-hover:scale-[1.018]' : 'opacity-[0.58] grayscale'}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 ${hasPrice || isPricePending ? 'opacity-[0.95] sm:group-hover:scale-[1.018]' : 'opacity-[0.58] grayscale'}`}
           onError={() => {
             if (imageSrc !== FALLBACK_MENU_IMAGE) setImageSrc(FALLBACK_MENU_IMAGE);
           }}
         />
-        {!hasPrice ? <div className="absolute inset-0 bg-[#fffdf8]/38" /> : null}
+        {!hasPrice && !isPricePending ? <div className="absolute inset-0 bg-[#fffdf8]/38" /> : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#181512]/16 to-transparent" />
       </div>
 
@@ -89,12 +91,14 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
             <PriceOptions options={priceOptions} />
           ) : hasPrice ? (
             <p className="mars-coordinate-label shrink-0 border border-[#ed6a32]/30 bg-[#ed6a32]/[0.07] px-2 py-1 text-[11px] text-[#ed6a32]">{price} ₽</p>
+          ) : isPricePending ? (
+            <p className="mars-coordinate-label shrink-0 max-w-[94px] border border-black/[0.08] bg-white/70 px-2 py-1 text-right text-[9px] leading-tight text-[#6f675f]">цена уточняется</p>
           ) : (
             <p className="mars-coordinate-label shrink-0 max-w-[82px] text-right text-[9px] leading-tight text-[#9a9188]">нет в этой точке</p>
           )}
         </div>
 
-        {item.description ? <p className="line-clamp-2 text-[12px] leading-relaxed text-[#504942] sm:line-clamp-none sm:text-sm">{item.description}</p> : null}
+        {item.description.trim() ? <p className="line-clamp-2 text-[12px] leading-relaxed text-[#504942] sm:line-clamp-none sm:text-sm">{item.description}</p> : null}
 
         <div className="mt-auto border-t border-black/[0.055] pt-2.5 sm:pt-3">
           <p className="mars-coordinate-label text-[9px] text-[#504942]/82 sm:text-[10px]">
