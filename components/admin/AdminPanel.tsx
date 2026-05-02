@@ -10,20 +10,27 @@ import AdminNumberField from './AdminNumberField';
 
 const ADMIN_SESSION_KEY = 'marsianin:admin:session';
 const DEFAULT_MENU_LOCATION = 'o12';
+const PRIMARY_LOCATION_ID = locations[0]?.id ?? 'o12';
 
 const fieldClass = 'border border-black/[0.1] px-3 py-2 text-sm';
 const numberFieldClass = 'mt-1 w-full border border-black/[0.1] px-2 py-1';
+
+const createPriceByLocation = (value: number): Record<LocationId, number> => {
+  return locations.reduce(
+    (acc, location) => {
+      acc[location.id] = value;
+      return acc;
+    },
+    {} as Record<LocationId, number>
+  );
+};
 
 const createDraftItem = (): MenuItem => ({
   id: `item-${Date.now()}`,
   name: '',
   description: '',
   image: '/images/mock/breakfast-card.svg',
-  priceByLocation: {
-    o12: 0,
-    k10: 0,
-    p7: 0
-  },
+  priceByLocation: createPriceByLocation(0),
   nutrition: {
     calories: 0,
     protein: 0,
@@ -31,6 +38,13 @@ const createDraftItem = (): MenuItem => ({
     carbs: 0
   }
 });
+
+const getPrimaryPrice = (priceByLocation: Record<LocationId, number>) => priceByLocation[PRIMARY_LOCATION_ID] ?? 0;
+
+const hasSamePriceEverywhere = (item: MenuItem) => {
+  const primaryPrice = getPrimaryPrice(item.priceByLocation);
+  return locations.every((location) => item.priceByLocation[location.id] === primaryPrice);
+};
 
 const getCatalogFromJsonPayload = (payload: unknown): MenuCategory[] | null => {
   if (Array.isArray(payload)) return payload as MenuCategory[];
@@ -69,6 +83,8 @@ export default function AdminPanel() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImportingSeed, setIsImportingSeed] = useState(false);
+  const [samePriceModeByItemId, setSamePriceModeByItemId] = useState<Record<string, boolean>>({});
+  const [draftUsesSamePrice, setDraftUsesSamePrice] = useState(true);
 
   const catalogJsonInputRef = useRef<HTMLInputElement>(null);
   const latestCatalogRef = useRef<MenuCategory[]>(catalog);
@@ -204,6 +220,7 @@ export default function AdminPanel() {
       applyCatalog(payload.catalog);
       setSelectedCategory(payload.catalog[0]?.category ?? '');
       setHasUnsavedChanges(false);
+      setSamePriceModeByItemId({});
       setSaveMessage(`Seed-меню загружено: ${getCatalogSummary(payload.catalog)}`);
     } catch (error) {
       setSaveMessage(getErrorMessage(error, 'Не удалось загрузить seed-меню'));
@@ -243,6 +260,7 @@ export default function AdminPanel() {
 
       applyCatalogLocally(nextCatalog);
       setSelectedCategory(nextCatalog[0]?.category ?? '');
+      setSamePriceModeByItemId({});
       setSaveMessage(`JSON загружен: ${getCatalogSummary(nextCatalog)}. Проверьте меню и нажмите «Сохранить»`);
     } catch {
       setSaveMessage('Не удалось загрузить JSON. Проверьте структуру файла');
@@ -305,6 +323,24 @@ export default function AdminPanel() {
     applyCatalogLocally(nextCatalog);
   };
 
+  const updateItemSamePriceMode = (item: MenuItem, enabled: boolean) => {
+    setSamePriceModeByItemId((prev) => ({ ...prev, [item.id]: enabled }));
+    if (!enabled) return;
+
+    const primaryPrice = getPrimaryPrice(item.priceByLocation);
+    updateItem(item.id, (entryItem) => ({
+      ...entryItem,
+      priceByLocation: createPriceByLocation(primaryPrice)
+    }));
+  };
+
+  const updateItemSamePrice = (itemId: string, value: number) => {
+    updateItem(itemId, (entryItem) => ({
+      ...entryItem,
+      priceByLocation: createPriceByLocation(value)
+    }));
+  };
+
   const moveItem = (itemId: string, direction: 'up' | 'down') => {
     if (!activeCategory) return;
 
@@ -333,6 +369,19 @@ export default function AdminPanel() {
     }));
   };
 
+  const updateDraftSamePrice = (value: number) => {
+    setDraftItem((prev) => ({
+      ...prev,
+      priceByLocation: createPriceByLocation(value)
+    }));
+  };
+
+  const updateDraftSamePriceMode = (enabled: boolean) => {
+    setDraftUsesSamePrice(enabled);
+    if (!enabled) return;
+    updateDraftSamePrice(getPrimaryPrice(draftItem.priceByLocation));
+  };
+
   const updateDraftNutrition = (field: keyof MenuItem['nutrition'], value: number) => {
     setDraftItem((prev) => ({
       ...prev,
@@ -342,26 +391,6 @@ export default function AdminPanel() {
       }
     }));
   };
-
-  if (!isAuthorized) {
-    return (
-      <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
-        <div className="mx-auto w-full max-w-md border border-black/[0.08] bg-white p-5">
-          <h1 className="text-2xl font-semibold">Вход в админ-кабинет</h1>
-          <p className="mt-2 text-sm text-black/60">Введите логин и пароль администратора.</p>
-
-          <form onSubmit={handleLogin} className="mt-4 space-y-3">
-            <input value={login} onChange={(event) => setLogin(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Логин" autoComplete="username" disabled={isLoggingIn} required />
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Пароль" autoComplete="current-password" disabled={isLoggingIn} required />
-            {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
-            <button type="submit" disabled={isLoggingIn} className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60">
-              {isLoggingIn ? 'Входим…' : 'Войти'}
-            </button>
-          </form>
-        </div>
-      </main>
-    );
-  }
 
   const handleAddCategory = (event: FormEvent) => {
     event.preventDefault();
@@ -404,6 +433,7 @@ export default function AdminPanel() {
 
     applyCatalogLocally(nextCatalog);
     setDraftItem(createDraftItem());
+    setDraftUsesSamePrice(true);
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -418,7 +448,32 @@ export default function AdminPanel() {
     });
 
     applyCatalogLocally(nextCatalog);
+    setSamePriceModeByItemId((prev) => {
+      const next = { ...prev };
+      delete next[itemId];
+      return next;
+    });
   };
+
+  if (!isAuthorized) {
+    return (
+      <main className="min-h-svh bg-[#f4f1ea] px-4 py-10 text-[#0b0b0b] sm:px-6">
+        <div className="mx-auto w-full max-w-md border border-black/[0.08] bg-white p-5">
+          <h1 className="text-2xl font-semibold">Вход в админ-кабинет</h1>
+          <p className="mt-2 text-sm text-black/60">Введите логин и пароль администратора.</p>
+
+          <form onSubmit={handleLogin} className="mt-4 space-y-3">
+            <input value={login} onChange={(event) => setLogin(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Логин" autoComplete="username" disabled={isLoggingIn} required />
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className={`w-full ${fieldClass}`} placeholder="Пароль" autoComplete="current-password" disabled={isLoggingIn} required />
+            {authError ? <p className="text-sm text-red-600">{authError}</p> : null}
+            <button type="submit" disabled={isLoggingIn} className="w-full border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-progress disabled:opacity-60">
+              {isLoggingIn ? 'Входим…' : 'Войти'}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-svh bg-[#f4f1ea] px-4 py-8 text-[#0b0b0b] sm:px-6">
@@ -456,6 +511,7 @@ export default function AdminPanel() {
                   .then(() => {
                     latestCatalogRef.current = catalog;
                     setHasUnsavedChanges(false);
+                    setSamePriceModeByItemId({});
                     setSaveMessage('Каталог сброшен до исходного состояния');
                   })
                   .catch((error) => setSaveMessage(getErrorMessage(error, 'Не удалось сбросить меню')));
@@ -494,61 +550,78 @@ export default function AdminPanel() {
             <h2 className="text-lg font-semibold">Позиции: {activeCategory?.category ?? '—'}</h2>
 
             <div className="space-y-3">
-              {activeCategory?.items.map((item, itemIndex) => (
-                <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
-                  <div className="grid gap-2 md:grid-cols-2">
-                    <input value={item.name} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, name: event.target.value }))} className={fieldClass} placeholder="Название" />
-                    <AdminImageField value={item.image} onChange={(nextValue) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: nextValue }))} onUpload={(file) => handleUploadImage(file, item.id)} />
-                  </div>
+              {activeCategory?.items.map((item, itemIndex) => {
+                const samePriceMode = samePriceModeByItemId[item.id] ?? hasSamePriceEverywhere(item);
+                return (
+                  <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <input value={item.name} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, name: event.target.value }))} className={fieldClass} placeholder="Название" />
+                      <AdminImageField value={item.image} onChange={(nextValue) => updateItem(item.id, (entryItem) => ({ ...entryItem, image: nextValue }))} onUpload={(file) => handleUploadImage(file, item.id)} />
+                    </div>
 
-                  <textarea value={item.description} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, description: event.target.value }))} className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Описание" />
+                    <textarea value={item.description} onChange={(event) => updateItem(item.id, (entryItem) => ({ ...entryItem, description: event.target.value }))} className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Описание" />
 
-                  <div className="grid gap-2 md:grid-cols-3">
-                    {locations.map((location) => (
-                      <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] px-2 py-1 text-sm">
-                        <span>{location.label}</span>
-                        <AdminNumberField
-                          value={item.priceByLocation[location.id]}
-                          onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, priceByLocation: { ...entryItem.priceByLocation, [location.id]: value } }))}
-                          className="w-full border border-black/[0.1] px-2 py-1"
-                          ariaLabel={`цена ${location.label}`}
-                        />
+                    <div className="space-y-2 border border-black/[0.06] bg-black/[0.015] p-3">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={samePriceMode} onChange={(event) => updateItemSamePriceMode(item, event.target.checked)} />
+                        одинаковая цена на всех точках
                       </label>
-                    ))}
-                  </div>
 
-                  <div className="grid gap-2 md:grid-cols-4">
-                    <label className="text-sm">
-                      ккал
-                      <AdminNumberField value={item.nutrition.calories} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, calories: value } }))} className={numberFieldClass} ariaLabel="ккал" />
-                    </label>
-                    <label className="text-sm">
-                      белки
-                      <AdminNumberField value={item.nutrition.protein} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, protein: value } }))} className={numberFieldClass} ariaLabel="белки" />
-                    </label>
-                    <label className="text-sm">
-                      жиры
-                      <AdminNumberField value={item.nutrition.fat} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, fat: value } }))} className={numberFieldClass} ariaLabel="жиры" />
-                    </label>
-                    <label className="text-sm">
-                      углеводы
-                      <AdminNumberField value={item.nutrition.carbs} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, carbs: value } }))} className={numberFieldClass} ariaLabel="углеводы" />
-                    </label>
-                  </div>
+                      {samePriceMode ? (
+                        <label className="block text-sm">
+                          цена для всех точек
+                          <AdminNumberField value={getPrimaryPrice(item.priceByLocation)} onChange={(value) => updateItemSamePrice(item.id, value)} className={numberFieldClass} ariaLabel="цена для всех точек" />
+                        </label>
+                      ) : (
+                        <div className="grid gap-2 md:grid-cols-3">
+                          {locations.map((location) => (
+                            <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] bg-white px-2 py-1 text-sm">
+                              <span>{location.label}</span>
+                              <AdminNumberField
+                                value={item.priceByLocation[location.id]}
+                                onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, priceByLocation: { ...entryItem.priceByLocation, [location.id]: value } }))}
+                                className="w-full border border-black/[0.1] px-2 py-1"
+                                ariaLabel={`цена ${location.label}`}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => moveItem(item.id, 'up')} disabled={itemIndex === 0} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
-                      Выше
-                    </button>
-                    <button type="button" onClick={() => moveItem(item.id, 'down')} disabled={itemIndex === activeCategory.items.length - 1} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
-                      Ниже
-                    </button>
-                    <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                      Удалить позицию
-                    </button>
-                  </div>
-                </article>
-              ))}
+                    <div className="grid gap-2 md:grid-cols-4">
+                      <label className="text-sm">
+                        ккал
+                        <AdminNumberField value={item.nutrition.calories} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, calories: value } }))} className={numberFieldClass} ariaLabel="ккал" />
+                      </label>
+                      <label className="text-sm">
+                        белки
+                        <AdminNumberField value={item.nutrition.protein} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, protein: value } }))} className={numberFieldClass} ariaLabel="белки" />
+                      </label>
+                      <label className="text-sm">
+                        жиры
+                        <AdminNumberField value={item.nutrition.fat} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, fat: value } }))} className={numberFieldClass} ariaLabel="жиры" />
+                      </label>
+                      <label className="text-sm">
+                        углеводы
+                        <AdminNumberField value={item.nutrition.carbs} onChange={(value) => updateItem(item.id, (entryItem) => ({ ...entryItem, nutrition: { ...entryItem.nutrition, carbs: value } }))} className={numberFieldClass} ariaLabel="углеводы" />
+                      </label>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => moveItem(item.id, 'up')} disabled={itemIndex === 0} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
+                        Выше
+                      </button>
+                      <button type="button" onClick={() => moveItem(item.id, 'down')} disabled={itemIndex === activeCategory.items.length - 1} className="border border-black/[0.1] px-3 py-2 text-sm enabled:hover:border-[#ed6a32] enabled:hover:text-[#ed6a32] disabled:cursor-not-allowed disabled:opacity-40">
+                        Ниже
+                      </button>
+                      <button type="button" onClick={() => handleRemoveItem(item.id)} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
+                        Удалить позицию
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
 
             <form onSubmit={handleAddItem} className="space-y-3 border border-dashed border-black/[0.2] p-3">
@@ -559,13 +632,27 @@ export default function AdminPanel() {
               </div>
               <textarea value={draftItem.description} onChange={(event) => setDraftItem((prev) => ({ ...prev, description: event.target.value }))} className="min-h-20 w-full border border-black/[0.1] px-3 py-2 text-sm" placeholder="Описание" />
 
-              <div className="grid gap-2 md:grid-cols-3">
-                {locations.map((location) => (
-                  <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] px-2 py-1 text-sm">
-                    <span>{location.label}</span>
-                    <AdminNumberField value={draftItem.priceByLocation[location.id]} onChange={(value) => updateDraftPrice(location.id, value)} className="w-full border border-black/[0.1] px-2 py-1" ariaLabel={`цена новой позиции ${location.label}`} />
+              <div className="space-y-2 border border-black/[0.06] bg-black/[0.015] p-3">
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={draftUsesSamePrice} onChange={(event) => updateDraftSamePriceMode(event.target.checked)} />
+                  одинаковая цена на всех точках
+                </label>
+
+                {draftUsesSamePrice ? (
+                  <label className="block text-sm">
+                    цена для всех точек
+                    <AdminNumberField value={getPrimaryPrice(draftItem.priceByLocation)} onChange={(value) => updateDraftSamePrice(value)} className={numberFieldClass} ariaLabel="цена новой позиции для всех точек" />
                   </label>
-                ))}
+                ) : (
+                  <div className="grid gap-2 md:grid-cols-3">
+                    {locations.map((location) => (
+                      <label key={location.id} className="flex items-center gap-2 border border-black/[0.08] bg-white px-2 py-1 text-sm">
+                        <span>{location.label}</span>
+                        <AdminNumberField value={draftItem.priceByLocation[location.id]} onChange={(value) => updateDraftPrice(location.id, value)} className="w-full border border-black/[0.1] px-2 py-1" ariaLabel={`цена новой позиции ${location.label}`} />
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="grid gap-2 md:grid-cols-4">
