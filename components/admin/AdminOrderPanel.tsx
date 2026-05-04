@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { DragEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { DragEvent } from 'react';
 import { MenuCategory, MenuItem } from '@/data/menu';
 
 const moveArrayItem = <T,>(items: T[], fromIndex: number, toIndex: number): T[] => {
@@ -212,27 +213,51 @@ export default function AdminOrderPanel() {
           <aside className="space-y-4 border border-black/[0.08] bg-white p-4">
             <div>
               <h2 className="text-lg font-semibold">Разделы</h2>
-              <p className="mt-1 text-xs leading-relaxed text-black/55">Перетащи раздел вверх или вниз. Этот порядок будет использоваться в гостевом меню.</p>
+              <p className="mt-1 text-xs leading-relaxed text-black/55">Перетащи раздел вверх или вниз либо используй кнопки ↑ / ↓. Этот порядок будет использоваться в гостевом меню.</p>
             </div>
             <div className="space-y-2">
               {catalog.map((category, index) => (
-                <button
+                <div
                   key={category.category}
-                  type="button"
-                  draggable
-                  onDragStart={(event) => handleCategoryDragStart(event, index)}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => handleCategoryDrop(event, index)}
-                  onDragEnd={() => setDraggedCategoryIndex(null)}
-                  onClick={() => setSelectedCategory(category.category)}
-                  className={`w-full cursor-grab border px-3 py-2 text-left text-sm active:cursor-grabbing ${activeCategory?.category === category.category ? 'border-[#ed6a32] text-[#ed6a32]' : 'border-black/[0.1]'} ${draggedCategoryIndex === index ? 'opacity-50' : ''}`}
+                  className={`flex gap-2 border px-3 py-2 text-sm ${activeCategory?.category === category.category ? 'border-[#ed6a32] text-[#ed6a32]' : 'border-black/[0.1]'} ${draggedCategoryIndex === index ? 'opacity-50' : ''}`}
                 >
-                  <span className="flex items-center justify-between gap-3">
-                    <span className="font-medium">{String(index + 1).padStart(2, '0')} · {category.category}</span>
-                    <span className="text-xs text-black/40">↕</span>
-                  </span>
-                  <span className="mt-1 block text-xs text-black/45">{getCategoryItemCount(category)} поз.</span>
-                </button>
+                  <button
+                    type="button"
+                    draggable
+                    onDragStart={(event) => handleCategoryDragStart(event, index)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => handleCategoryDrop(event, index)}
+                    onDragEnd={() => setDraggedCategoryIndex(null)}
+                    onClick={() => setSelectedCategory(category.category)}
+                    className="min-w-0 flex-1 cursor-grab text-left active:cursor-grabbing"
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="font-medium">{String(index + 1).padStart(2, '0')} · {category.category}</span>
+                      <span className="text-xs text-black/40">↕</span>
+                    </span>
+                    <span className="mt-1 block text-xs text-black/45">{getCategoryItemCount(category)} поз.</span>
+                  </button>
+                  <div className="flex shrink-0 flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveCategory(index, index - 1)}
+                      disabled={index === 0}
+                      className="border border-black/[0.12] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                      aria-label={`Поднять раздел ${category.category}`}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveCategory(index, index + 1)}
+                      disabled={index === catalog.length - 1}
+                      className="border border-black/[0.12] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                      aria-label={`Опустить раздел ${category.category}`}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </aside>
@@ -240,7 +265,7 @@ export default function AdminOrderPanel() {
           <section className="space-y-4 border border-black/[0.08] bg-white p-4">
             <div>
               <h2 className="text-lg font-semibold">Позиции: {activeCategory?.category ?? '—'}</h2>
-              <p className="mt-1 text-sm text-black/55">Перетащи блюдо/напиток. Первые позиции будут первыми в разделе меню.</p>
+              <p className="mt-1 text-sm text-black/55">Перетащи блюдо/напиток либо используй кнопки ↑ / ↓. Первые позиции будут первыми в разделе меню.</p>
             </div>
 
             <div className="space-y-2">
@@ -255,12 +280,30 @@ export default function AdminOrderPanel() {
                   className={`cursor-grab border border-black/[0.08] bg-white px-3 py-3 active:cursor-grabbing ${draggedItemIndex === index ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-medium">{String(index + 1).padStart(2, '0')} · {item.name || item.id}</p>
                       {item.subcategory ? <p className="mt-1 text-xs text-black/45">{item.subcategory}</p> : null}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       {item.containsAlcohol ? <span className="border border-[#ed6a32]/35 bg-[#ed6a32]/[0.06] px-2 py-1 text-xs text-[#ed6a32]">18+</span> : null}
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, index - 1)}
+                        disabled={index === 0}
+                        className="border border-black/[0.12] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                        aria-label={`Поднять позицию ${item.name || item.id}`}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, index + 1)}
+                        disabled={!activeCategory || index === activeCategory.items.length - 1}
+                        className="border border-black/[0.12] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-30"
+                        aria-label={`Опустить позицию ${item.name || item.id}`}
+                      >
+                        ↓
+                      </button>
                       <span className="text-xs text-black/40">↕</span>
                     </div>
                   </div>
