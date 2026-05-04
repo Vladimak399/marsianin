@@ -72,6 +72,17 @@ export default function AdminOrderPanel() {
     if (selectedCategory !== activeCategory.category) setSelectedCategory(activeCategory.category);
   }, [activeCategory, selectedCategory]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const markDirty = () => {
     setHasUnsavedChanges(true);
     setMessage('Есть несохраненные изменения');
@@ -190,6 +201,12 @@ export default function AdminOrderPanel() {
             </Link>
           </div>
         </header>
+
+        {hasUnsavedChanges ? (
+          <div className="sticky top-3 z-20 border border-[#ed6a32]/35 bg-[#fff8f1] px-4 py-3 text-sm text-[#7b3a1d] shadow-[0_10px_30px_rgba(24,21,18,0.08)]">
+            Есть несохраненные изменения. Чтобы порядок обновился в гостевом меню, нажмите «Сохранить порядок».
+          </div>
+        ) : null}
 
         <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
           <aside className="space-y-4 border border-black/[0.08] bg-white p-4">
