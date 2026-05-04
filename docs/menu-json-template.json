@@ -1,0 +1,48 @@
+{
+  "catalog": [
+    {
+      "category": "завтраки",
+      "items": [
+        {
+          "id": "big-breakfast-trout",
+          "name": "большой завтрак с форелью",
+          "description": "форель слабой соли, яйцо, хлеб собственного производства, овощи",
+          "image": "/images/menu/big-breakfast-trout.webp",
+          "priceByLocation": {
+            "o12": 1100,
+            "k10": 1050,
+            "p7": 990
+          },
+          "nutrition": {
+            "calories": 650,
+            "protein": 25,
+            "fat": 30,
+            "carbs": 60
+          }
+        }
+      ]
+    },
+    {
+      "category": "напитки",
+      "items": [
+        {
+          "id": "raf-basil",
+          "name": "раф базилик",
+          "description": "эспрессо, сливки, базиликовый сироп",
+          "image": "/images/menu/raf-basil.webp",
+          "priceByLocation": {
+            "o12": 0,
+            "k10": 0,
+            "p7": 0
+          },
+          "nutrition": {
+            "calories": 0,
+            "protein": 0,
+            "fat": 0,
+            "carbs": 0
+          }
+        }
+      ]
+    }
+  ]
+}
