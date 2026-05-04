@@ -17,6 +17,7 @@ type MenuCardProps = {
 
 const FALLBACK_MENU_IMAGE = '/images/mock/breakfast-card.svg';
 const hasValidPrice = (price: unknown): price is number => typeof price === 'number' && Number.isFinite(price) && price > 0;
+const hasNutritionData = (item: MenuItem) => Object.values(item.nutrition).some((value) => value > 0);
 
 function PriceOptions({ options }: { options: PriceOption[] }) {
   return (
@@ -41,6 +42,7 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
   const price = item.priceByLocation[location];
   const priceOptions = item.priceOptionsByLocation?.[location];
   const hasPrice = hasValidPrice(price);
+  const shouldShowNutrition = hasNutritionData(item);
   const normalizedImage = item.image?.trim() || FALLBACK_MENU_IMAGE;
   const [imageSrc, setImageSrc] = useState(normalizedImage);
 
@@ -96,11 +98,13 @@ export default function MenuCard({ item, category, selectedLocation, onOpen, pri
 
         {item.description ? <p className="line-clamp-2 text-[12px] leading-relaxed text-[#504942] sm:line-clamp-none sm:text-sm">{item.description}</p> : null}
 
-        <div className="mt-auto border-t border-black/[0.055] pt-2.5 sm:pt-3">
-          <p className="mars-coordinate-label text-[9px] text-[#504942]/82 sm:text-[10px]">
-            кбжу · {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
-          </p>
-        </div>
+        {shouldShowNutrition ? (
+          <div className="mt-auto border-t border-black/[0.055] pt-2.5 sm:pt-3">
+            <p className="mars-coordinate-label text-[9px] text-[#504942]/82 sm:text-[10px]">
+              кбжу · {item.nutrition.calories} / {item.nutrition.protein} / {item.nutrition.fat} / {item.nutrition.carbs}
+            </p>
+          </div>
+        ) : null}
       </div>
     </motion.button>
   );
