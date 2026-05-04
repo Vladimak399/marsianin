@@ -54,6 +54,7 @@ const getHiddenCategoryWarnings = (category: MenuCategory | undefined) => {
 export default function AdminAvailabilityPanel() {
   const [catalog, setCatalog] = useState<MenuCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [itemSearchQuery, setItemSearchQuery] = useState('');
   const [message, setMessage] = useState('Загрузка…');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -63,6 +64,17 @@ export default function AdminAvailabilityPanel() {
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
     [catalog, selectedCategory]
   );
+
+  const filteredItems = useMemo(() => {
+    if (!activeCategory) return [];
+    const normalizedQuery = itemSearchQuery.trim().toLowerCase();
+    if (!normalizedQuery) return activeCategory.items;
+
+    return activeCategory.items.filter((item) => {
+      const searchableText = [item.name, item.id, item.subcategory, item.description].filter(Boolean).join(' ').toLowerCase();
+      return searchableText.includes(normalizedQuery);
+    });
+  }, [activeCategory, itemSearchQuery]);
 
   const hiddenCategoryWarnings = useMemo(() => getHiddenCategoryWarnings(activeCategory), [activeCategory]);
 
@@ -101,6 +113,10 @@ export default function AdminAvailabilityPanel() {
     if (!activeCategory) return;
     if (selectedCategory !== activeCategory.category) setSelectedCategory(activeCategory.category);
   }, [activeCategory, selectedCategory]);
+
+  useEffect(() => {
+    setItemSearchQuery('');
+  }, [selectedCategory]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -254,6 +270,28 @@ export default function AdminAvailabilityPanel() {
               </div>
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 border border-black/[0.08] bg-black/[0.015] p-3">
+              <input
+                type="search"
+                value={itemSearchQuery}
+                onChange={(event) => setItemSearchQuery(event.target.value)}
+                placeholder="поиск позиции в разделе"
+                className="min-w-[220px] flex-1 border border-black/[0.12] bg-white px-3 py-2 text-sm outline-none focus:border-[#ed6a32]"
+              />
+              {itemSearchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setItemSearchQuery('')}
+                  className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]"
+                >
+                  очистить
+                </button>
+              ) : null}
+              <span className="text-xs text-black/45">
+                найдено: {filteredItems.length} из {activeCategory?.items.length ?? 0}
+              </span>
+            </div>
+
             {hiddenCategoryWarnings.length > 0 ? (
               <div className="space-y-1 border border-black/[0.08] bg-black/[0.025] px-3 py-2 text-xs text-black/60">
                 {hiddenCategoryWarnings.map((warning) => (
@@ -263,7 +301,7 @@ export default function AdminAvailabilityPanel() {
             ) : null}
 
             <div className="space-y-3">
-              {activeCategory?.items.map((item) => {
+              {filteredItems.map((item) => {
                 const availability = normalizeAvailability(item);
                 const hasAlcoholIssue = hasAlcoholAvailabilityIssue(item);
                 return (
@@ -313,6 +351,12 @@ export default function AdminAvailabilityPanel() {
                   </article>
                 );
               })}
+
+              {activeCategory && filteredItems.length === 0 ? (
+                <div className="border border-black/[0.08] bg-black/[0.015] px-4 py-6 text-sm text-black/50">
+                  По этому запросу в разделе ничего не найдено.
+                </div>
+              ) : null}
             </div>
           </section>
         </section>
