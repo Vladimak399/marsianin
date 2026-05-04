@@ -29,7 +29,7 @@ const attachPhraseHint = (button: HTMLButtonElement) => {
     'relative inline-flex h-9 w-9 items-center justify-center border border-red-500/40 text-sm font-semibold text-red-600 hover:bg-red-50';
 
   hint.addEventListener('click', () => {
-    window.alert(`Фраза подтверждения для замены меню:\n\n${CONFIRMATION_PHRASE}`);
+    window.alert(`Фраза подтверждения для полной замены живого меню:\n\n${CONFIRMATION_PHRASE}`);
   });
 
   button.insertAdjacentElement('afterend', hint);
@@ -56,7 +56,7 @@ export default function SeedImportGuard() {
       event.stopImmediatePropagation();
 
       const enteredPhrase = window.prompt(
-        `Опасное действие: живое меню будет заменено seed-версией из кода.\n\nТекущее меню сохранится в backup, но ручные правки в живом меню будут перезаписаны.\n\nЧтобы продолжить, введите фразу:\n${CONFIRMATION_PHRASE}`
+        `Опасное действие: живое меню будет полностью заменено seed-версией из кода.\n\nЭто не обычное сохранение. Все текущие ручные правки в живом меню будут перезаписаны. Перед заменой система сохранит backup, но восстановление потребует отдельного действия.\n\nИспользуйте seed-импорт только если нужно полностью перезалить каталог из кода.\n\nЧтобы продолжить, введите фразу:\n${CONFIRMATION_PHRASE}`
       );
 
       if (enteredPhrase !== CONFIRMATION_PHRASE) {
