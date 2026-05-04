@@ -13,9 +13,9 @@ export type LocationPoint = {
 export type NearestLocation = LocationPoint & { distance: number };
 
 const LOCATION_META: Record<LocationId, Pick<LocationPoint, 'code' | 'title' | 'visual'>> = {
-  o12: { code: 'о12', title: 'октябрьская, 12', visual: { x: 7, y: 34 } },
-  k10: { code: 'к10', title: 'костромская, 10', visual: { x: 7, y: 54 } },
-  p7: { code: 'п7', title: 'пролетарская, 7', visual: { x: 7, y: 74 } }
+  o12: { code: 'О12', title: 'октябрьская, 12', visual: { x: 7, y: 34 } },
+  k10: { code: 'К10', title: 'костромская, 10', visual: { x: 7, y: 54 } },
+  p7: { code: 'П7', title: 'пролетарская, 7', visual: { x: 7, y: 74 } }
 };
 
 export const LOCATIONS: LocationPoint[] = locations.map((location) => ({
