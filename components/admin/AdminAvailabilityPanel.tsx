@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { LocationId, locations } from '@/data/locations';
 import { MenuCategory, MenuItem } from '@/data/menu';
 
+const O12_LOCATION_ID: LocationId = 'o12';
+
 const createDefaultAvailability = (): Record<LocationId, boolean> => {
   return locations.reduce(
     (acc, location) => {
@@ -35,6 +37,20 @@ const getItemAvailabilityLabel = (item: MenuItem) => {
   return activeLocations.map((location) => location.label).join(' / ');
 };
 
+const hasAlcoholAvailabilityIssue = (item: MenuItem) => {
+  if (!item.containsAlcohol) return false;
+  const availability = normalizeAvailability(item);
+  return locations.some((location) => location.id !== O12_LOCATION_ID && availability[location.id]);
+};
+
+const getHiddenCategoryWarnings = (category: MenuCategory | undefined) => {
+  if (!category) return [];
+
+  return locations
+    .filter((location) => category.items.length > 0 && category.items.every((item) => normalizeAvailability(item)[location.id] === false))
+    .map((location) => `на ${location.label} раздел «${category.category}» будет скрыт`);
+};
+
 export default function AdminAvailabilityPanel() {
   const [catalog, setCatalog] = useState<MenuCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -47,6 +63,8 @@ export default function AdminAvailabilityPanel() {
     () => catalog.find((category) => category.category === selectedCategory) ?? catalog[0],
     [catalog, selectedCategory]
   );
+
+  const hiddenCategoryWarnings = useMemo(() => getHiddenCategoryWarnings(activeCategory), [activeCategory]);
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -84,6 +102,17 @@ export default function AdminAvailabilityPanel() {
     if (selectedCategory !== activeCategory.category) setSelectedCategory(activeCategory.category);
   }, [activeCategory, selectedCategory]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const updateItem = (itemId: string, updater: (item: MenuItem) => MenuItem) => {
     if (!activeCategory) return;
 
@@ -117,10 +146,10 @@ export default function AdminAvailabilityPanel() {
     }));
   };
 
-  const applyPreset = (item: MenuItem, preset: 'all' | 'o12' | 'none') => {
+  const applyPreset = (item: MenuItem, preset: 'all' | 'o12' | 'alcoholO12' | 'none') => {
     const nextAvailability = locations.reduce(
       (acc, location) => {
-        acc[location.id] = preset === 'all' ? true : preset === 'o12' ? location.id === 'o12' : false;
+        acc[location.id] = preset === 'all' ? true : preset === 'o12' || preset === 'alcoholO12' ? location.id === O12_LOCATION_ID : false;
         return acc;
       },
       {} as Record<LocationId, boolean>
@@ -129,7 +158,7 @@ export default function AdminAvailabilityPanel() {
     updateItem(item.id, (currentItem) => ({
       ...currentItem,
       availableByLocation: nextAvailability,
-      containsAlcohol: preset === 'o12' ? currentItem.containsAlcohol : currentItem.containsAlcohol
+      containsAlcohol: preset === 'alcoholO12' ? true : currentItem.containsAlcohol
     }));
   };
 
@@ -193,6 +222,12 @@ export default function AdminAvailabilityPanel() {
           </div>
         </header>
 
+        {hasUnsavedChanges ? (
+          <div className="sticky top-3 z-20 border border-[#ed6a32]/35 bg-[#fff8f1] px-4 py-3 text-sm text-[#7b3a1d] shadow-[0_10px_30px_rgba(24,21,18,0.08)]">
+            Есть несохраненные изменения. Чтобы они попали в гостевое меню, нажмите «Сохранить доступность».
+          </div>
+        ) : null}
+
         <section className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-4 border border-black/[0.08] bg-white p-4">
             <h2 className="text-lg font-semibold">Категории</h2>
@@ -219,15 +254,27 @@ export default function AdminAvailabilityPanel() {
               </div>
             </div>
 
+            {hiddenCategoryWarnings.length > 0 ? (
+              <div className="space-y-1 border border-black/[0.08] bg-black/[0.025] px-3 py-2 text-xs text-black/60">
+                {hiddenCategoryWarnings.map((warning) => (
+                  <p key={warning}>{warning}</p>
+                ))}
+              </div>
+            ) : null}
+
             <div className="space-y-3">
               {activeCategory?.items.map((item) => {
                 const availability = normalizeAvailability(item);
+                const hasAlcoholIssue = hasAlcoholAvailabilityIssue(item);
                 return (
                   <article key={item.id} className="space-y-3 border border-black/[0.08] p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h3 className="font-medium">{item.name || item.id}</h3>
                         <p className="mt-1 text-xs text-black/45">{getItemAvailabilityLabel(item)}</p>
+                        {hasAlcoholIssue ? (
+                          <p className="mt-2 text-xs text-red-600">Проверьте: алкогольная позиция доступна не только на О12.</p>
+                        ) : null}
                       </div>
                       {item.containsAlcohol ? <span className="border border-[#ed6a32]/35 bg-[#ed6a32]/[0.06] px-2 py-1 text-xs text-[#ed6a32]">18+ алкоголь</span> : null}
                     </div>
@@ -254,7 +301,10 @@ export default function AdminAvailabilityPanel() {
                         Все точки
                       </button>
                       <button type="button" onClick={() => applyPreset(item, 'o12')} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
-                        Только о12
+                        Только О12
+                      </button>
+                      <button type="button" onClick={() => applyPreset(item, 'alcoholO12')} className="border border-[#ed6a32]/35 bg-[#ed6a32]/[0.045] px-3 py-2 text-sm text-[#ed6a32] hover:bg-[#ed6a32]/[0.08]">
+                        Алкоголь · только О12
                       </button>
                       <button type="button" onClick={() => applyPreset(item, 'none')} className="border border-black/[0.1] px-3 py-2 text-sm hover:border-[#ed6a32] hover:text-[#ed6a32]">
                         Скрыть везде
