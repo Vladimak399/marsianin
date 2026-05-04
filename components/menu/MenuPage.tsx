@@ -182,8 +182,19 @@ export default function MenuPage({
   };
 
   const handleLocationSwitch = (location: LocationId) => {
+    const nextCatalog = filterCatalogByLocation(menuCatalog, location);
+    const nextCategory = nextCatalog.some((section) => section.category === activeCategory)
+      ? activeCategory
+      : nextCatalog[0]?.category ?? '';
+
     setSelectedLocation(location);
-    router.replace(`/menu/${location}?category=${activeCategory}`, { scroll: false });
+    setActiveCategory(nextCategory);
+
+    const nextUrl = nextCategory
+      ? `/menu/${location}?category=${encodeURIComponent(nextCategory)}`
+      : `/menu/${location}`;
+
+    router.replace(nextUrl, { scroll: false });
   };
 
   const handleCategorySelect = (category: string) => {
@@ -310,17 +321,24 @@ export default function MenuPage({
               chipsContainerRef={chipsContainerRef}
             />
 
-            <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
-              {locationCatalog.map((section, index) => (
-                <MenuSection
-                  key={section.category}
-                  section={section}
-                  selectedLocation={activeLocation}
-                  onOpenItem={handleOpenDetails}
-                  isFirstSection={index === 0}
-                />
-              ))}
-            </div>
+            {locationCatalog.length > 0 ? (
+              <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
+                {locationCatalog.map((section, index) => (
+                  <MenuSection
+                    key={section.category}
+                    section={section}
+                    selectedLocation={activeLocation}
+                    onOpenItem={handleOpenDetails}
+                    isFirstSection={index === 0}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="relative z-10 mt-7 border border-dashed border-black/[0.08] bg-white/70 px-4 py-10 text-center">
+                <p className="mars-coordinate-label text-[10px] text-[#ed6a32]">меню обновляется</p>
+                <p className="mt-2 text-sm leading-relaxed text-[#504942]">для этой точки пока нет доступных позиций</p>
+              </div>
+            )}
 
             <div className="relative z-10 mt-8 border border-[#ed6a32]/22 bg-[#ed6a32]/[0.055] px-4 py-4">
               <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">важно</p>
