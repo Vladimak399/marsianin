@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useLocation } from '@/components/providers/LocationProvider';
 import { LocationId, locations } from '@/data/locations';
 import { Coordinates } from '@/lib/geo';
-import { MenuItem } from '@/data/menu';
+import { MenuCategory, MenuItem } from '@/data/menu';
 import { premiumEase } from '@/lib/animations';
 import { useMenuCatalog } from '@/lib/useMenuCatalog';
 import CoordinateSystemLayer from '@/components/CoordinateSystemLayer';
@@ -18,6 +18,17 @@ import Footer from '@/components/Footer';
 
 const DEFAULT_LOCATION: LocationId = 'o12';
 
+const isItemAvailableAtLocation = (item: MenuItem, location: LocationId) => item.availableByLocation?.[location] !== false;
+
+const filterCatalogByLocation = (catalog: MenuCategory[], location: LocationId): MenuCategory[] => {
+  return catalog
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => isItemAvailableAtLocation(item, location))
+    }))
+    .filter((section) => section.items.length > 0);
+};
+
 type MenuPageProps = {
   initialLocation?: string;
   initialCategory?: string;
@@ -25,7 +36,7 @@ type MenuPageProps = {
   initialGuestCoordinates?: Coordinates | null;
 };
 
-type CategoryChangeSource = 'intersection-observer' | 'chip-click';
+type CategoryChangeSource = 'scroll' | 'chip-click';
 
 export default function MenuPage({
   initialLocation,
@@ -41,7 +52,7 @@ export default function MenuPage({
   const [viewerItems, setViewerItems] = useState<MenuItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedItemCategory, setSelectedItemCategory] = useState('');
-  const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('intersection-observer');
+  const [categoryChangeSource, setCategoryChangeSource] = useState<CategoryChangeSource>('scroll');
   const categoryNavRef = useRef<HTMLDivElement>(null);
   const chipsContainerRef = useRef<HTMLDivElement>(null);
   const [categoryNavHeight, setCategoryNavHeight] = useState(64);
@@ -67,8 +78,9 @@ export default function MenuPage({
     if (initialEntrySource === 'qr') setEntrySource('qr');
   }, [initialEntrySource, setEntrySource]);
 
-  const categories = useMemo(() => menuCatalog.map((section) => section.category), [menuCatalog]);
   const activeLocation = selectedLocation ?? initialResolvedLocation ?? DEFAULT_LOCATION;
+  const locationCatalog = useMemo(() => filterCatalogByLocation(menuCatalog, activeLocation), [activeLocation, menuCatalog]);
+  const categories = useMemo(() => locationCatalog.map((section) => section.category), [locationCatalog]);
   const currentLocation = locations.find((location) => location.id === activeLocation);
 
   useEffect(() => {
@@ -103,29 +115,49 @@ export default function MenuPage({
   }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (categories.length === 0) return;
 
-        const next = visible[0]?.target.getAttribute('data-category');
-        if (next) {
-          setCategoryChangeSource('intersection-observer');
-          setActiveCategory(next);
+    let frameId = 0;
+
+    const getSectionElements = () =>
+      categories
+        .map((category) => document.getElementById(`section-${category}`))
+        .filter((section): section is HTMLElement => Boolean(section));
+
+    const updateActiveCategoryFromScroll = () => {
+      const sections = getSectionElements();
+      if (sections.length === 0) return;
+
+      const activationLine = window.scrollY + categoryNavHeight + 28;
+      let nextCategory = sections[0].getAttribute('data-category') ?? categories[0];
+
+      for (const section of sections) {
+        if (section.offsetTop <= activationLine) {
+          nextCategory = section.getAttribute('data-category') ?? nextCategory;
+        } else {
+          break;
         }
-      },
-      {
-        rootMargin: `-${categoryNavHeight + 18}px 0px -55% 0px`,
-        threshold: [0.15, 0.35, 0.6]
       }
-    );
 
-    const sections = document.querySelectorAll<HTMLElement>('[data-category]');
-    sections.forEach((section) => observer.observe(section));
+      setCategoryChangeSource('scroll');
+      setActiveCategory(nextCategory);
+    };
 
-    return () => observer.disconnect();
-  }, [categoryNavHeight]);
+    const requestUpdate = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateActiveCategoryFromScroll);
+    };
+
+    requestUpdate();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+    };
+  }, [categories, categoryNavHeight]);
 
   useEffect(() => {
     const container = chipsContainerRef.current;
@@ -140,7 +172,7 @@ export default function MenuPage({
     const left = Math.min(Math.max(targetLeft, 0), maxLeft);
     container.scrollTo({ left, behavior });
 
-    if (categoryChangeSource === 'chip-click') setCategoryChangeSource('intersection-observer');
+    if (categoryChangeSource === 'chip-click') setCategoryChangeSource('scroll');
   }, [activeCategory, categoryChangeSource]);
 
   const updateQuery = (nextCategory: string) => {
@@ -150,8 +182,19 @@ export default function MenuPage({
   };
 
   const handleLocationSwitch = (location: LocationId) => {
+    const nextCatalog = filterCatalogByLocation(menuCatalog, location);
+    const nextCategory = nextCatalog.some((section) => section.category === activeCategory)
+      ? activeCategory
+      : nextCatalog[0]?.category ?? '';
+
     setSelectedLocation(location);
-    router.replace(`/menu/${location}?category=${activeCategory}`, { scroll: false });
+    setActiveCategory(nextCategory);
+
+    const nextUrl = nextCategory
+      ? `/menu/${location}?category=${encodeURIComponent(nextCategory)}`
+      : `/menu/${location}`;
+
+    router.replace(nextUrl, { scroll: false });
   };
 
   const handleCategorySelect = (category: string) => {
@@ -169,7 +212,7 @@ export default function MenuPage({
   };
 
   const handleOpenDetails = (item: MenuItem, category: string) => {
-    const section = menuCatalog.find((entry) => entry.category === category);
+    const section = locationCatalog.find((entry) => entry.category === category);
     const items = section?.items ?? [];
     const nextIndex = items.findIndex((entry) => entry.id === item.id);
     if (nextIndex < 0) return;
@@ -278,16 +321,30 @@ export default function MenuPage({
               chipsContainerRef={chipsContainerRef}
             />
 
-            <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
-              {menuCatalog.map((section, index) => (
-                <MenuSection
-                  key={section.category}
-                  section={section}
-                  selectedLocation={activeLocation}
-                  onOpenItem={handleOpenDetails}
-                  isFirstSection={index === 0}
-                />
-              ))}
+            {locationCatalog.length > 0 ? (
+              <div className="relative z-10 mt-7 space-y-7 sm:space-y-8">
+                {locationCatalog.map((section, index) => (
+                  <MenuSection
+                    key={section.category}
+                    section={section}
+                    selectedLocation={activeLocation}
+                    onOpenItem={handleOpenDetails}
+                    isFirstSection={index === 0}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="relative z-10 mt-7 border border-dashed border-black/[0.08] bg-white/70 px-4 py-10 text-center">
+                <p className="mars-coordinate-label text-[10px] text-[#ed6a32]">меню обновляется</p>
+                <p className="mt-2 text-sm leading-relaxed text-[#504942]">для этой точки пока нет доступных позиций</p>
+              </div>
+            )}
+
+            <div className="relative z-10 mt-8 border border-[#ed6a32]/22 bg-[#ed6a32]/[0.055] px-4 py-4">
+              <p className="mars-coordinate-label text-[9px] text-[#ed6a32]">важно</p>
+              <p className="mt-2 text-xs leading-relaxed text-[#504942]">
+                если у вас есть аллергия на какие-либо продукты, пожалуйста, сообщите нам об этом
+              </p>
             </div>
 
             <Footer />

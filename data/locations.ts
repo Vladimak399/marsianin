@@ -1,7 +1,7 @@
 export const locations = [
   {
     id: 'o12',
-    label: 'о12',
+    label: 'О12',
     lat: 54.7008,
     lng: 20.5161,
     address: 'калининград, ул октябрьская 12',
@@ -25,7 +25,7 @@ export const locations = [
   },
   {
     id: 'k10',
-    label: 'к10',
+    label: 'К10',
     lat: 54.7299,
     lng: 20.5523,
     address: 'калининград, ул костромская 10',
@@ -49,7 +49,7 @@ export const locations = [
   },
   {
     id: 'p7',
-    label: 'п7',
+    label: 'П7',
     lat: 54.712506,
     lng: 20.512726,
     address: 'калининград, ул пролетарская 7',
