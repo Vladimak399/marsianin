@@ -231,9 +231,9 @@ export default function AdminOrderPanel() {
                     onClick={() => setSelectedCategory(category.category)}
                     className="min-w-0 flex-1 cursor-grab text-left active:cursor-grabbing"
                   >
-                    <span className="flex items-center justify-between gap-3">
-                      <span className="font-medium">{String(index + 1).padStart(2, '0')} · {category.category}</span>
-                      <span className="text-xs text-black/40">↕</span>
+                    <span className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="min-w-0 truncate font-medium">{String(index + 1).padStart(2, '0')} · {category.category}</span>
+                      <span className="shrink-0 text-xs text-black/40">↕</span>
                     </span>
                     <span className="mt-1 block text-xs text-black/45">{getCategoryItemCount(category)} поз.</span>
                   </button>
@@ -280,9 +280,9 @@ export default function AdminOrderPanel() {
                   className={`cursor-grab border border-black/[0.08] bg-white px-3 py-3 active:cursor-grabbing ${draggedItemIndex === index ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">{String(index + 1).padStart(2, '0')} · {item.name || item.id}</p>
-                      {item.subcategory ? <p className="mt-1 text-xs text-black/45">{item.subcategory}</p> : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{String(index + 1).padStart(2, '0')} · {item.name || item.id}</p>
+                      {item.subcategory ? <p className="mt-1 truncate text-xs text-black/45">{item.subcategory}</p> : null}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {item.containsAlcohol ? <span className="border border-[#ed6a32]/35 bg-[#ed6a32]/[0.06] px-2 py-1 text-xs text-[#ed6a32]">18+</span> : null}
